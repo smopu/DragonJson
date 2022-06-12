@@ -1,0 +1,25 @@
+﻿{
+	"gcc": {
+		"b": false,
+		"num": 3.8
+	},
+	"fgg": 16,
+	"array": [ 1, 2, 3, 4 ],
+	"arrayB": [
+		{
+			"b": true,
+			"num": 1.2
+		},
+		{
+			"b": false,
+			"num": 3.4
+		},
+		{
+			"b": true,
+			"num": 5.6
+		}
+	],
+
+	"num": 3.14,
+	"str": "hello world"
+}

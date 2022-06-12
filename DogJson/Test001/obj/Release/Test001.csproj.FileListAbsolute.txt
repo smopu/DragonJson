@@ -1,0 +1,5 @@
+E:\0\DogJson\dog-json\DogJson\Test001\bin\Release\Test001.dll
+E:\0\DogJson\dog-json\DogJson\Test001\bin\Release\Test001.pdb
+E:\0\DogJson\dog-json\DogJson\Test001\obj\Release\Test001.csproj.CoreCompileInputs.cache
+E:\0\DogJson\dog-json\DogJson\Test001\obj\Release\Test001.dll
+E:\0\DogJson\dog-json\DogJson\Test001\obj\Release\Test001.pdb

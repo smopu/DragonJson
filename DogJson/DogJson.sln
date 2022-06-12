@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30803.129
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DogJson", "DogJson\DogJson.csproj", "{169180BC-815E-428A-BD24-71B9022B800D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{169180BC-815E-428A-BD24-71B9022B800D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{169180BC-815E-428A-BD24-71B9022B800D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{169180BC-815E-428A-BD24-71B9022B800D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{169180BC-815E-428A-BD24-71B9022B800D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1BEE05F0-57EE-4ECB-AAE5-6727FCBCEFD7}
+	EndGlobalSection
+EndGlobal
