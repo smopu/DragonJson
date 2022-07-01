@@ -11,8 +11,8 @@ namespace DogJson
     public class JsonReflection
     {
 
-        static Dictionary<Type, TypeWarp> allGenericType = new Dictionary<Type, TypeWarp>();
-        static Dictionary<Type, TypeReflectionWarp> allTypeStructWarp = new Dictionary<Type, TypeReflectionWarp>();
+        static Dictionary<Type, TypeWrapper> allGenericType = new Dictionary<Type, TypeWrapper>();
+        static Dictionary<Type, TypeReflectionWrapper> allTypeStructWrapper = new Dictionary<Type, TypeReflectionWrapper>();
 
         /// <summary>
         /// 设置整数
@@ -81,10 +81,10 @@ namespace DogJson
             }
         }
 
-        static unsafe TypeReflectionWarp AddTypeStructWarp(Type type)
+        static unsafe TypeReflectionWrapper AddTypeStructWrapper(Type type)
         {
             FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            TypeReflectionWarp typeStructWarp = new TypeReflectionWarp();
+            TypeReflectionWrapper typeStructWrapper = new TypeReflectionWrapper();
             foreach (var field in fieldInfos)
             {
                 //IntPtr ix = Marshal.OffsetOf(type, field.Name);
@@ -126,47 +126,47 @@ namespace DogJson
                     }
                 }
 
-                typeStructWarp.nameOfField[field.Name] = typeStructField;
+                typeStructWrapper.nameOfField[field.Name] = typeStructField;
             }
-            allTypeStructWarp[type] = typeStructWarp;
-            return typeStructWarp;
+            allTypeStructWrapper[type] = typeStructWrapper;
+            return typeStructWrapper;
         }
-        public static unsafe TypeReflectionWarp GetTypeStructWarp(Type type)
+        public static unsafe TypeReflectionWrapper GetTypeStructWrapper(Type type)
         {
-            TypeReflectionWarp typeStructWarp;
-            if (!allTypeStructWarp.TryGetValue(type, out typeStructWarp))
+            TypeReflectionWrapper typeStructWrapper;
+            if (!allTypeStructWrapper.TryGetValue(type, out typeStructWrapper))
             {
-                typeStructWarp = AddTypeStructWarp(type);
-                allTypeStructWarp[type] = typeStructWarp;
+                typeStructWrapper = AddTypeStructWrapper(type);
+                allTypeStructWrapper[type] = typeStructWrapper;
             }
-            return typeStructWarp;
+            return typeStructWrapper;
         }
 
-        public static unsafe TypeReflectionWarp GetArrayTypeStructWarp(Type type)
+        public static unsafe TypeReflectionWrapper GetArrayTypeStructWrapper(Type type)
         {
-            TypeReflectionWarp typeStructWarp;
-            if (!allTypeStructWarp.TryGetValue(type, out typeStructWarp))
+            TypeReflectionWrapper typeStructWrapper;
+            if (!allTypeStructWrapper.TryGetValue(type, out typeStructWrapper))
             {
-                typeStructWarp = new TypeReflectionWarp();
+                typeStructWrapper = new TypeReflectionWrapper();
                 if (type.IsArray)
                 {
-                    typeStructWarp.itemType = type.GetElementType();
-                    typeStructWarp.itemTypeCode = Type.GetTypeCode(typeStructWarp.itemType);
+                    typeStructWrapper.itemType = type.GetElementType();
+                    typeStructWrapper.itemTypeCode = Type.GetTypeCode(typeStructWrapper.itemType);
 
                 }
                 else if (type.IsGenericType)
                 {
-                    typeStructWarp.itemType = type.GetGenericArguments()[0];
-                    typeStructWarp.itemTypeCode = Type.GetTypeCode(typeStructWarp.itemType);
+                    typeStructWrapper.itemType = type.GetGenericArguments()[0];
+                    typeStructWrapper.itemTypeCode = Type.GetTypeCode(typeStructWrapper.itemType);
                 }
             }
-            return typeStructWarp;
+            return typeStructWrapper;
         }
 
 
 
     }
-    public class TypeWarp
+    public class TypeWrapper
     {
         public bool isObject;
         //public ReadArrayObject readArray;
@@ -175,13 +175,13 @@ namespace DogJson
 
     }
 
-    public class TypeReflectionWarp
+    public class TypeReflectionWrapper
     {
         public TypeCode itemTypeCode;
         public Type itemType;
 
         public Dictionary<string, TypeField> nameOfField = new Dictionary<string, TypeField>();
-        public unsafe void SetTypeStructWarpLong(object obj, string key, long v)
+        public unsafe void SetTypeStructWrapperLong(object obj, string key, long v)
         {
             TypeField typeStructField;
             if (nameOfField.TryGetValue(key, out typeStructField))
@@ -190,7 +190,7 @@ namespace DogJson
             }
         }
 
-        public unsafe void SetTypeStructWarpDouble(object obj, string key, double v)
+        public unsafe void SetTypeStructWrapperDouble(object obj, string key, double v)
         {
             TypeField typeStructField;
             if (nameOfField.TryGetValue(key, out typeStructField))
@@ -199,7 +199,7 @@ namespace DogJson
             }
         }
 
-        public unsafe void SetTypeStructWarpString(object obj, string key, string v)
+        public unsafe void SetTypeStructWrapperString(object obj, string key, string v)
         {
             TypeField typeStructField;
             if (nameOfField.TryGetValue(key, out typeStructField))
@@ -208,7 +208,7 @@ namespace DogJson
             }
         }
 
-        public unsafe void SetTypeStructWarpBool(object obj, string key, bool v)
+        public unsafe void SetTypeStructWrapperBool(object obj, string key, bool v)
         {
             TypeField typeStructField;
             if (nameOfField.TryGetValue(key, out typeStructField))
@@ -217,7 +217,7 @@ namespace DogJson
             }
         }
 
-        public unsafe void AddTypeStructWarpLong(IList obj, long value)
+        public unsafe void AddTypeStructWrapperLong(IList obj, long value)
         {
             switch (itemTypeCode)
             {
@@ -254,7 +254,7 @@ namespace DogJson
             }
         }
 
-        public unsafe void AddTypeStructWarpDouble(IList obj, double value)
+        public unsafe void AddTypeStructWrapperDouble(IList obj, double value)
         {
             switch (itemTypeCode)
             {

@@ -1,0 +1,9 @@
+D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.AssemblyReference.cache
+D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CoreCompileInputs.cache
+D:\git\DogJson\CharPointerTable\bin\x64\Debug\CharPointerTable.exe.config
+D:\git\DogJson\CharPointerTable\bin\x64\Debug\CharPointerTable.exe
+D:\git\DogJson\CharPointerTable\bin\x64\Debug\CharPointerTable.pdb
+D:\git\DogJson\CharPointerTable\bin\x64\Debug\DynamicCustomReflection.dll
+D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CopyComplete
+D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.exe
+D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.pdb

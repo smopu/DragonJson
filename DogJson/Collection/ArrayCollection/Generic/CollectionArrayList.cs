@@ -17,6 +17,7 @@ namespace DogJson
 
         protected override void Add(List<T> array, int index, object value)
         {
+
             array.Add((T)value);
         }
 

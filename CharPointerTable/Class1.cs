@@ -45,9 +45,9 @@ namespace CustomReflection
         public unsafe static void Main2(string[] args)
         {
             //DynamicCreateType();
-            TypeAddrReflectionWarp warp = new TypeAddrReflectionWarp(typeof(V3));
+            TypeAddrReflectionWrapper wrapper = new TypeAddrReflectionWrapper(typeof(V3));
             GCHandle gcHandle;
-            object obj = warp.Create();
+            object obj = wrapper.Create();
 
             object objV3 = new V3();
 

@@ -131,7 +131,21 @@ namespace DogJson
         Type GetItemType(JsonObject* bridge);
     }
 
-
+    public unsafe abstract class CollectionObjectStructBase<T> : CollectionObjectBase<T, Box<T>> where T : struct
+    {
+        public override bool IsRef()
+        {
+            return false;
+        }
+        protected override T End(Box<T> obj)
+        {
+            return obj.value;
+        }
+        protected override Box<T> CreateObject(JsonObject* obj, object parent, Type objectType, Type parentType)
+        {
+            return new Box<T>();
+        }
+    }
 
     public unsafe abstract class CollectionObjectBase<CollectionType, TempCollectionType> : ICollectionObjectBase
     {

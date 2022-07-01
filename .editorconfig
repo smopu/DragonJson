@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CS0659: 类型重写 Object.Equals(object o)，但不重写 Object.GetHashCode()
+dotnet_diagnostic.CS0659.severity = suggestion

@@ -485,6 +485,10 @@ namespace DogJson
 
         public unsafe int Find(char* d, int length)
         {
+            if (length >= lives.Length) 
+            {
+                return -1;
+            }
             if (lives[length] != null)
             {
                 return lives[length].Run(d);

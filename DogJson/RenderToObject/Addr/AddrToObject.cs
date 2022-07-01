@@ -10,15 +10,15 @@ namespace DogJson
 {
     public unsafe class AddrToObject : IJsonRenderToObject
     {
-        Dictionary<Type, TypeAddrReflectionWarp> allTypeWarp = new Dictionary<Type, TypeAddrReflectionWarp>();
-        public TypeAddrReflectionWarp GetTypeWarp(Type type)
+        Dictionary<Type, TypeAddrReflectionWrapper> allTypeWrapper = new Dictionary<Type, TypeAddrReflectionWrapper>();
+        public TypeAddrReflectionWrapper GetTypeWrapper(Type type)
         {
-            TypeAddrReflectionWarp ob;
-            if (allTypeWarp.TryGetValue(type, out ob))
+            TypeAddrReflectionWrapper ob;
+            if (allTypeWrapper.TryGetValue(type, out ob))
             {
                 return ob;
             }
-            return allTypeWarp[type] = new TypeAddrReflectionWarp(type);
+            return allTypeWrapper[type] = new TypeAddrReflectionWrapper(type);
         }
 
         public class CreateObjectItem
@@ -45,7 +45,7 @@ namespace DogJson
 
             public Type type;
             public Type sourceType;
-            public TypeAddrField fieldInfo;
+            public TypeAddrFieldAndProperty fieldInfo;
             public string key;
             public Array objArray;
             public TypeCode ArrayItemTypeCode;
@@ -61,7 +61,7 @@ namespace DogJson
             public int index;
             public ICollectionObjectBase collectionArray;
             public ICollectionObjectBase collectionObject;
-            public TypeAddrReflectionWarp warp;
+            public TypeAddrReflectionWrapper wrapper;
 
         }
 
@@ -71,9 +71,9 @@ namespace DogJson
             CreateObjectItem[] createObjectItems = new CreateObjectItem[jsonRender.objectQueueIndex];
             {
                 var rootItem = createObjectItems[0] = new CreateObjectItem(0);
-                rootItem.warp = GetTypeWarp(type);
+                rootItem.wrapper = GetTypeWrapper(type);
                 rootItem.type = type;
-                rootItem.Obj = rootItem.warp.Create(out rootItem.gcHandle);
+                rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);
                 //rootItem.gcHandle.Free();
                 rootItem.isValueType = type.IsValueType;
                 rootItem.jsonObject = jsonRender.objectQueue[0];
@@ -92,10 +92,10 @@ namespace DogJson
                         ICollectionObjectBase collectionParent = parentObject.collectionObject;
                         if (collectionParent == null)
                         {
-                            //var fieldInfo = parentObject.warp.Find(vs + v.keyStringStart, v.keyStringLength);
+                            //var fieldInfo = parentObject.wrapper.Find(vs + v.keyStringStart, v.keyStringLength);
                             string key = new string(v.keyStringStart, 0, v.keyStringLength);
                             myObject.key = key;
-                            var fieldInfo = parentObject.warp.nameOfField[key];
+                            var fieldInfo = parentObject.wrapper.nameOfField[key];
 
                             myObject.fieldInfo = fieldInfo;
                             if (v.isCommandValue)
@@ -162,7 +162,7 @@ namespace DogJson
                     //"#create"
                     if (v.isConstructor)
                     {
-                        myObject.type = typeof(ConstructorWarp);
+                        myObject.type = typeof(ConstructorWrapper);
                     }
 
                     if (v.isObject)
@@ -187,16 +187,16 @@ namespace DogJson
                             }
                             else
                             {
-                                myObject.warp = GetTypeWarp(myObject.type);
+                                myObject.wrapper = GetTypeWrapper(myObject.type);
                                 //if (myObject.isValueType)
                                 //{
                                 //    parentObject
                                 //}
                                 //else
                                 //{
-                                //    myObject.Obj = myObject.warp.Create(out myObject.gcHandle);
+                                //    myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
                                 //}
-                                myObject.Obj = myObject.warp.Create(out myObject.gcHandle);
+                                myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
                             }
                         }
                     }
@@ -334,8 +334,8 @@ namespace DogJson
                         else
                         {
                             var key = new string(vs, v.keyStringStart, v.keyStringLength);
-                            //TypeAddrField fieldInfo = myObject.warp.Find(vs + v.keyStringStart, v.keyStringLength);
-                            TypeAddrField fieldInfo = myObject.warp.nameOfField[key];
+                            //TypeAddrField fieldInfo = myObject.wrapper.Find(vs + v.keyStringStart, v.keyStringLength);
+                            TypeAddrFieldAndProperty fieldInfo = myObject.wrapper.nameOfField[key];
                             var itemTypeCode = fieldInfo.typeCode;
                             switch (v.type)
                             {
@@ -631,7 +631,7 @@ namespace DogJson
                             {
                                 if (myObject.fieldInfo.isValueType)
                                 {
-                                    TypeAddrField.SetStruct(parentObject.byteP + myObject.fieldInfo.offset,
+                                    TypeAddrFieldAndProperty.SetStruct(parentObject.byteP + myObject.fieldInfo.offset,
                                         GeneralTool.ObjectToVoid(myObject.Obj),
                                         UnsafeOperation.SizeOf(myObject.type));
 

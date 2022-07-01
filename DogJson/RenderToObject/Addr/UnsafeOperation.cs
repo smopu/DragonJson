@@ -140,9 +140,18 @@ namespace DogJson
             }
             else
             {
+                type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    int index = typeName.IndexOf(',');
+                    string assemblyName = typeName.Substring(0, index);
+                    Assembly assembly = Assembly.Load(assemblyName);//WithPartialName
+                    string TypeName2 = typeName.Substring(index + 1, typeName.Length - index - 1);
+                    type = assembly.GetType(TypeName2);
+                }
                 lock (dictionaryGetType)
                 {
-                    dictionaryGetType[typeName] = type = Type.GetType(typeName);
+                    dictionaryGetType[typeName] = type;
                 }
             }
             return type;

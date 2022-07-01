@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace DogJson
 {
-    public unsafe class ArrayWarp
+    public unsafe class ArrayWrapper
     {
         int maxRank = 10;
-        public ArrayWarp(int Max_Rank = 10)
+        public ArrayWrapper(int Max_Rank = 10)
         {
             this.maxRank = Max_Rank;
             intPtr = Marshal.AllocHGlobal(100);
             array_lengths = (int*)intPtr.ToPointer();
 
         }
-        ~ArrayWarp()
+        ~ArrayWrapper()
         {
             Marshal.FreeHGlobal(intPtr);
         }
@@ -27,7 +27,7 @@ namespace DogJson
         int rank = 0;
         public int arraySize = 1;
 
-        Dictionary<Type, ArrayWarpItem> allArrayTypeHeadAddr = new Dictionary<Type, ArrayWarpItem>();
+        Dictionary<Type, ArrayWrapperItem> allArrayTypeHeadAddr = new Dictionary<Type, ArrayWrapperItem>();
         public void SetSize(int length)
         {
             array_lengths[rank] = length;
@@ -43,25 +43,25 @@ namespace DogJson
         //    rank = 0;
         //    array_size = 1;
         //}
-        readonly static int array1StartOffcet = UnsafeOperation.PTR_COUNT* 2;
+        public readonly static int array1StartOffcet = UnsafeOperation.PTR_COUNT * 2;
 
 
         public object CreateArrayOne(Type type, int length, out byte* startOffcet, out GCHandle gCHandle, out int itemSize)
         {
-            ArrayWarpItem arrayWarpItem;
-            if (allArrayTypeHeadAddr.TryGetValue(type, out arrayWarpItem))
+            ArrayWrapperItem arrayWrapperItem;
+            if (allArrayTypeHeadAddr.TryGetValue(type, out arrayWrapperItem))
             {
             }
             else
             {
-                allArrayTypeHeadAddr[type] = arrayWarpItem = new ArrayWarpItem(type, maxRank);
+                allArrayTypeHeadAddr[type] = arrayWrapperItem = new ArrayWrapperItem(type, maxRank);
             }
-            itemSize = arrayWarpItem.typeSize;
-            int arrayMsize = length * arrayWarpItem.typeSize;
+            itemSize = arrayWrapperItem.typeSize;
+            int arrayMsize = length * arrayWrapperItem.typeSize;
             object array = new byte[arrayMsize];
             gCHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
             IntPtr* p = (IntPtr*)GeneralTool.ObjectToVoid(array);
-            *p = arrayWarpItem.heads[1];
+            *p = arrayWrapperItem.heads[1];
             ++p;
             *p = (IntPtr)length;
             startOffcet = (byte*)GeneralTool.ObjectToVoid(array) + array1StartOffcet;
@@ -71,19 +71,19 @@ namespace DogJson
          public object CreateArray(Type type, out byte* startOffcet, out GCHandle gCHandle, 
              out int itemTypeSize)
         {
-            ArrayWarpItem arrayWarpItem;
-            if (allArrayTypeHeadAddr.TryGetValue(type, out arrayWarpItem))
+            ArrayWrapperItem arrayWrapperItem;
+            if (allArrayTypeHeadAddr.TryGetValue(type, out arrayWrapperItem))
             {
-                if (arrayWarpItem.maxRank < maxRank)
+                if (arrayWrapperItem.maxRank < maxRank)
                 {
-                    allArrayTypeHeadAddr[type] = arrayWarpItem = new ArrayWarpItem(type, maxRank);
+                    allArrayTypeHeadAddr[type] = arrayWrapperItem = new ArrayWrapperItem(type, maxRank);
                 }
             }
             else
             {
-                allArrayTypeHeadAddr[type] = arrayWarpItem = new ArrayWarpItem(type, maxRank);
+                allArrayTypeHeadAddr[type] = arrayWrapperItem = new ArrayWrapperItem(type, maxRank);
             }
-            itemTypeSize = arrayWarpItem.typeSize;
+            itemTypeSize = arrayWrapperItem.typeSize;
             int offcet = (rank * 2 - 1) * 4;
             int arrayMsize = offcet + arraySize * itemTypeSize;
             object array = new byte[arrayMsize];
@@ -91,7 +91,7 @@ namespace DogJson
 
             IntPtr* p = (IntPtr*)GeneralTool.ObjectToVoid(array);
 
-            *p = arrayWarpItem.heads[rank];
+            *p = arrayWrapperItem.heads[rank];
             ++p;
 
             *p = (IntPtr)arraySize; ++p;
@@ -102,9 +102,9 @@ namespace DogJson
             return array;
         }
 
-        public class ArrayWarpItem
+        public class ArrayWrapperItem
         {
-            public ArrayWarpItem(Type itemType, int maxRank)
+            public ArrayWrapperItem(Type itemType, int maxRank)
             {
                 this.itemType = itemType;
                 this.maxRank = maxRank;

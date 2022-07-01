@@ -132,7 +132,7 @@ namespace DogJson
                     //"#create"
                     if (v.isConstructor)
                     {
-                        myObject.type = typeof(ConstructorWarp);
+                        myObject.type = typeof(ConstructorWrapper);
                     }
 
                     if (v.isObject)

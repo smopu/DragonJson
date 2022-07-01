@@ -343,11 +343,24 @@ namespace DogJson
                 this.txt = txt;
                 this.startIndex = startIndex;
                 this.length = length;
+
+
+                var getValue = Delegate.CreateDelegate(typeof(Func<TestJsonClassA, double>),
+                    typeof(TestJsonClassA).GetProperty("Num").GetGetMethod()) as Func<TestJsonClassA, double>;
+
+                TestJsonClassA a1 = new TestJsonClassA();
+
+                Action<double> action = typeof(TestJsonClassA).GetProperty("Num").GetSetMethod().CreateDelegate
+                    (typeof(Action<double>), a1) as Action<double>;
+
+
+
             }
         }
 
         [StructLayout(LayoutKind.Sequential)]
         internal sealed class Pinnable<T>
+        //GetType().GetMethod("").CreateDelegate;
         {
             public T Data;
         }
@@ -695,8 +708,549 @@ namespace DogJson
 
         //@自己 ..父类  $根结点 
 
+        public struct A3struct
+        {
+            public double Num
+            {
+                get { return num; }
+                set { num = value; }
+            }
+            public double num;
+        }
+        public class A3
+        {
+            public double Num
+            {
+                get { return num; }
+                set { num = value; }
+            }
+            public double num;
+
+            public A3struct Struct
+            {
+                get { return v; }
+                set { v = value; }
+            }
+            public A3struct v;
+        }
+
+        public class TclassACC
+        {
+            public double num;
+            public bool b;
+            public double Num
+            {
+                get { return num; }
+                set { num = value; }
+            }
+        }
+
+
+        public class AAXA
+        {
+            private double num;
+            public double Num
+            {
+                get { return num; }
+                set { num = value; }
+            }
+
+            private B bb;
+            public B BB
+            {
+                get { return bb; }
+                set { bb = value; }
+            }
+        }
+
+        static unsafe void Main44(string[] args)
+        {
+            StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
+            string str = streamReader.ReadToEnd();
+            JsonManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+
+            JsonRender jsonRender = new JsonRender();
+
+            jsonRender.ReadJsonText(str);
+            var o = jsonRender.ReadJsonTextCreateObject<AAXA>(str);
+
+            Console.ReadKey();
+
+
+            //AAXA aAXA = new AAXA();
+            //var a1_p = GeneralTool.ObjectToVoid(aAXA);
+            //var o111 = new TypeAddrReflectionWrapper(typeof(AAXA));
+            //string key = "Num\"";
+            ////fixed (byte* o11 = &o11)
+            //fixed (char* o11 = key)
+            //{
+            //    TypeAddrFieldAndProperty typeAddr = o111.Find(o11, key.Length - 1);
+            //    if (typeAddr.isField)
+            //    {
+
+            //    }
+            //    else if (typeAddr.isPropertySet)
+            //    {
+            //        *typeAddr.propertyDelegateItem.setTargetPtr = a1_p;
+            //        typeAddr.propertyDelegateItem.setDouble(111.444);
+            //    }
+            //} 
+            Console.ReadKey();
+        }
+
+
+        public class ACE3
+        {
+            public int kk;
+            public string str;
+        }
+
+        public class ACE1
+        {
+            public ACE3[] aCE3s;
+            public bool b;
+            public double num;
+            public string str;
+            public ACE3 aCE3;
+            public int[] ints;
+            public List<int> intLists;
+            public int[,] ints2;
+            public ACE3[,] aCE3s2;
+            public int[,,] ints3;
+        }
+
+
         static unsafe void Main(string[] args)
         {
+            StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
+            string str = streamReader.ReadToEnd();
+            JsonManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+
+            JsonRender jsonRender = new JsonRender();
+
+            //jsonRender.ReadJsonText(str);
+            //var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+
+
+            JsonWriter jsonWriter = new JsonWriter();
+            ACE1 aCE = new ACE1();
+            aCE.aCE3 = new ACE3
+            {
+                kk = 44,
+                str = "E4",
+            };
+
+            aCE.intLists = new List<int>() { 3, 4, 5 };
+
+            aCE.ints = new int[] {
+                1,2,3,9
+            };
+            
+            aCE.ints2 = new int[,]
+            {
+                {1, 2, 3, 4},
+                {11, 12, 13, 14},
+                {101, 102, 103, 104},
+            };
+            aCE.ints3 = new int[,,]
+            {
+                 {
+                    {1, 2, 3, 4},
+                    {11, 12, 13, 14},
+                    {101, 102, 103, 104},
+                },
+                 {
+                    {2001, 2002, 2003, 2004},
+                    {2011, 2012, 2013, 2014},
+                    {2101, 2102, 2103, 2104},
+                },
+            };
+            aCE.aCE3s2 = new ACE3[,]
+            {
+                 {
+                   new ACE3{
+                kk = 4,
+                str = "1", },
+                   new ACE3{
+                kk = 3,
+                str = "2", },
+                },
+                 {
+                   new ACE3{
+                kk = 2,
+                str = "3", },
+                   new ACE3{
+                kk = 1,
+                str = "4", },
+                },
+            };
+
+            aCE.aCE3s = new ACE3[] {
+                new ACE3{
+                kk = 4,
+                str = "eewqr", },
+                new ACE3{
+                kk = 2,
+                str = "DE4", },
+                new ACE3{
+                kk = 1,
+                str = "F3", }
+            };
+
+
+            aCE.b = false;
+            aCE.num = 4.5;
+            aCE.str = "CCCCD";
+
+            List<JsonWriteValue> writers = new List<JsonWriteValue>();
+            writers = jsonWriter.Wirter(aCE);
+
+
+            JsonWriteValue root = new JsonWriteValue();
+            root.type = JsonWriteType.Object;
+            root.isLast = true;
+
+            JsonWriteValue item = new JsonWriteValue();
+
+            StringBuilder sb = new StringBuilder();
+            Stack<JsonWriteValue> objStack = new Stack<JsonWriteValue>();
+            sb.AppendLine("{");
+
+            JsonWriteValue parent = writers[0];
+            objStack.Push(parent);
+
+
+            //for (int i = 1; i < writers.Count; i++)
+            //{
+            //    item = parent.back;
+            //    parent = item;
+
+            //    if (item.key != null)
+            //    {
+            //        sb.Append("\"" + item.key + "\": ");
+            //    }
+            //    sb.AppendLine(item.value);
+
+            //}
+
+            //Console.WriteLine(sb.ToString());
+            //Console.ReadKey();
+
+
+
+            for (int i = 1; i < writers.Count; i++)
+            {
+                sb.Append('\t', objStack.Count);
+                item = parent.back;
+                parent = item;
+
+                if (item.key != null)
+                {
+                    sb.Append("\"" + item.key + "\": ");
+                }
+
+                switch (item.type)
+                {
+                    case JsonWriteType.String:
+                        sb.Append(item.value);
+                        if (item.isLast)
+                        {
+                            JsonWriteValue parentStack;
+                            sb.AppendLine();
+                            if (item.back == null)
+                            {
+                                while (objStack.Count > 0)//item.back != null &&  
+                                {
+                                    parentStack = objStack.Pop();
+                                    sb.Append('\t', objStack.Count);
+
+                                    if (parentStack.isLast)
+                                    {
+                                        if (parentStack.type == JsonWriteType.Object)
+                                        {
+                                            sb.AppendLine("}");
+                                        }
+                                        else
+                                        {
+                                            sb.AppendLine("]");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (parentStack.type == JsonWriteType.Object)
+                                        {
+                                            sb.AppendLine("},");
+                                        }
+                                        else
+                                        {
+                                            sb.AppendLine("],");
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                            else
+                            {
+
+                                while (objStack.Peek().parent != item.back.parent)//item.back != null &&  
+                                {
+                                    parentStack = objStack.Pop();
+                                    sb.Append('\t', objStack.Count);
+
+                                    if (parentStack.isLast)
+                                    {
+                                        if (parentStack.type == JsonWriteType.Object)
+                                        {
+                                            sb.AppendLine("}");
+                                        }
+                                        else
+                                        {
+                                            sb.AppendLine("]");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (parentStack.type == JsonWriteType.Object)
+                                        {
+                                            sb.AppendLine("},");
+                                        }
+                                        else
+                                        {
+                                            sb.AppendLine("],");
+                                        }
+                                    }
+                                }
+                                parentStack = objStack.Pop();
+                                sb.Append('\t', objStack.Count);
+
+                                if (parentStack.isLast)
+                                {
+                                    if (parentStack.type == JsonWriteType.Object)
+                                    {
+                                        sb.AppendLine("}");
+                                    }
+                                    else
+                                    {
+                                        sb.AppendLine("]");
+                                    }
+                                }
+                                else
+                                {
+                                    if (parentStack.type == JsonWriteType.Object)
+                                    {
+                                        sb.AppendLine("},");
+                                    }
+                                    else
+                                    {
+                                        sb.AppendLine("],");
+                                    }
+                                }
+                            }
+
+
+                        }
+                        else
+                        {
+                            sb.AppendLine(",");
+                        }
+                        break;
+                    case JsonWriteType.Object:
+                        sb.AppendLine("{");
+                        objStack.Push(item);
+                        break;
+                    case JsonWriteType.Array:
+                        sb.AppendLine("[");
+                        objStack.Push(item);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            //sb.AppendLine("}");
+            Console.WriteLine(sb.ToString());
+            Console.ReadKey();
+        }
+
+
+
+        static unsafe void MainZ(string[] args)
+        {
+            Stopwatch oTime = new Stopwatch();
+
+            int tst = sizeof(MulticastDelegateValue);
+            //Action<string[]> action2 = Main;
+            //action2 += Main7;
+            //Action<string[]> action3 = Main;
+            //int* action2P = (int*)GeneralTool.ObjectToVoid(action2);
+            //List<int> testaction2P = new List<int>();
+            //for (int i = 0; i < 20; i++)
+            //{
+            //    testaction2P.Add(action2P[i]);
+            //}
+            //int size11 = UnsafeOperation.SizeOf(typeof(Action<string[]>));
+            //int size112 = UnsafeOperation.SizeOf(typeof(Func<string[]>));
+            //int size1123 = UnsafeOperation.SizeOf(typeof(Func<object, string[]>));
+            //int size11234 = UnsafeOperation.SizeOf(typeof(MulticastDelegate));
+            //int size12 = UnsafeOperation.SizeOfStack(typeof(Action<string[]>));
+
+            A3 a1 = new A3();
+            a1.Num = 999;
+
+            PropertyInfo propertyInfo = typeof(A3).GetProperty("Num");
+            PropertyInfo propertyInfo2 = typeof(A3).GetProperty("Struct");
+
+            Action<A3, A3struct> setValue22 = Delegate.CreateDelegate(typeof(Action<A3, A3struct>),
+                propertyInfo2.GetSetMethod()) as Action<A3, A3struct>;
+            A3struct a3Struct1 = new A3struct();
+            a3Struct1.num = 111;
+            //setValue22(a1, a3Struct1);
+
+            object box;
+            if (typeof(A3).IsValueType)
+            {
+                box = new Box<A3>(a1);
+            }
+            else
+            {
+                box = a1;
+            }
+
+            IPropertyWrapper wrapper = PropertyWrapper.Create(typeof(A3), typeof(A3).GetProperty("Num"));
+            wrapper.Set(box, 777.0);
+
+            Console.WriteLine(wrapper.Get(box));
+
+            Action<A3, double> setValue = Delegate.CreateDelegate(typeof(Action<A3, double>),
+                typeof(A3).GetProperty("Num").GetSetMethod()) as Action<A3, double>;
+
+            var getValue = Delegate.CreateDelegate(typeof(Action<A3, double>),
+                typeof(A3).GetProperty("Num").GetSetMethod()) as Action<A3, double>;
+
+            Action<double> setValue2 = Delegate.CreateDelegate(typeof(Action<double>),
+                null, propertyInfo.GetSetMethod()) as Action<double>;
+
+            
+
+            var set2 = (Action<double>)
+                propertyInfo.GetSetMethod().CreateDelegate(typeof(Action<double>), a1);
+
+            A3struct a3Struct = new A3struct();
+            a3Struct.num = 1999;
+            var setValue24 = Delegate.CreateDelegate(typeof(Action<double>),
+                a3Struct, typeof(A3struct).GetProperty("Num").GetSetMethod()) as Action<double>;
+            a3Struct.num = 11;
+
+            object objccc = a3Struct;
+            var logp = (long*)GeneralTool.ObjectToVoid(setValue24);
+            logp++;
+            var logpO = GeneralTool.VoidToObject((long*)*logp);
+
+            PropertyDelegateItem propertyWrapperAction2 = new PropertyDelegateItem();
+            propertyWrapperAction2.Set = setValue24;
+            *propertyWrapperAction2.setTarget = (IntPtr)GeneralTool.ObjectToVoid(objccc);
+            propertyWrapperAction2.setDouble(777.0);
+
+
+            var @this = 0;
+            PropertyDelegateItem propertyWrapperAction = new PropertyDelegateItem();
+            propertyWrapperAction.Set = setValue2;
+            //propertyWrapperAction.get2 = setValue;
+
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 1000000; __1++)
+            {
+                // set2(777.0);
+                setValue(a1, 777.0);
+            }
+            oTime.Stop();
+            Console.WriteLine("属性委托赋值（不能做成通用反射，只做参考）：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+            var a1_p = GeneralTool.ObjectToVoid(a1);
+            //bool isClass = true;
+            //oTime.Reset(); oTime.Start();
+            //for (int __1 = 0; __1 < 1000000; __1++)
+            //{
+            //    if (isClass)
+            //    {
+            //        propertyWrapperAction.get_double2(a1, 777.0);
+            //    }
+            //    else
+            //    {
+            //        *propertyWrapperAction.target = (IntPtr)a1_p;
+            //        propertyWrapperAction.getDouble(777.0);
+            //    }
+            //}
+            //oTime.Stop();
+            //Console.WriteLine("属性指针赋值（引用类型和值类型分开处理）：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+            *propertyWrapperAction.setTargetPtr = a1_p;
+            propertyWrapperAction.setDouble(424.9991);
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 1000000; __1++)
+            {
+                *propertyWrapperAction.setTargetPtr = a1_p;
+                propertyWrapperAction.setDouble(777.0);
+            }
+            oTime.Stop();
+            Console.WriteLine("属性指针赋值（引用类型和值类型同一处理）：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 1000000; __1++)
+            {
+                *propertyWrapperAction.setTarget = (IntPtr)a1_p;
+                propertyWrapperAction.setDouble(777.0);
+            }
+            oTime.Stop();
+            Console.WriteLine("属性指针赋值（引用类型和值类型同一处理）2：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 1000000; __1++)
+            {
+                wrapper.Set(box, 777.0); 
+            }
+            oTime.Stop();
+            Console.WriteLine("属性接口赋值：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 1000000; __1++)
+            {
+                a1.Num = 777.0;
+            }
+            oTime.Stop();
+            Console.WriteLine("属性原生赋值：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 1000000; __1++)
+            {
+                propertyInfo.SetValue(a1, 777.0);
+            }
+            oTime.Stop();
+            Console.WriteLine("属性反射赋值：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+
+
+
+            //var setValue3 = Delegate.CreateDelegate(typeof(Action),
+            //   777,
+            //   setValue2.Method) as Action;
+
+
+
+
+            //Console.WriteLine(getValue(a1));
+
+            //Console.ReadKey();
+            setValue(a1, 111);
+            Console.WriteLine(a1.Num);
+
+
             var varddd = TestEnum.Test001.ToString();
             string nnnn = typeof(TestEnum).ToString();
 
@@ -707,32 +1261,31 @@ namespace DogJson
             JsonRender jsonRender = new JsonRender();
 
             jsonRender.ReadJsonText(str);
-            var o = jsonRender.ReadJsonTextCreateObject<A>( str);
+            var o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>( str);
 
-            Stopwatch oTime = new Stopwatch();
 
             StreamReader streamReader2 = new StreamReader(@"TextFile2.json", Encoding.UTF32);
             string strD = streamReader2.ReadToEnd();
 
 
             oTime.Reset(); oTime.Start();
-            for (int __1 = 0; __1 < 100000; __1++)
+            for (int __1 = 0; __1 < 30000; __1++)
             {
                 jsonRender.ReadJsonText(str);
             }
             oTime.Stop();
             double time001 = oTime.Elapsed.TotalMilliseconds;
             Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
-            o = jsonRender.ReadJsonTextCreateObject<A>(str);
+            o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
 
             //string strd = File.ReadAllText("TextFile1.json");
 
             byte[] data = Encoding.Unicode.GetBytes(str);
             Stopwatch oTime2 = new Stopwatch();
             oTime2.Reset(); oTime2.Start();
-            for (int __1 = 0; __1 < 100000; __1++)
+            for (int __1 = 0; __1 < 30000; __1++)
             {
-                var ot = jsonRender.ReadJsonTextCreateObject<A>(str);
+                var ot = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
                 //AddrToObject2.indexDbug++;
             }
 
@@ -898,14 +1451,14 @@ namespace DogJson
                 }
             }
         }
-        public class TestOB2
+        public struct TestOB2
         {
             public P_box_3 p3_0;
             public P_box_3 p3_2;
             public int numI;
             public double num;
         }
-        public class TestOB
+        public struct TestOB
         {
             public P_box_3 p3_0;
             public P_box_3 p3_2;
@@ -932,7 +1485,7 @@ namespace DogJson
         {
             public override bool IsRef()
             {
-                return true;
+                return false;
             }
             public override unsafe Type GetItemType(JsonObject* bridge)
             {
@@ -1005,12 +1558,8 @@ namespace DogJson
         }
 
         [Collection(typeof(Program.TestOB), false)]
-        public unsafe class CollectionTestOB : CollectionObjectBase<TestOB, TestOB>
+        public unsafe class CollectionTestOB : CollectionObjectStructBase<TestOB>
         {
-            public override bool IsRef()
-            {
-                return false;
-            }
             public override unsafe Type GetItemType(JsonObject* bridge)
             {
                 string keystring = new string(bridge->keyStringStart, 0, bridge->keyStringLength);
@@ -1028,21 +1577,21 @@ namespace DogJson
                 return typeof(float);
             }
 
-            protected override unsafe void Add(TestOB obj, char* key, int keyLength, object value)
+            protected override unsafe void Add(Box<TestOB> obj, char* key, int keyLength, object value)
             {
                 string keystring = new string(key, 0, keyLength);
                 switch (keystring)
                 {
                     case "p3_0":
-                        obj.p3_0 = (P_box_3)value;
+                        obj.value.p3_0 = (P_box_3)value;
                         break;
                     case "p3_2":
-                        obj.p3_2 = (P_box_3)value;
+                        obj.value.p3_2 = (P_box_3)value;
                         break;
                 }
             }
 
-            protected override unsafe void AddValue(TestOB obj, char* key, int keyLength, char* str, JsonValue* value)
+            protected override unsafe void AddValue(Box<TestOB> obj, char* key, int keyLength, char* str, JsonValue* value)
             {
                 string keystring = new string(key, 0, keyLength);
                 switch (keystring)
@@ -1050,36 +1599,28 @@ namespace DogJson
                     case "numI":
                         if (value->type == JsonValueType.Long)
                         {
-                            obj.numI = (int)value->valueLong;
+                            obj.value.numI = (int)value->valueLong;
                         }
                         else
                         {
-                            obj.numI = (int)value->valueDouble;
+                            obj.value.numI = (int)value->valueDouble;
                         }
                         break;
                     case "num":
                         if (value->type == JsonValueType.Long)
                         {
-                            obj.num = value->valueLong;
+                            obj.value.num = value->valueLong;
                         }
                         else
                         {
-                            obj.num = value->valueDouble;
+                            obj.value.num = value->valueDouble;
                         }
                         break;
                 }
             }
-
-            protected override TestOB CreateObject(JsonObject* obj, object parent, Type objectType, Type parentType)
-            {
-                return new TestOB();
-            }
-
-            protected override TestOB End(TestOB obj)
-            {
-                return obj;
-            }
         }
+
+
 
         //[Collection(typeof(Program.P_3), false)]
         //public unsafe class CollectionP_3X : CollectionObjectBase<P_3>
@@ -1286,8 +1827,15 @@ namespace DogJson
             public double num;
         }
 
-        public class A
+        public class TestJsonClassA
         {
+            public double Num
+            {
+                get { return num; }
+                set { num = value; }
+            }
+            public double num;
+
             public LinkedList<long> arrayLinkedList;
             public int[,,] arrayArray1;
             public int[,][] arrayArray2;
@@ -1298,21 +1846,17 @@ namespace DogJson
             public List<B> listB;
             public List<C> listC;
             public List<E> listE;
-            
 
             public bool b;
-            public double num;
             public int kk;
             public string str;
             public C gcc;
             public E gD;
             public V3 v3;
 
-            public TestOB2 testOB;
+            public TestOB testOB;
 
             public TclassDCC dcc;
-
-
 
             public object ddd;
             public object[] objects;
@@ -1323,7 +1867,6 @@ namespace DogJson
             public TClass003 testClassDD4;
             public TestEnum testEnum;
             public TestEnum[] testEnums;
-
 
             public IList<int> arrayint2;
             public TclassA Iclass0Z;
@@ -1339,6 +1882,8 @@ namespace DogJson
             public Dictionary<int, B> dictionary2;
             public Dictionary<V3, B> dictionary3;
         }
+
+
 
         public class TclassA
         {

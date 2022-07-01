@@ -11,15 +11,15 @@ namespace DogJson
 {
     public unsafe class AddrToObject2 : IJsonRenderToObject
     {
-        Dictionary<Type, TypeAddrReflectionWarp> allTypeWarp = new Dictionary<Type, TypeAddrReflectionWarp>();
-        public TypeAddrReflectionWarp GetTypeWarp(Type type)
+        Dictionary<Type, TypeAddrReflectionWrapper> allTypeWrapper = new Dictionary<Type, TypeAddrReflectionWrapper>();
+        public TypeAddrReflectionWrapper GetTypeWrapper(Type type)
         {
-            TypeAddrReflectionWarp ob;
-            if (allTypeWarp.TryGetValue(type, out ob))
+            TypeAddrReflectionWrapper ob;
+            if (allTypeWrapper.TryGetValue(type, out ob))
             {
                 return ob;
             }
-            return allTypeWarp[type] = new TypeAddrReflectionWarp(type);
+            return allTypeWrapper[type] = new TypeAddrReflectionWrapper(type);
         }
 
         public AddrToObject2()
@@ -40,42 +40,49 @@ namespace DogJson
             public bool isValueType;
             public ICollectionObjectBase collectionObject;
 
-            public TypeAddrReflectionWarp warp;
+            public PropertyDelegateItem2 propertyDelegateItem;
+            public bool isProperty;
+            
+            public TypeAddrReflectionWrapper wrapper;
             public int offset;
             public GCHandle gcHandle;
-            public byte* byteP;
+            public byte* bytePtr;
+            public byte* bytePtrStart;
             public object obj;
 
             public TypeCode ArrayItemTypeCode;
-            public Type ArrayItemType; 
-            public int ArrayRank; 
+            public Type ArrayItemType;
+            public int ArrayRank;
             public int ArrayItemTypeSize;
             public int ArrayNowItemSize;
 
 
             public object Obj
             {
-               // get { return GeneralTool.VoidToObject(byteP - TypeAddrReflectionWarp.PTR_COUNT); }
+                // get { return GeneralTool.VoidToObject(byteP - TypeAddrReflectionWrapper.PTR_COUNT); }
                 get { return obj; }
                 set
                 {
                     obj = value;
-                    byteP = (byte*)GeneralTool.ObjectToVoid(value) + UnsafeOperation.PTR_COUNT;
+                    bytePtrStart = (byte*)GeneralTool.ObjectToVoid(value);
+                    bytePtr = bytePtrStart + UnsafeOperation.PTR_COUNT;
                 }
             }
         }
 
-        struct SetValue {
+        struct SetValue
+        {
             public JsonObject* objValue;
-            public void* byteP;
-            public CreateObjectItem myObject; 
-            public ICollectionObjectBase parentCollection; 
-            public CreateObjectItem parentObject;
+            public PropertyDelegateItem propertyDelegateItem;
         }
 
         int setValuesIndex = 0;
-        ArrayWarp arrayWarp = new ArrayWarp();
-        SetValue[] setValues = new SetValue[1024];
+        ArrayWrapper arrayWrapper = new ArrayWrapper();
+
+        //SetValue[] setValues = new SetValue[1024];
+        int[] setValues = new int[1024];
+
+        int[] setValuesOrder = new int[1024];
         CreateObjectItem[] createObjectItems = new CreateObjectItem[1024];
 
 
@@ -87,28 +94,44 @@ namespace DogJson
             var rootItem = createObjectItems[0];
             int itemCount = jsonRender.objectQueueIndex;
             {
-                rootItem.warp = GetTypeWarp(type);
+                rootItem.wrapper = GetTypeWrapper(type);
                 rootItem.type = type;
-                rootItem.Obj = rootItem.warp.Create(out rootItem.gcHandle);//out rootItem.gcHandle
+                rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
                 rootItem.isValueType = type.IsValueType;
 
                 //对象数组创建
                 for (int i = 1; i < jsonRender.objectQueueIndex; i++)
                 {
+                    //if (i == 6)
+                    //{
+                    //    int ccc = 0;
+                    //}
+
                     CreateObjectItem myObject = createObjectItems[i];
                     JsonObject* v = jsonRender.objectQueue + i;
                     JsonObject* parent = jsonRender.objectQueue + v->parentObjectIndex;
                     CreateObjectItem parentObject = createObjectItems[v->parentObjectIndex];
                     ICollectionObjectBase parentCollection = parentObject.collectionObject;
-                    TypeAddrField fieldInfo = null;
+                    TypeAddrFieldAndProperty fieldInfo = null;
+                    myObject.isProperty = false;
+                    //string key;
                     if (parent->isObject)
                     {
                         if (parentCollection == null)
                         {
-                            fieldInfo = parentObject.warp.Find(v->keyStringStart, v->keyStringLength);
-                            //string key = new string(vs, v->keyStringStart, v->keyStringLength);
-                            //var fieldInfo = parentObject.warp.nameOfField[key];
-                            myObject.offset = fieldInfo.offset;
+                            fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                            //key = new string(v->keyStringStart, 0, v->keyStringLength);
+                            //var fieldInfo = parentObject.wrapper.nameOfField[key];
+                            if (fieldInfo.isProperty)
+                            {
+                                myObject.isProperty = true;
+                                myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                            }
+                            else
+                            {
+                                myObject.offset = fieldInfo.offset;
+                            }
+
                             myObject.type = fieldInfo.fieldType;
                         }
 
@@ -150,7 +173,7 @@ namespace DogJson
                     //"#create"
                     if (v->isConstructor)
                     {
-                        myObject.type = typeof(ConstructorWarp);
+                        myObject.type = typeof(ConstructorWrapper);
                     }
 
                     if (v->isObject)
@@ -168,30 +191,62 @@ namespace DogJson
                             else
                             {
                                 myObject.collectionObject = null;
-                                myObject.warp = GetTypeWarp(myObject.type);
+                                myObject.wrapper = GetTypeWrapper(myObject.type);
+                                //collection == null
                                 if (myObject.isValueType)
                                 {
                                     if (parentCollection == null)
                                     {
-                                        myObject.byteP = (byte*)(parentObject.byteP + myObject.offset);// +TypeAddrReflectionWarp.PTR_COUNT;
+                                        if (myObject.isProperty)
+                                        {
+                                            //ToDo Add struct
+
+                                            // myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.byteP);
+                                            myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
+                                             
+
+                                            setValues[setValuesIndex] = i;
+
+                                            ++setValuesIndex;
+                                        }
+                                        else
+                                        {
+                                            myObject.bytePtr = (byte*)(parentObject.bytePtr + myObject.offset);
+                                        }
                                     }
                                     else
                                     {
-                                        myObject.Obj = myObject.warp.Create(out myObject.gcHandle);
-                                        setValues[setValuesIndex].parentCollection = parentCollection;
-                                        setValues[setValuesIndex].objValue = v;
-                                        setValues[setValuesIndex].myObject = myObject;
-                                        setValues[setValuesIndex].parentObject = parentObject;
+                                        myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
+                                        //setValues[setValuesIndex].parentCollection = parentCollection;
+                                        setValues[setValuesIndex] = i;
+                                        //setValues[setValuesIndex].myObject = myObject;
+
                                         ++setValuesIndex;
+
+
                                     }
                                 }
                                 else
                                 {
-                                   myObject.Obj = myObject.warp.Create(out myObject.gcHandle);
+                                    myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
 
                                     if (parentCollection == null)
                                     {
-                                        GeneralTool.SetObject(parentObject.byteP + myObject.offset, myObject.obj);
+                                        if (myObject.isProperty)
+                                        {
+                                            if (parentObject.isValueType)
+                                            {
+                                                myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
+                                            }
+                                            else
+                                            {
+                                                myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                        }
                                     }
                                     else
                                     {
@@ -208,7 +263,24 @@ namespace DogJson
                         {
                             if (parentCollection == null)
                             {
-                                GeneralTool.SetObject(parentObject.byteP + myObject.offset, myObject.obj);
+                                if (myObject.isProperty)
+                                {
+                                    if (parentObject.isValueType)
+                                    {
+                                        myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
+                                    }
+                                    else
+                                    {
+                                        myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
+                                    }
+                                    myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
+                                    //*myObject.propertyDelegateItem.setTargetPtr = parentObject.bytePtrStart;
+                                    //myObject.propertyDelegateItem.setObject(myObject.obj);
+                                }
+                                else
+                                {
+                                    GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                }
                             }
                             else
                             {
@@ -217,18 +289,25 @@ namespace DogJson
                         }
                         else
                         {
-                            setValues[setValuesIndex].parentCollection = parentCollection;
-                            setValues[setValuesIndex].objValue = v;
-                            setValues[setValuesIndex].myObject = myObject;
-                            if (parentCollection == null)
-                            {
-                                setValues[setValuesIndex].byteP = parentObject.byteP + myObject.offset;
-                            }
-                            else
-                            {
-                                setValues[setValuesIndex].parentObject = parentObject;
-                                //parentCollection.Add(parentObject.obj, vs + v->keyStringStart, v->keyStringLength, myObject.obj);
-                            }
+                            //setValues[setValuesIndex].parentCollection = parentCollection;
+                            setValues[setValuesIndex] = i;
+                            //setValues[setValuesIndex].myObject = myObject;
+                            //if (parentCollection == null)
+                            //{
+                            //    //if (myObject.isProperty)
+                            //    //{
+                            //    //    //setValues[setValuesIndex].propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                            //    //}
+                            //    //else
+                            //    //{
+                            //    //    //setValues[setValuesIndex].byteP = parentObject.byteP + myObject.offset;
+                            //    //}
+                            //}
+                            //else
+                            //{
+                            //    //setValues[setValuesIndex].parentObject = parentObject;
+                            //    //parentCollection.Add(parentObject.obj, vs + v->keyStringStart, v->keyStringLength, myObject.obj);
+                            //}
                             ++setValuesIndex;
                         }
 
@@ -272,7 +351,7 @@ namespace DogJson
                                         myObject.ArrayRank = 1;
                                         myObject.ArrayItemType = elementType;
                                         myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-                                        myObject.obj = arrayWarp.CreateArrayOne(elementType, v->arrayCount, out myObject.byteP, out myObject.gcHandle, out myObject.ArrayNowItemSize);
+                                        myObject.obj = arrayWrapper.CreateArrayOne(elementType, v->arrayCount, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayNowItemSize);
                                         myObject.ArrayItemTypeSize = myObject.ArrayNowItemSize;
                                     }
                                     else
@@ -280,7 +359,7 @@ namespace DogJson
                                         if (parentObject.type.IsArray && parentObject.ArrayRank > 1)
                                         {
                                             myObject.ArrayRank = parentObject.ArrayRank - 1;
-                                            myObject.byteP = parentObject.byteP + myObject.offset;
+                                            myObject.bytePtr = parentObject.bytePtr + myObject.offset;
 
                                             myObject.ArrayItemTypeSize = parentObject.ArrayItemTypeSize;
                                             myObject.ArrayNowItemSize = parentObject.ArrayNowItemSize /
@@ -315,14 +394,14 @@ namespace DogJson
                                                 throw new Exception("无法满足秩");
                                             }
 
-                                            arrayWarp.SetSize(v->arrayCount);
+                                            arrayWrapper.SetSize(v->arrayCount);
 
                                             for (int j = 1; j < rank; j++)
                                             {
                                                 JsonObject* v1 = jsonRender.objectQueue + (j + i);
                                                 if (v1->parentObjectIndex == j + i - 1 && !v1->isObject)
                                                 {
-                                                    arrayWarp.SetSize(v1->arrayCount);
+                                                    arrayWrapper.SetSize(v1->arrayCount);
                                                 }
                                                 else
                                                 {
@@ -330,9 +409,9 @@ namespace DogJson
                                                 }
                                             }
 
-                                            myObject.ArrayNowItemSize = arrayWarp.arraySize / v->arrayCount;
+                                            myObject.ArrayNowItemSize = arrayWrapper.arraySize / v->arrayCount;
 
-                                            myObject.obj = arrayWarp.CreateArray(elementType, out myObject.byteP, out myObject.gcHandle, out myObject.ArrayItemTypeSize);
+                                            myObject.obj = arrayWrapper.CreateArray(elementType, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayItemTypeSize);
 
                                             myObject.ArrayNowItemSize *= myObject.ArrayItemTypeSize;
 
@@ -346,7 +425,24 @@ namespace DogJson
                                 }
                                 if (parentCollection == null)
                                 {
-                                    GeneralTool.SetObject(parentObject.byteP + myObject.offset, myObject.obj);
+                                    if (myObject.isProperty)
+                                    {
+                                        if (parentObject.isValueType)
+                                        {
+                                            myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
+                                        }
+                                        else
+                                        {
+                                            myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
+                                        }
+                                        //myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
+                                        //*myObject.propertyDelegateItem.setTargetPtr = parentObject.bytePtrStart;
+                                        //myObject.propertyDelegateItem.setObject(myObject.obj);
+                                    }
+                                    else
+                                    {
+                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                    }
                                 }
                                 else
                                 {
@@ -362,7 +458,7 @@ namespace DogJson
                         {
                             if (parentCollection == null)
                             {
-                                GeneralTool.SetObject(parentObject.byteP + myObject.offset, myObject.obj);
+                                GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
                             }
                             else
                             {
@@ -371,27 +467,27 @@ namespace DogJson
                         }
                         else
                         {
-                            setValues[setValuesIndex].parentCollection = parentCollection;
-                            setValues[setValuesIndex].objValue = v;
-                            setValues[setValuesIndex].myObject = myObject;
-                            if (parentCollection == null)
-                            {
-                                setValues[setValuesIndex].byteP = parentObject.byteP + myObject.offset;
-                            }
-                            else
-                            {
-                                setValues[setValuesIndex].parentObject = parentObject;
-                                //parentCollection.Add(parentObject.obj, vs + v->keyStringStart, v->keyStringLength, myObject.obj);
-                            }
+                            //setValues[setValuesIndex].parentCollection = parentCollection;
+                            setValues[setValuesIndex] = i;
+                            //setValues[setValuesIndex].myObject = myObject;
+                            //if (parentCollection == null)
+                            //{
+                            //    //setValues[setValuesIndex].byteP = parentObject.byteP + myObject.offset;
+                            //}
+                            //else
+                            //{
+                            //    //setValues[setValuesIndex].parentObject = parentObject;
+                            //    //parentCollection.Add(parentObject.obj, vs + v->keyStringStart, v->keyStringLength, myObject.obj);
+                            //}
                             ++setValuesIndex;
                         }
                     }
-                    
+
                 }
 
                 //goto Dubg;
 
-                //基本类型赋值
+                //基本类型赋值  
                 for (int i = 0; i < jsonRender.poolIndex; i++)
                 {
                     var v = jsonRender.pool[i];
@@ -404,118 +500,263 @@ namespace DogJson
                         {
                             collection.AddValue(myObject.obj, vs, jsonRender.pool + i);
                         }
-                        else 
+                        else
                         {
                             //var debug = new string(vs + v.keyStringStart, 0, v.keyStringLength);
-                            TypeAddrField fieldInfo = myObject.warp.Find(vs + v.keyStringStart, v.keyStringLength);
+                            TypeAddrFieldAndProperty fieldInfo = myObject.wrapper.Find(vs + v.keyStringStart, v.keyStringLength);
                             var itemTypeCode = fieldInfo.typeCode;
-                            switch (v.type) 
+                            if (fieldInfo.isProperty)
                             {
-                                case JsonValueType.String:
-                                    switch (itemTypeCode)
-                                    {
-                                        case TypeCode.Char:
-                                            *(char*)(myObject.byteP + fieldInfo.offset) = vs[v.vStringStart];
-                                            break;
-                                        case TypeCode.String:
-                                            var str = new string(vs, v.vStringStart, v.vStringLength);
-                                            //gCHandles.Add(GCHandle.Alloc(str, GCHandleType.Pinned));
-                                            GeneralTool.SetObject(myObject.byteP + fieldInfo.offset, str);
-                                            break;
-                                        case TypeCode.Object:
-                                            JsonObject* obj = jsonRender.objectQueue;
-                                            if (PathToObject(vs + v.vStringStart, v.vStringLength, jsonRender, ref obj))
-                                            {
-                                                GeneralTool.SetObject(myObject.byteP + fieldInfo.offset,
-                                                  createObjectItems[obj->objectQueueIndex].obj);
-                                            }
-                                            break;
-                                        default:
+                                CreateObjectItem parentObject = createObjectItems[parent->objectQueueIndex];
+                                byte* bytePtr;
+                                
+                                if (parentObject.isValueType)
+                                {
+                                    bytePtr = myObject.bytePtr;
+                                }
+                                else
+                                {
+                                    bytePtr = myObject.bytePtrStart;
+                                }
 
-                                            if (fieldInfo.isEnum)
-                                            {
-                                                var strEnum = new string(vs, v.vStringStart, v.vStringLength);
-                                                Array Arrays = Enum.GetValues(fieldInfo.fieldType);
-                                                for (int k = 0; k < Arrays.Length; k++)
+                                //* fieldInfo.propertyDelegateItem.setTargetPtr = bytePtrStart;
+                                switch (v.type)
+                                {
+                                    case JsonValueType.String:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Char:
+                                                fieldInfo.propertyDelegateItem.setChar(bytePtr, vs[v.vStringStart]);
+                                                break;
+                                            case TypeCode.String:
+                                                fieldInfo.propertyDelegateItem.setString(bytePtr, jsonRender.EscapeString(vs + v.vStringStart, v.vStringLength));
+                                                break;
+                                            case TypeCode.Object:
+                                                JsonObject* obj = jsonRender.objectQueue;
+                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, jsonRender, ref obj))
                                                 {
-                                                    if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                                    fieldInfo.propertyDelegateItem.setObject(bytePtr, createObjectItems[obj->objectQueueIndex].obj);
+                                                }
+                                                break;
+                                            default:
+
+                                                if (fieldInfo.isEnum)
+                                                {
+                                                    var strEnum = new string(vs, v.vStringStart, v.vStringLength);
+                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldType);
+                                                    for (int k = 0; k < Arrays.Length; k++)
                                                     {
-                                                        GeneralTool.Memcpy(myObject.byteP + fieldInfo.offset
-                                                            , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
-                                                            , UnsafeOperation.SizeOfStack(fieldInfo.fieldType)
-                                                            );
-                                                        break;
+                                                        if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                                        {
+                                                            switch (itemTypeCode)
+                                                            {
+                                                                case TypeCode.SByte:
+                                                                    fieldInfo.propertyDelegateItem.setSByte(bytePtr, (sbyte)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Byte:
+                                                                    fieldInfo.propertyDelegateItem.setByte(bytePtr, (byte)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Int16:
+                                                                    fieldInfo.propertyDelegateItem.setInt16(bytePtr, (short)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.UInt16:
+                                                                    fieldInfo.propertyDelegateItem.setUInt16(bytePtr, (ushort)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Int32:
+                                                                    fieldInfo.propertyDelegateItem.setInt32(bytePtr, (int)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.UInt32:
+                                                                    fieldInfo.propertyDelegateItem.setUInt32(bytePtr, (uint)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Int64:
+                                                                    fieldInfo.propertyDelegateItem.setInt64(bytePtr, (long)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.UInt64:
+                                                                    fieldInfo.propertyDelegateItem.setUInt64(bytePtr, (ulong)Arrays.GetValue(k));
+                                                                    break;
+                                                            }
+                                                            break;
+                                                        }
                                                     }
                                                 }
-                                            }
-                                            break;
-                                    }
-                                    break;
-                                case JsonValueType.Long:
-                                    switch (itemTypeCode)
-                                    {
-                                        case TypeCode.SByte:
-                                            *(SByte*)(myObject.byteP + fieldInfo.offset) = (SByte)v.valueLong;
-                                            break;
-                                        case TypeCode.Byte:
-                                            *(Byte*)(myObject.byteP + fieldInfo.offset) = (Byte)v.valueLong;
-                                            break;
-                                        case TypeCode.Int16:
-                                            *(Int16*)(myObject.byteP + fieldInfo.offset) = (Int16)v.valueLong;
-                                            break;
-                                        case TypeCode.UInt16:
-                                            *(UInt16*)(myObject.byteP + fieldInfo.offset) = (UInt16)v.valueLong;
-                                            break;
-                                        case TypeCode.Int32:
-                                            *(Int32*)(myObject.byteP + fieldInfo.offset) = (Int32)v.valueLong;
-                                            break;
-                                        case TypeCode.UInt32:
-                                            *(UInt32*)(myObject.byteP + fieldInfo.offset) = (UInt32)v.valueLong;
-                                            break;
-                                        case TypeCode.Int64:
-                                            *(Int64*)(myObject.byteP + fieldInfo.offset) = v.valueLong;
-                                            break;
-                                        case TypeCode.UInt64:
-                                            *(UInt64*)(myObject.byteP + fieldInfo.offset) = (UInt64)v.valueLong;
-                                            break;
-                                        case TypeCode.Single:
-                                            *(Single*)(myObject.byteP + fieldInfo.offset) = (Single)v.valueLong;
-                                            break;
-                                        case TypeCode.Double:
-                                            *(Double*)(myObject.byteP + fieldInfo.offset) = (Double)v.valueLong;
-                                            break;
-                                        case TypeCode.Decimal:
-                                            *(Decimal*)(myObject.byteP + fieldInfo.offset) = (Decimal)v.valueLong;
-                                            break;
-                                    }
-                                    break;
-                                case JsonValueType.Double:
-                                    switch (itemTypeCode)
-                                    {
-                                        case TypeCode.Single:
-                                            *(Single*)(myObject.byteP + fieldInfo.offset) = (Single)v.valueDouble;
-                                            break;
-                                        case TypeCode.Double:
-                                            *(Double*)(myObject.byteP + fieldInfo.offset) = v.valueDouble;
-                                            break;
-                                        case TypeCode.Decimal:
-                                            *(Decimal*)(myObject.byteP + fieldInfo.offset) = (Decimal)v.valueDouble;
-                                            break;
-                                    }
-                                    break;
-                                case JsonValueType.Boolean:
-                                    *(bool*)(myObject.byteP + fieldInfo.offset) = v.valueBool;
-                                    break;
-                                case JsonValueType.Object:
-                                    if (myObject.type == (typeof(Type)))
-                                    {
-                                        GeneralTool.SetObject(myObject.byteP + fieldInfo.offset,
-                                            UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
-                                            );
-                                    }
-                                    break;
-                                default:
-                                    break;
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Long:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.SByte:
+                                                fieldInfo.propertyDelegateItem.setSByte(bytePtr, (SByte)v.valueLong);
+                                                break;
+                                            case TypeCode.Byte:
+                                                fieldInfo.propertyDelegateItem.setByte(bytePtr, (Byte)v.valueLong);
+                                                break;
+                                            case TypeCode.Int16:
+                                                fieldInfo.propertyDelegateItem.setInt16(bytePtr, (Int16)v.valueLong);
+                                                break;
+                                            case TypeCode.UInt16:
+                                                fieldInfo.propertyDelegateItem.setUInt16(bytePtr, (UInt16)v.valueLong);
+                                                break;
+                                            case TypeCode.Int32:
+                                                fieldInfo.propertyDelegateItem.setInt32(bytePtr, (Int32)v.valueLong);
+                                                break;
+                                            case TypeCode.UInt32:
+                                                fieldInfo.propertyDelegateItem.setUInt32(bytePtr, (UInt32)v.valueLong);
+                                                break;
+                                            case TypeCode.Int64:
+                                                fieldInfo.propertyDelegateItem.setInt64(bytePtr, v.valueLong);
+                                                break;
+                                            case TypeCode.UInt64:
+                                                fieldInfo.propertyDelegateItem.setUInt64(bytePtr, (UInt64)v.valueLong);
+                                                break;
+                                            case TypeCode.Single:
+                                                fieldInfo.propertyDelegateItem.setSingle(bytePtr, (Single)v.valueLong);
+                                                break;
+                                            case TypeCode.Double:
+                                                fieldInfo.propertyDelegateItem.setDouble(bytePtr, (Double)v.valueLong);
+                                                break;
+                                            case TypeCode.Decimal:
+                                                fieldInfo.propertyDelegateItem.setDecimal(bytePtr, (Decimal)v.valueLong);
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Double:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Single:
+                                                fieldInfo.propertyDelegateItem.setSingle(bytePtr, (Single)v.valueDouble);
+                                                break;
+                                            case TypeCode.Double:
+                                                fieldInfo.propertyDelegateItem.setDouble(bytePtr, v.valueDouble);
+                                                break;
+                                            case TypeCode.Decimal:
+                                                fieldInfo.propertyDelegateItem.setDecimal(bytePtr, (Decimal)v.valueDouble);
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Boolean:
+                                        *(bool*)(bytePtr + fieldInfo.offset) = v.valueBool;
+                                        break;
+                                    case JsonValueType.Object:
+                                        if (myObject.type == (typeof(Type)))
+                                        {
+                                            fieldInfo.propertyDelegateItem.setObject(bytePtr,
+                                                UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                );
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                switch (v.type)
+                                {
+                                    case JsonValueType.String:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Char:
+                                                *(char*)(myObject.bytePtr + fieldInfo.offset) = vs[v.vStringStart];
+                                                break;
+                                            case TypeCode.String:
+                                                GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset, jsonRender.EscapeString(vs + v.vStringStart, v.vStringLength));
+                                                break;
+                                            case TypeCode.Object:
+                                                JsonObject* obj = jsonRender.objectQueue;
+                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, jsonRender, ref obj))
+                                                {
+                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                      createObjectItems[obj->objectQueueIndex].obj);
+                                                }
+                                                break;
+                                            default:
+
+                                                if (fieldInfo.isEnum)
+                                                {
+                                                    var strEnum = new string(vs, v.vStringStart, v.vStringLength);
+                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldType);
+                                                    for (int k = 0; k < Arrays.Length; k++)
+                                                    {
+                                                        if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                                        {
+                                                            GeneralTool.Memcpy(myObject.bytePtr + fieldInfo.offset
+                                                                , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
+                                                                , UnsafeOperation.SizeOfStack(fieldInfo.fieldType)
+                                                                );
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Long:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.SByte:
+                                                *(SByte*)(myObject.bytePtr + fieldInfo.offset) = (SByte)v.valueLong;
+                                                break;
+                                            case TypeCode.Byte:
+                                                *(Byte*)(myObject.bytePtr + fieldInfo.offset) = (Byte)v.valueLong;
+                                                break;
+                                            case TypeCode.Int16:
+                                                *(Int16*)(myObject.bytePtr + fieldInfo.offset) = (Int16)v.valueLong;
+                                                break;
+                                            case TypeCode.UInt16:
+                                                *(UInt16*)(myObject.bytePtr + fieldInfo.offset) = (UInt16)v.valueLong;
+                                                break;
+                                            case TypeCode.Int32:
+                                                *(Int32*)(myObject.bytePtr + fieldInfo.offset) = (Int32)v.valueLong;
+                                                break;
+                                            case TypeCode.UInt32:
+                                                *(UInt32*)(myObject.bytePtr + fieldInfo.offset) = (UInt32)v.valueLong;
+                                                break;
+                                            case TypeCode.Int64:
+                                                *(Int64*)(myObject.bytePtr + fieldInfo.offset) = v.valueLong;
+                                                break;
+                                            case TypeCode.UInt64:
+                                                *(UInt64*)(myObject.bytePtr + fieldInfo.offset) = (UInt64)v.valueLong;
+                                                break;
+                                            case TypeCode.Single:
+                                                *(Single*)(myObject.bytePtr + fieldInfo.offset) = (Single)v.valueLong;
+                                                break;
+                                            case TypeCode.Double:
+                                                *(Double*)(myObject.bytePtr + fieldInfo.offset) = (Double)v.valueLong;
+                                                break;
+                                            case TypeCode.Decimal:
+                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offset) = (Decimal)v.valueLong;
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Double:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Single:
+                                                *(Single*)(myObject.bytePtr + fieldInfo.offset) = (Single)v.valueDouble;
+                                                break;
+                                            case TypeCode.Double:
+                                                *(Double*)(myObject.bytePtr + fieldInfo.offset) = v.valueDouble;
+                                                break;
+                                            case TypeCode.Decimal:
+                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offset) = (Decimal)v.valueDouble;
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Boolean:
+                                        *(bool*)(myObject.bytePtr + fieldInfo.offset) = v.valueBool;
+                                        break;
+                                    case JsonValueType.Object:
+                                        if (myObject.type == (typeof(Type)))
+                                        {
+                                            GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                );
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
                     }
@@ -541,9 +782,9 @@ namespace DogJson
                                 itemType = myObject.ArrayItemType;
                                 itemTypeCode = myObject.ArrayItemTypeCode;
                             }
-                            byte* pByte = myObject.byteP + myObject.ArrayItemTypeSize * v.arrayIndex;
+                            byte* pByte = myObject.bytePtr + myObject.ArrayItemTypeSize * v.arrayIndex;
 
-                          
+
 
                             switch (v.type)
                             {
@@ -554,8 +795,7 @@ namespace DogJson
                                             *(char*)(pByte) = vs[v.vStringStart];
                                             break;
                                         case TypeCode.String:
-                                            var str = new string(vs, v.vStringStart, v.vStringLength);
-                                            GeneralTool.SetObject(pByte, str);
+                                            GeneralTool.SetObject(pByte, jsonRender.EscapeString(vs + v.vStringStart, v.vStringLength));
                                             break;
                                         case TypeCode.Object:
                                             JsonObject* obj = jsonRender.objectQueue;
@@ -639,7 +879,7 @@ namespace DogJson
                                     }
                                     break;
                                 case JsonValueType.Boolean:
-                                     *(Boolean*)(pByte) = v.valueBool;
+                                    *(Boolean*)(pByte) = v.valueBool;
                                     break;
                                 case JsonValueType.Object:
                                     if (myObject.type == (typeof(Type)))
@@ -649,57 +889,120 @@ namespace DogJson
                                     }
                                     break;
                             }
-
-
-
-
-
                         }
                     }
                 }
 
-                //goto Dubg;
-                //类类型赋值
-                for (int i = setValuesIndex - 1; i >= 0; i--)
+                if (setValuesIndex > 0)
                 {
-                    SetValue setValue = setValues[i];
-                    CreateObjectItem myObject = setValue.myObject;
-                    JsonObject* parent = jsonRender.objectQueue + setValue.objValue->parentObjectIndex;
+                    int indexLeft = 0;
+                    int indexRight = setValuesIndex - 1;
 
-                    object over;
-                    if (myObject.collectionObject == null)
-                    {
-                        over = myObject.obj;
-                    }
-                    else
-                    {
-                        over = myObject.collectionObject.End(myObject.obj);
-                    }
+                    setValuesOrder[indexRight] = 0;
 
-                    if (setValues[i].parentCollection == null)
+                    for (int i = 1; i < setValuesIndex; i++)
                     {
-                        if (myObject.isValueType)
+                    Loop:
+                        //右边没对象，则进入
+                        if (indexRight == setValuesIndex)
                         {
-                            GeneralTool.Memcpy(setValue.byteP
-                            , ((IntPtr*)GeneralTool.ObjectToVoid(over) + 1)
-                            , UnsafeOperation.SizeOfStack(myObject.type)
-                            );
+                            --indexRight;
+                            setValuesOrder[indexRight] = i;
+                            continue;
+                        }
+                        //比较右边如果右边的对象是当前的父对象，则进入右边队伍，否则把右边的对象转移到左边队伍，然后继续比较
+                        JsonObject* now = jsonRender.objectQueue + setValues[i];
+                        JsonObject* next = jsonRender.objectQueue + setValues[setValuesOrder[indexRight]];
+                        if (now->parentObjectIndex >= next->objectQueueIndex)
+                        {
+                            --indexRight;
+                            setValuesOrder[indexRight] = i;
+                            continue;
+                        }
+                        setValuesOrder[indexLeft] = setValuesOrder[indexRight];
+                        ++indexLeft;
+                        ++indexRight;
+                        goto Loop;
+                    }
+
+
+
+                    //goto Dubg;
+                    //类类型赋值
+                    for (int j = 0; j < setValuesIndex; j++)
+                    //for (int i = setValuesIndex - 1; i >= 0; i--)
+                    {
+                        //int i = j;
+                        int i = setValuesOrder[j];
+                        //SetValue setValue = setValues[i];
+                        JsonObject* objValue = jsonRender.objectQueue + setValues[i];
+
+
+                        //CreateObjectItem myObject = setValue.myObject;
+                        CreateObjectItem myObject = createObjectItems[objValue->objectQueueIndex];
+                        JsonObject* parent = jsonRender.objectQueue + objValue->parentObjectIndex;
+                        var parentObject = createObjectItems[objValue->parentObjectIndex];
+                        if (myObject.isProperty)
+                        {
+                            if (parentObject.isValueType)
+                            {
+                                myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
+                            }
+                            else
+                            {
+                                myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
+                            }
+                            //try
+                            //{
+                            //    //*myObject.propertyDelegateItem.setTargetPtr = parentObject.bytePtrStart;
+                            //    //myObject.propertyDelegateItem.setObject(myObject.obj);
+                            //}
+                            //catch (Exception)
+                            //{
+
+                            //    throw;
+                            //}
                         }
                         else
                         {
-                            GeneralTool.SetObject(setValue.byteP, over);
-                        }
-                    }
-                    else
-                    {
-                        setValue.parentCollection.Add(setValue.parentObject.obj, setValue.objValue, over);
-                    }
+                            object over;
+                            if (myObject.collectionObject == null)
+                            {
+                                over = myObject.obj;
+                            }
+                            else
+                            {
+                                over = myObject.collectionObject.End(myObject.obj);
+                            }
 
+                            if (parentObject.collectionObject == null)
+                            {
+                                if (myObject.isValueType)
+                                {
+                                    //var byteP = setValue.parentObject.byteP + myObject.offset;
+                                    GeneralTool.Memcpy(parentObject.bytePtr + myObject.offset
+                                    , ((IntPtr*)GeneralTool.ObjectToVoid(over) + 1)
+                                    , UnsafeOperation.SizeOfStack(myObject.type)
+                                    );
+                                }
+                                else
+                                {
+                                    GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, over);
+                                }
+                            }
+                            else
+                            {
+                                parentObject.collectionObject.Add(parentObject.obj, objValue, over);
+                            }
+                        }
+
+                    }
                 }
 
-
             }
-            Dubg:
+
+
+        Dubg:
             for (int i = 0; i < itemCount; i++)
             {
                 if (createObjectItems[i].gcHandle != default(GCHandle))

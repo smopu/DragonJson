@@ -87,3 +87,17 @@ D:\DogJson\DogJson\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
 D:\DogJson\DogJson\bin\Debug\System.Buffers.xml
 D:\DogJson\DogJson\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 D:\DogJson\DogJson\obj\Debug\DogJson.csproj.CopyComplete
+D:\git\DogJson\DogJson\bin\Debug\TextFile2.json
+D:\git\DogJson\DogJson\bin\Debug\TextFile3.json
+D:\git\DogJson\DogJson\bin\Debug\TextFile1.json
+D:\git\DogJson\DogJson\bin\Debug\DogJson.exe.config
+D:\git\DogJson\DogJson\bin\Debug\DogJson.exe
+D:\git\DogJson\DogJson\bin\Debug\DogJson.pdb
+D:\git\DogJson\DogJson\bin\Debug\DynamicCustomReflection.dll
+D:\git\DogJson\DogJson\bin\Debug\System.Buffers.dll
+D:\git\DogJson\DogJson\bin\Debug\System.Buffers.xml
+D:\git\DogJson\DogJson\obj\Debug\DogJson.csproj.AssemblyReference.cache
+D:\git\DogJson\DogJson\obj\Debug\DogJson.csproj.CoreCompileInputs.cache
+D:\git\DogJson\DogJson\obj\Debug\DogJson.csproj.CopyComplete
+D:\git\DogJson\DogJson\obj\Debug\DogJson.exe
+D:\git\DogJson\DogJson\obj\Debug\DogJson.pdb

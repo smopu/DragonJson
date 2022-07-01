@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 namespace CustomReflection
 {
 
-    public unsafe class TypeAddrReflectionWarp
+    public unsafe class TypeAddrReflectionWrapper
     {
         public readonly static int PTR_COUNT = sizeof(IntPtr);
-        public unsafe TypeAddrReflectionWarp(Type type)
+        public unsafe TypeAddrReflectionWrapper(Type type)
         {
             isValueType = type.IsValueType;
             Dictionary<string, TypeAddrField> nameOfField = new Dictionary<string, TypeAddrField>();
@@ -149,7 +149,7 @@ namespace CustomReflection
             }
             else
             {
-                stackSize = TypeAddrReflectionWarp.PTR_COUNT;
+                stackSize = TypeAddrReflectionWrapper.PTR_COUNT;
             }
             typeHead = UnsafeUtility.GetTypeHead(fieldType);
         }
@@ -163,7 +163,7 @@ namespace CustomReflection
         public int offset;
         public int stackSize;
         public TypeCode typeCode;
-        //public TypeAddrReflectionWarp warp;
+        //public TypeAddrReflectionWrapper wrapper;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetStruct(void* destination, void* value, int size)

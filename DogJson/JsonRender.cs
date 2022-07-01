@@ -46,6 +46,14 @@ namespace DogJson
             }
         }
 
+        ~JsonRender() 
+        {
+            Marshal.FreeHGlobal(stackIntPtr);
+            Marshal.FreeHGlobal(objectQueueIntPtr);
+            Marshal.FreeHGlobal(poolIntPtr);
+            Marshal.FreeHGlobal(stringQueueIntPtr);
+        }
+
         public unsafe JsonRender(
             IJsonRenderToObject jsonRenderToObject = null,
             int jsonStackLength = 1024, int poolLength = 65536)
@@ -89,11 +97,13 @@ namespace DogJson
             stackIntPtr = Marshal.AllocHGlobal(jsonStackLength * Marshal.SizeOf(typeof(JsonObject*)));
             objectQueueIntPtr = Marshal.AllocHGlobal(poolLength * Marshal.SizeOf(typeof(JsonObject)));
             poolIntPtr = Marshal.AllocHGlobal(poolLength * Marshal.SizeOf(typeof(JsonValue)));
+            stringQueueIntPtr = Marshal.AllocHGlobal(stringQueueLength * Marshal.SizeOf(typeof(char)));
 
-
+            
             pool = (JsonValue*)poolIntPtr.ToPointer();
             objectQueue = (JsonObject*)objectQueueIntPtr.ToPointer();
             stack = (JsonObject**)stackIntPtr.ToPointer();
+            stringQueue = (char*)stringQueueIntPtr.ToPointer();
 
 
             fixed (char* vs = "true")
@@ -133,6 +143,13 @@ namespace DogJson
         public JsonObject* objectQueue;
         public JsonValue* pool;
         JsonObject** stack;
+        char* stringQueue;
+        int stringQueueLength = 100;
+
+        IntPtr stackIntPtr;
+        IntPtr poolIntPtr;
+        IntPtr objectQueueIntPtr;
+        IntPtr stringQueueIntPtr;
 
         long truelong;
         long falslong;
@@ -143,9 +160,6 @@ namespace DogJson
         long crealong;
         int telong;
 
-        IntPtr stackIntPtr;
-        IntPtr poolIntPtr;
-        IntPtr objectQueueIntPtr;
 
         public class CreateObjectItem
         {
@@ -1155,7 +1169,232 @@ namespace DogJson
             }
         }
 
+        public unsafe string EscapeString(char* start, int length)
+        {
+            if (stringQueueLength < length)
+            {
+                stringQueueLength = length;
+                Marshal.FreeHGlobal(stringQueueIntPtr);
+                stringQueueIntPtr = Marshal.AllocHGlobal(stringQueueLength + 2);
+                stringQueue = (char*)stringQueueIntPtr.ToPointer();
+            }
+            int index = 0, i = 0, max = length - 1;
+            for (; i < max; ++i)
+            {
+                if (start[i] == '\\')
+                {
+                    ++i;
+                    switch (start[i])
+                    {
+                        case 'u':
+                            ++i;
+                            if (max - i < 3)
+                            {
+                                i += 3;
+                                break;
+                            }
+                            int u0 = start[i];
+                            int u1 = start[i + 1];
+                            int u2 = start[i + 2];
+                            int u3 = start[i + 3];
+                            i += 3;
+                            if ('0' > u0 || u0 > '9')
+                            {
+                                switch (u0)
+                                {
+                                    case 'a':
+                                    case 'A':
+                                        u0 = 10;
+                                        break;
+                                    case 'b':
+                                    case 'B':
+                                        u0 = 11;
+                                        break;
+                                    case 'c':
+                                    case 'C':
+                                        u0 = 12;
+                                        break;
+                                    case 'd':
+                                    case 'D':
+                                        u0 = 13;
+                                        break;
+                                    case 'e':
+                                    case 'E':
+                                        u0 = 14;
+                                        break;
+                                    case 'f':
+                                    case 'F':
+                                        u0 = 15;
+                                        break;
+                                    default:
+                                        u0 = '0';
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                u0 -= '0';
+                            }
+                            if ('0' > u1 || u1 > '9')
+                            {
+                                switch (u1)
+                                {
+                                    case 'a':
+                                    case 'A':
+                                        u1 = 10;
+                                        break;
+                                    case 'b':
+                                    case 'B':
+                                        u1 = 11;
+                                        break;
+                                    case 'c':
+                                    case 'C':
+                                        u1 = 12;
+                                        break;
+                                    case 'd':
+                                    case 'D':
+                                        u1 = 13;
+                                        break;
+                                    case 'e':
+                                    case 'E':
+                                        u1 = 14;
+                                        break;
+                                    case 'f':
+                                    case 'F':
+                                        u1 = 15;
+                                        break;
+                                    default:
+                                        u1 = '0';
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                u1 -= '0';
+                            }
+                            if ('0' > u2 || u2 > '9')
+                            {
+                                switch (u2)
+                                {
+                                    case 'a':
+                                    case 'A':
+                                        u2 = 10;
+                                        break;
+                                    case 'b':
+                                    case 'B':
+                                        u2 = 11;
+                                        break;
+                                    case 'c':
+                                    case 'C':
+                                        u2 = 12;
+                                        break;
+                                    case 'd':
+                                    case 'D':
+                                        u2 = 13;
+                                        break;
+                                    case 'e':
+                                    case 'E':
+                                        u2 = 14;
+                                        break;
+                                    case 'f':
+                                    case 'F':
+                                        u2 = 15;
+                                        break;
+                                    default:
+                                        u2 = '0';
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                u2 -= '0';
+                            }
+                            if ('0' > u3 || u3 > '9')
+                            {
+                                switch (u3)
+                                {
+                                    case 'a':
+                                    case 'A':
+                                        u3 = 10;
+                                        break;
+                                    case 'b':
+                                    case 'B':
+                                        u3 = 11;
+                                        break;
+                                    case 'c':
+                                    case 'C':
+                                        u3 = 12;
+                                        break;
+                                    case 'd':
+                                    case 'D':
+                                        u3 = 13;
+                                        break;
+                                    case 'e':
+                                    case 'E':
+                                        u3 = 14;
+                                        break;
+                                    case 'f':
+                                    case 'F':
+                                        u3 = 15;
+                                        break;
+                                    default:
+                                        u3 = '0';
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                u3 -= '0';
+                            }
 
+                            int over = (u0 << 12) | (u1 << 8) | (u2 << 4) | u3;
+
+                            stringQueue[index++] = (char)over;
+
+                            break;
+                        case 't':
+                            stringQueue[index] = '\t';
+                            ++index;
+                            break;
+                        case 'v':
+                            stringQueue[index] = '\v';
+                            ++index;
+                            break;
+                        case 'n':
+                            stringQueue[index] = '\n';
+                            ++index;
+                            break;
+                        case 'r':
+                            stringQueue[index] = '\r';
+                            ++index;
+                            break;
+                        case '\\':
+                            stringQueue[index] = '\\';
+                            ++index;
+                            break;
+                        case '\"':
+                            stringQueue[index] = '\"';
+                            ++index;
+                            break;
+                        default:
+                            Console.WriteLine(start[i]);
+                            break;
+                    }
+                }
+                else
+                {
+                    stringQueue[index] = start[i];
+                    ++index;
+                }
+            }
+
+            if (i == max)
+            {
+                stringQueue[index] = start[i];
+                ++index;
+            }
+            return new string(stringQueue, 0, index);
+        }
 
 
     }
