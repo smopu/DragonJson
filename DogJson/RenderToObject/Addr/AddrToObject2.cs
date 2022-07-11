@@ -24,6 +24,8 @@ namespace DogJson
 
         public AddrToObject2()
         {
+            proxy = new ReadCollectionProxy();
+            proxy.callGetValue = GetValue;
             for (int i = 0; i < createObjectItems.Length; i++)
             {
                 createObjectItems[i] = new CreateObjectItem();
@@ -38,8 +40,9 @@ namespace DogJson
             public Type type;
             public Type sourceType;
             public bool isValueType;
-            public ICollectionObjectBase collectionObject;
-
+            public ReadCollectionLink collectionObject;
+            public ReadCollectionLink parentCollection;
+            
             public PropertyDelegateItem2 propertyDelegateItem;
             public bool isProperty;
             
@@ -47,8 +50,11 @@ namespace DogJson
             public int offset;
             public GCHandle gcHandle;
             public byte* bytePtr;
-            public byte* bytePtrStart;
+            public byte* objPtr;
             public object obj;
+            public object temp;
+            public bool collectionNoRef;
+            
 
             public TypeCode ArrayItemTypeCode;
             public Type ArrayItemType;
@@ -64,8 +70,8 @@ namespace DogJson
                 set
                 {
                     obj = value;
-                    bytePtrStart = (byte*)GeneralTool.ObjectToVoid(value);
-                    bytePtr = bytePtrStart + UnsafeOperation.PTR_COUNT;
+                    objPtr = (byte*)GeneralTool.ObjectToVoid(value);
+                    bytePtr = objPtr + UnsafeOperation.PTR_COUNT;
                 }
             }
         }
@@ -86,15 +92,20 @@ namespace DogJson
         CreateObjectItem[] createObjectItems = new CreateObjectItem[1024];
 
 
-
+        JsonRender jsonRender;
         public static int indexDbug = 0;
         public unsafe object CreateObject(JsonRender jsonRender, Type type, char* vs, int length)
         {
+            this.jsonRender = jsonRender;
             setValuesIndex = 0;
             var rootItem = createObjectItems[0];
             int itemCount = jsonRender.objectQueueIndex;
             {
-                rootItem.wrapper = GetTypeWrapper(type);
+                if (!allTypeWrapper.TryGetValue(type, out rootItem.wrapper))
+                {
+                    rootItem.wrapper = allTypeWrapper[type] = new TypeAddrReflectionWrapper(type);
+                }
+                //rootItem.wrapper = GetTypeWrapper(type);
                 rootItem.type = type;
                 rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
                 rootItem.isValueType = type.IsValueType;
@@ -111,9 +122,12 @@ namespace DogJson
                     JsonObject* v = jsonRender.objectQueue + i;
                     JsonObject* parent = jsonRender.objectQueue + v->parentObjectIndex;
                     CreateObjectItem parentObject = createObjectItems[v->parentObjectIndex];
-                    ICollectionObjectBase parentCollection = parentObject.collectionObject;
+                    ReadCollectionLink parentCollection = myObject.parentCollection = parentObject.collectionObject;
+                 
+
                     TypeAddrFieldAndProperty fieldInfo = null;
                     myObject.isProperty = false;
+                    myObject.collectionNoRef = false;
                     //string key;
                     if (parent->isObject)
                     {
@@ -164,13 +178,14 @@ namespace DogJson
                     {
                         if (parentCollection != null)
                         {
-                            myObject.type = parentCollection.GetItemType(v);
+                            myObject.type = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
                         }
                     }
 
                     myObject.isValueType = myObject.type.IsValueType;
                     myObject.sourceType = myObject.type;
-                    //"#create"
+
+                    //"$create"
                     if (v->isConstructor)
                     {
                         myObject.type = typeof(ConstructorWrapper);
@@ -178,311 +193,198 @@ namespace DogJson
 
                     if (v->isObject)
                     {
-                        ICollectionObjectBase collection;
-                        if (!JsonManager.formatterAllObjectMap.TryGetValue(myObject.type, out collection))
+                        ReadCollectionLink collection = null;
+                        if (!allTypeWrapper.TryGetValue(myObject.type, out myObject.wrapper))
                         {
-                            Type collectionType;
-                            if (myObject.type.IsGenericType && JsonManager.formatterObjectTypeMap.TryGetValue(myObject.type.GetGenericTypeDefinition(), out collectionType))
-                            {
-                                Type type1 = collectionType.MakeGenericType(myObject.type.GetGenericArguments());
-                                JsonManager.formatterAllObjectMap[myObject.type] = collection
-                                    = Activator.CreateInstance(type1) as ICollectionObjectBase;
-                            }
-                            else
+                            collection = CollectionManager.GetReadArrayCollectionLink(myObject.type);
+                            if (collection == null)
                             {
                                 myObject.collectionObject = null;
-                                myObject.wrapper = GetTypeWrapper(myObject.type);
-                                //collection == null
-                                if (myObject.isValueType)
-                                {
-                                    if (parentCollection == null)
-                                    {
-                                        if (myObject.isProperty)
-                                        {
-                                            //ToDo Add struct
-
-                                            // myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.byteP);
-                                            myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
-                                             
-
-                                            setValues[setValuesIndex] = i;
-
-                                            ++setValuesIndex;
-                                        }
-                                        else
-                                        {
-                                            myObject.bytePtr = (byte*)(parentObject.bytePtr + myObject.offset);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
-                                        //setValues[setValuesIndex].parentCollection = parentCollection;
-                                        setValues[setValuesIndex] = i;
-                                        //setValues[setValuesIndex].myObject = myObject;
-
-                                        ++setValuesIndex;
-
-
-                                    }
-                                }
-                                else
-                                {
-                                    myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
-
-                                    if (parentCollection == null)
-                                    {
-                                        if (myObject.isProperty)
-                                        {
-                                            if (parentObject.isValueType)
-                                            {
-                                                myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
-                                            }
-                                            else
-                                            {
-                                                myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        parentCollection.Add(parentObject.obj, v, myObject.obj);
-                                    }
-                                }
-                                continue;
+                                //myObject.wrapper = GetTypeWrapper(myObject.type);
+                                myObject.wrapper = allTypeWrapper[myObject.type] = new TypeAddrReflectionWrapper(myObject.type);
                             }
                         }
-                        //collection != null
-                        myObject.collectionObject = collection;
-                        myObject.obj = collection.Create(v, parentObject.obj, myObject.sourceType, parentObject.type);
-                        if (collection.IsRef())
+
+
+                        if (collection == null)
                         {
-                            if (parentCollection == null)
+                            //父对象是容器就延迟赋值
+                            if (parentCollection != null)
                             {
-                                if (myObject.isProperty)
-                                {
-                                    if (parentObject.isValueType)
-                                    {
-                                        myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
-                                    }
-                                    else
-                                    {
-                                        myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
-                                    }
-                                    myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
-                                    //*myObject.propertyDelegateItem.setTargetPtr = parentObject.bytePtrStart;
-                                    //myObject.propertyDelegateItem.setObject(myObject.obj);
-                                }
-                                else
-                                {
-                                    GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
-                                }
+                                myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
+                                setValues[setValuesIndex++] = i;
                             }
                             else
                             {
-                                parentCollection.Add(parentObject.obj, v, myObject.obj);
+                                //对象是属性延迟赋值
+                                if (myObject.isProperty)
+                                {
+                                    myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
+                                    setValues[setValuesIndex++] = i;
+                                }
+                                else
+                                {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                        myObject.objPtr = myObject.bytePtr = (byte*)(parentObject.bytePtr + myObject.offset);
+                                    }
+                                    else
+                                    {
+                                        myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
+                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                    }
+                                }
                             }
                         }
                         else
                         {
-                            //setValues[setValuesIndex].parentCollection = parentCollection;
-                            setValues[setValuesIndex] = i;
-                            //setValues[setValuesIndex].myObject = myObject;
-                            //if (parentCollection == null)
-                            //{
-                            //    //if (myObject.isProperty)
-                            //    //{
-                            //    //    //setValues[setValuesIndex].propertyDelegateItem = fieldInfo.propertyDelegateItem;
-                            //    //}
-                            //    //else
-                            //    //{
-                            //    //    //setValues[setValuesIndex].byteP = parentObject.byteP + myObject.offset;
-                            //    //}
-                            //}
-                            //else
-                            //{
-                            //    //setValues[setValuesIndex].parentObject = parentObject;
-                            //    //parentCollection.Add(parentObject.obj, vs + v->keyStringStart, v->keyStringLength, myObject.obj);
-                            //}
-                            ++setValuesIndex;
+                            //collection != null
+                            myObject.collectionObject = collection;
+
+                            ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                            arg.objectType = myObject.sourceType;
+                            arg.bridge = v;
+                            arg.parent = parentObject.objPtr;
+
+
+                            //父对象是容器就延迟赋值
+                            if (parentCollection != null)
+                            {
+                                collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                setValues[setValuesIndex++] = i;
+                            }
+                            else
+                            {
+                                //对象是属性延迟赋值
+                                if (myObject.isProperty)
+                                {
+                                    collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                    setValues[setValuesIndex++] = i;
+                                }
+                                else
+                                {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                        arg.structPtr = (byte*)(parentObject.bytePtr + myObject.offset);
+                                        collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                    }
+                                    else
+                                    {
+                                        collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                    }
+                                }
+                            }
+
+
                         }
 
                     }
                     //array
                     else
                     {
-                        ICollectionObjectBase collection;
-                        if (!JsonManager.formatterAllObjectMap.TryGetValue(myObject.type, out collection))
+                        ReadCollectionLink collection = CollectionManager.GetReadArrayCollectionLink(myObject.type);
+                        if (collection == null)
                         {
-                            if (myObject.type.IsGenericType)
+                            myObject.collectionObject = null;
+                            if (myObject.type.IsArray)
                             {
-                                Type collectionType;
-                                if (JsonManager.formatterObjectTypeMap.TryGetValue(myObject.type.GetGenericTypeDefinition(), out collectionType))
+                                var rank = myObject.type.GetArrayRank();
+                                if (rank == 1)//数组的秩= 1 直接遍历赋值
                                 {
-                                    Type type1 = collectionType.MakeGenericType(myObject.type.GetGenericArguments());
-                                    JsonManager.formatterAllObjectMap[myObject.type] = collection
-                                        = Activator.CreateInstance(type1) as ICollectionObjectBase;
+                                    var elementType = myObject.type.GetElementType();
+                                    myObject.ArrayRank = 1;
+                                    myObject.ArrayItemType = elementType;
+                                    myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
+                                    myObject.obj = arrayWrapper.CreateArrayOne(elementType, v->arrayCount, out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayNowItemSize);
+                                    myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                                    myObject.ArrayItemTypeSize = myObject.ArrayNowItemSize;
                                 }
                                 else
                                 {
-                                    if (myObject.type.IsSubclassOf(typeof(MulticastDelegate)))
+                                    if (parentObject.type.IsArray && parentObject.ArrayRank > 1)
                                     {
-                                        collection = JsonManager.formatterAllObjectMap[typeof(MulticastDelegate)];
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("JSON数组类型容器未注册");
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                myObject.collectionObject = null;
-                                if (myObject.type.IsArray)
-                                {
-                                    var rank = myObject.type.GetArrayRank();
-                                    if (rank == 1)//数组的秩= 1 直接遍历赋值
-                                    {
-                                        var elementType = myObject.type.GetElementType();
-                                        myObject.ArrayRank = 1;
-                                        myObject.ArrayItemType = elementType;
-                                        myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-                                        myObject.obj = arrayWrapper.CreateArrayOne(elementType, v->arrayCount, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayNowItemSize);
-                                        myObject.ArrayItemTypeSize = myObject.ArrayNowItemSize;
-                                    }
-                                    else
-                                    {
-                                        if (parentObject.type.IsArray && parentObject.ArrayRank > 1)
+                                        myObject.ArrayRank = parentObject.ArrayRank - 1;
+                                        myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+
+                                        myObject.ArrayItemTypeSize = parentObject.ArrayItemTypeSize;
+                                        myObject.ArrayNowItemSize = parentObject.ArrayNowItemSize /
+                                            v->arrayCount;
+
+                                        myObject.obj = parentObject.obj;
+
+
+                                        if (myObject.ArrayRank == 1)
                                         {
-                                            myObject.ArrayRank = parentObject.ArrayRank - 1;
-                                            myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+                                            var elementType = myObject.type.GetElementType();
+                                            myObject.ArrayItemType = elementType;
+                                            myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
+                                        }
+                                        else
+                                        {
+                                            myObject.ArrayItemType = myObject.type;
+                                        }
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        myObject.ArrayRank = rank;
+                                        myObject.ArrayItemType = myObject.type;
+                                        var elementType = myObject.type.GetElementType();
+                                        //myObject.ArrayItemType = elementType;
+                                        myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
 
-                                            myObject.ArrayItemTypeSize = parentObject.ArrayItemTypeSize;
-                                            myObject.ArrayNowItemSize = parentObject.ArrayNowItemSize /
-                                                v->arrayCount;
 
-                                            myObject.obj = parentObject.obj;
+                                        if (rank + i > jsonRender.objectQueueIndex)
+                                        {
+                                            throw new Exception("无法满足秩");
+                                        }
 
+                                        arrayWrapper.SetSize(v->arrayCount);
 
-                                            if (myObject.ArrayRank == 1)
+                                        for (int j = 1; j < rank; j++)
+                                        {
+                                            JsonObject* v1 = jsonRender.objectQueue + (j + i);
+                                            if (v1->parentObjectIndex == j + i - 1 && !v1->isObject)
                                             {
-                                                var elementType = myObject.type.GetElementType();
-                                                myObject.ArrayItemType = elementType;
-                                                myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
+                                                arrayWrapper.SetSize(v1->arrayCount);
                                             }
                                             else
                                             {
-                                                myObject.ArrayItemType = myObject.type;
-                                            }
-                                            continue;
-                                        }
-                                        else
-                                        {
-                                            myObject.ArrayRank = rank;
-                                            myObject.ArrayItemType = myObject.type;
-                                            var elementType = myObject.type.GetElementType();
-                                            //myObject.ArrayItemType = elementType;
-                                            myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-
-
-                                            if (rank + i > jsonRender.objectQueueIndex)
-                                            {
                                                 throw new Exception("无法满足秩");
                                             }
-
-                                            arrayWrapper.SetSize(v->arrayCount);
-
-                                            for (int j = 1; j < rank; j++)
-                                            {
-                                                JsonObject* v1 = jsonRender.objectQueue + (j + i);
-                                                if (v1->parentObjectIndex == j + i - 1 && !v1->isObject)
-                                                {
-                                                    arrayWrapper.SetSize(v1->arrayCount);
-                                                }
-                                                else
-                                                {
-                                                    throw new Exception("无法满足秩");
-                                                }
-                                            }
-
-                                            myObject.ArrayNowItemSize = arrayWrapper.arraySize / v->arrayCount;
-
-                                            myObject.obj = arrayWrapper.CreateArray(elementType, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayItemTypeSize);
-
-                                            myObject.ArrayNowItemSize *= myObject.ArrayItemTypeSize;
-
                                         }
+
+                                        myObject.ArrayNowItemSize = arrayWrapper.arraySize / v->arrayCount;
+
+                                        myObject.obj = arrayWrapper.CreateArray(elementType, out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayItemTypeSize);
+
+                                        myObject.ArrayNowItemSize *= myObject.ArrayItemTypeSize;
 
                                     }
                                 }
-                                else
-                                {
-                                    throw new Exception("类型不是数组");
-                                }
-                                if (parentCollection == null)
-                                {
-                                    if (myObject.isProperty)
-                                    {
-                                        if (parentObject.isValueType)
-                                        {
-                                            myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
-                                        }
-                                        else
-                                        {
-                                            myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
-                                        }
-                                        //myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
-                                        //*myObject.propertyDelegateItem.setTargetPtr = parentObject.bytePtrStart;
-                                        //myObject.propertyDelegateItem.setObject(myObject.obj);
-                                    }
-                                    else
-                                    {
-                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
-                                    }
-                                }
-                                else
-                                {
-                                    parentCollection.Add(parentObject.obj, v, myObject.obj);
-                                }
-                                continue;
-                            }
-                        }
-                        //collection != null
-                        myObject.obj = collection.Create(v, parentObject.obj, myObject.sourceType, parentObject.type);
-                        myObject.collectionObject = collection;
-                        if (collection.IsRef())
-                        {
-                            if (parentCollection == null)
-                            {
-                                GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
                             }
                             else
                             {
-                                parentCollection.Add(parentObject.obj, v, myObject.obj);
+                                throw new Exception("数组容器未注册");
                             }
                         }
                         else
                         {
-                            //setValues[setValuesIndex].parentCollection = parentCollection;
-                            setValues[setValuesIndex] = i;
-                            //setValues[setValuesIndex].myObject = myObject;
-                            //if (parentCollection == null)
-                            //{
-                            //    //setValues[setValuesIndex].byteP = parentObject.byteP + myObject.offset;
-                            //}
-                            //else
-                            //{
-                            //    //setValues[setValuesIndex].parentObject = parentObject;
-                            //    //parentCollection.Add(parentObject.obj, vs + v->keyStringStart, v->keyStringLength, myObject.obj);
-                            //}
-                            ++setValuesIndex;
+                            //collection != null
+                            myObject.collectionObject = collection;
+
+                            ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                            arg.objectType = myObject.sourceType;
+                            arg.bridge = v;
+                            arg.parent = parentObject.objPtr;
+
+                            collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                            setValues[setValuesIndex++] = i;
                         }
                     }
-
                 }
 
                 //goto Dubg;
@@ -495,10 +397,16 @@ namespace DogJson
                     JsonObject* parent = v.objectQueue;
                     if (parent->isObject)
                     {
-                        ICollectionObjectBase collection = myObject.collectionObject;
+                        ReadCollectionLink collection = myObject.collectionObject;
                         if (collection != null)
                         {
-                            collection.AddValue(myObject.obj, vs, jsonRender.pool + i);
+                            ReadCollectionLink.AddValue_Args addValue_Args = new ReadCollectionLink.AddValue_Args();
+                            addValue_Args.callGetValue = GetValue;
+                            addValue_Args.str = vs;
+                            addValue_Args.value = jsonRender.pool + i;
+
+                            //parentCollection.add(parentObject.bytePtr, myObject.bytePtr, add_Args);
+                            collection.addValue(myObject.objPtr, addValue_Args);
                         }
                         else
                         {
@@ -510,14 +418,15 @@ namespace DogJson
                                 CreateObjectItem parentObject = createObjectItems[parent->objectQueueIndex];
                                 byte* bytePtr;
                                 
-                                if (parentObject.isValueType)
-                                {
-                                    bytePtr = myObject.bytePtr;
-                                }
-                                else
-                                {
-                                    bytePtr = myObject.bytePtrStart;
-                                }
+                                //if (parentObject.isValueType)
+                                //{
+                                //    bytePtr = myObject.bytePtr;
+                                //}
+                                //else
+                                //{
+                                //    bytePtr = myObject.dataStartPtr;
+                                //}
+                                bytePtr = myObject.bytePtr;
 
                                 //* fieldInfo.propertyDelegateItem.setTargetPtr = bytePtrStart;
                                 switch (v.type)
@@ -533,9 +442,27 @@ namespace DogJson
                                                 break;
                                             case TypeCode.Object:
                                                 JsonObject* obj = jsonRender.objectQueue;
-                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, jsonRender, ref obj))
+                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, parent, jsonRender, ref obj))
                                                 {
-                                                    fieldInfo.propertyDelegateItem.setObject(bytePtr, createObjectItems[obj->objectQueueIndex].obj);
+                                                    var taget = createObjectItems[obj->objectQueueIndex];
+                                                    if (taget.collectionNoRef)
+                                                    {
+                                                        fieldInfo.propertyDelegateItem.setObject(bytePtr, taget.obj);
+                                                    }
+                                                    else
+                                                    {
+                                                        fieldInfo.propertyDelegateItem.setObject(bytePtr, taget.obj);
+                                                    }
+                                                    break;
+                                                }
+                                                //var k2 = new string(vs, v.vStringStart, v.vStringLength);
+
+                                                if (fieldInfo.fieldType == typeof(Type))
+                                                //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                                                { 
+                                                    GeneralTool.SetObject(bytePtr + fieldInfo.offset,
+                                                        UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                        );
                                                 }
                                                 break;
                                             default:
@@ -635,7 +562,7 @@ namespace DogJson
                                         }
                                         break;
                                     case JsonValueType.Boolean:
-                                        *(bool*)(bytePtr + fieldInfo.offset) = v.valueBool;
+                                        fieldInfo.propertyDelegateItem.setBoolean(bytePtr, v.valueBool);
                                         break;
                                     case JsonValueType.Object:
                                         if (myObject.type == (typeof(Type)))
@@ -664,10 +591,18 @@ namespace DogJson
                                                 break;
                                             case TypeCode.Object:
                                                 JsonObject* obj = jsonRender.objectQueue;
-                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, jsonRender, ref obj))
+                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, parent, jsonRender, ref obj))
                                                 {
                                                     GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
                                                       createObjectItems[obj->objectQueueIndex].obj);
+                                                    break;
+                                                }
+                                                if (fieldInfo.fieldType == typeof(Type))
+                                                //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                                                {
+                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                        UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                        );
                                                 }
                                                 break;
                                             default:
@@ -747,12 +682,6 @@ namespace DogJson
                                         *(bool*)(myObject.bytePtr + fieldInfo.offset) = v.valueBool;
                                         break;
                                     case JsonValueType.Object:
-                                        if (myObject.type == (typeof(Type)))
-                                        {
-                                            GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
-                                                UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
-                                                );
-                                        }
                                         break;
                                     default:
                                         break;
@@ -762,10 +691,16 @@ namespace DogJson
                     }
                     else
                     {
-                        ICollectionObjectBase collection = myObject.collectionObject;
+                        ReadCollectionLink collection = myObject.collectionObject;
                         if (collection != null)
                         {
-                            collection.AddValue(myObject.obj, vs, jsonRender.pool + i);
+                            ReadCollectionLink.AddValue_Args addValue_Args = new ReadCollectionLink.AddValue_Args();
+                            addValue_Args.callGetValue = GetValue;
+                            addValue_Args.str = vs;
+                            addValue_Args.value = jsonRender.pool + i;
+
+                            collection.addValue(myObject.objPtr, addValue_Args);
+                            //collection.AddValue(myObject.obj, vs, jsonRender.pool + i, proxy);
                         }
                         else
                         {
@@ -784,8 +719,6 @@ namespace DogJson
                             }
                             byte* pByte = myObject.bytePtr + myObject.ArrayItemTypeSize * v.arrayIndex;
 
-
-
                             switch (v.type)
                             {
                                 case JsonValueType.String:
@@ -799,10 +732,18 @@ namespace DogJson
                                             break;
                                         case TypeCode.Object:
                                             JsonObject* obj = jsonRender.objectQueue;
-                                            if (PathToObject(vs + v.vStringStart, v.vStringLength, jsonRender, ref obj))
+                                            if (PathToObject(vs + v.vStringStart, v.vStringLength, parent, jsonRender, ref obj))
                                             {
                                                 GeneralTool.SetObject(pByte,
                                                   createObjectItems[obj->objectQueueIndex].obj);
+                                                    break;
+                                            }
+                                            if (itemType == typeof(Type))
+                                            //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                                            {
+                                                GeneralTool.SetObject(pByte,
+                                                    UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                    );
                                             }
                                             //set_value = PathToObject(vs + v.vStringStart, v.vStringLength, createObjectItems[0]);
                                             break;
@@ -822,6 +763,7 @@ namespace DogJson
                                                         break;
                                                     }
                                                 }
+                                                break;
                                             }
                                             break;
                                     }
@@ -893,116 +835,106 @@ namespace DogJson
                     }
                 }
 
-                if (setValuesIndex > 0)
-                {
-                    int indexLeft = 0;
-                    int indexRight = setValuesIndex - 1;
 
-                    setValuesOrder[indexRight] = 0;
 
-                    for (int i = 1; i < setValuesIndex; i++)
-                    {
-                    Loop:
-                        //右边没对象，则进入
-                        if (indexRight == setValuesIndex)
+                ///*
+               if (setValuesIndex > 0)
+               {
+                   int indexLeft = 0;
+                   int indexRight = setValuesIndex - 1;
+
+                   setValuesOrder[indexRight] = 0;
+
+                   for (int i = 1; i < setValuesIndex; i++)
+                   {
+                   Loop:
+                       //右边没对象，则进入
+                       if (indexRight == setValuesIndex)
+                       {
+                           --indexRight;
+                           setValuesOrder[indexRight] = i;
+                           continue;
+                       }
+                       //比较右边如果右边的对象是当前的父对象，则进入右边队伍，否则把右边的对象转移到左边队伍，然后继续比较
+                       JsonObject* now = jsonRender.objectQueue + setValues[i];
+                       JsonObject* next = jsonRender.objectQueue + setValues[setValuesOrder[indexRight]];
+                       if (now->parentObjectIndex >= next->objectQueueIndex)
+                       {
+                           --indexRight;
+                           setValuesOrder[indexRight] = i;
+                           continue;
+                       }
+                       setValuesOrder[indexLeft] = setValuesOrder[indexRight];
+                       ++indexLeft;
+                       ++indexRight;
+                       goto Loop;
+                   }
+
+                   //goto Dubg;
+                   //类类型赋值
+                   for (int j = 0; j < setValuesIndex; j++)
+                   {
+                       //int i = j;
+                       int i = setValuesOrder[j];
+                       //SetValue setValue = setValues[i];
+                       JsonObject* objValue = jsonRender.objectQueue + setValues[i];
+
+
+                       //CreateObjectItem myObject = setValue.myObject;
+                       CreateObjectItem myObject = createObjectItems[objValue->objectQueueIndex];
+                       JsonObject* parent = jsonRender.objectQueue + objValue->parentObjectIndex;
+                       var parentObject = createObjectItems[objValue->parentObjectIndex];
+                       if (myObject.isProperty)
                         {
-                            --indexRight;
-                            setValuesOrder[indexRight] = i;
-                            continue;
-                        }
-                        //比较右边如果右边的对象是当前的父对象，则进入右边队伍，否则把右边的对象转移到左边队伍，然后继续比较
-                        JsonObject* now = jsonRender.objectQueue + setValues[i];
-                        JsonObject* next = jsonRender.objectQueue + setValues[setValuesOrder[indexRight]];
-                        if (now->parentObjectIndex >= next->objectQueueIndex)
-                        {
-                            --indexRight;
-                            setValuesOrder[indexRight] = i;
-                            continue;
-                        }
-                        setValuesOrder[indexLeft] = setValuesOrder[indexRight];
-                        ++indexLeft;
-                        ++indexRight;
-                        goto Loop;
-                    }
-
-
-
-                    //goto Dubg;
-                    //类类型赋值
-                    for (int j = 0; j < setValuesIndex; j++)
-                    //for (int i = setValuesIndex - 1; i >= 0; i--)
-                    {
-                        //int i = j;
-                        int i = setValuesOrder[j];
-                        //SetValue setValue = setValues[i];
-                        JsonObject* objValue = jsonRender.objectQueue + setValues[i];
-
-
-                        //CreateObjectItem myObject = setValue.myObject;
-                        CreateObjectItem myObject = createObjectItems[objValue->objectQueueIndex];
-                        JsonObject* parent = jsonRender.objectQueue + objValue->parentObjectIndex;
-                        var parentObject = createObjectItems[objValue->parentObjectIndex];
-                        if (myObject.isProperty)
-                        {
-                            if (parentObject.isValueType)
-                            {
-                                myObject.propertyDelegateItem.setObject(parentObject.bytePtr, myObject.obj);
-                            }
-                            else
-                            {
-                                myObject.propertyDelegateItem.setObject(parentObject.bytePtrStart, myObject.obj);
-                            }
-                            //try
-                            //{
-                            //    //*myObject.propertyDelegateItem.setTargetPtr = parentObject.bytePtrStart;
-                            //    //myObject.propertyDelegateItem.setObject(myObject.obj);
-                            //}
-                            //catch (Exception)
-                            //{
-
-                            //    throw;
-                            //}
+                            myObject.propertyDelegateItem.setObject(parentObject.objPtr, myObject.obj);
                         }
                         else
-                        {
-                            object over;
-                            if (myObject.collectionObject == null)
-                            {
-                                over = myObject.obj;
-                            }
-                            else
-                            {
-                                over = myObject.collectionObject.End(myObject.obj);
-                            }
+                       {
+                           //object over = myObject.obj;
+                           if (myObject.collectionObject == null
+                               && myObject.temp != null
+                               )
+                           {
+                               myObject.collectionObject.end(myObject.temp);
+                           }
 
-                            if (parentObject.collectionObject == null)
-                            {
-                                if (myObject.isValueType)
-                                {
-                                    //var byteP = setValue.parentObject.byteP + myObject.offset;
-                                    GeneralTool.Memcpy(parentObject.bytePtr + myObject.offset
-                                    , ((IntPtr*)GeneralTool.ObjectToVoid(over) + 1)
-                                    , UnsafeOperation.SizeOfStack(myObject.type)
-                                    );
-                                }
-                                else
-                                {
-                                    GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, over);
-                                }
-                            }
-                            else
-                            {
-                                parentObject.collectionObject.Add(parentObject.obj, objValue, over);
-                            }
-                        }
+                           if (parentObject.collectionObject == null)
+                           {
+                               if (myObject.isValueType)
+                               {
+                                   //var byteP = setValue.parentObject.byteP + myObject.offset;
+                                   GeneralTool.Memcpy(parentObject.bytePtr + myObject.offset
+                                   , myObject.objPtr
+                                   , UnsafeOperation.SizeOfStack(myObject.type)
+                                   );
+                               }
+                               else
+                               {
+                                    *(IntPtr*)(parentObject.bytePtr + myObject.offset) = (IntPtr)myObject.objPtr;
+                                   //GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, over);
+                               }
+                           }
+                           else
+                           {
+                                ReadCollectionLink.Add_Args arg = new ReadCollectionLink.Add_Args();
+                                arg.bridge = objValue;
 
-                    }
-                }
+                                //* (IntPtr*)(parentObject.bytePtr + myObject.offset) = (IntPtr)myObject.objPtr;
+                               parentObject.collectionObject.add(parentObject.objPtr, myObject.objPtr, arg);
+                               //void Add(void* obj, void* value, Add_Args arg);
+                           }
+                       }
+
+                   }
+               }
+
+
+               // */
 
             }
 
 
-        Dubg:
+            //Dubg:
             for (int i = 0; i < itemCount; i++)
             {
                 if (createObjectItems[i].gcHandle != default(GCHandle))
@@ -1025,13 +957,126 @@ namespace DogJson
         }
 
 
+        public ReadCollectionProxy proxy = new ReadCollectionProxy();
+        object GetValue(TypeCode typeCode, char* str, JsonValue* value)
+        {
+            JsonObject* parent = value->objectQueue;
+            switch (value->type)
+            {
+                case JsonValueType.String:
+                    switch (typeCode)
+                    {
+                        case TypeCode.Char:
+                            return str[value->vStringStart];
+
+                        case TypeCode.String:
+                            return new string(str, value->vStringStart, value->vStringLength);
+
+                        case TypeCode.Object:
+                            JsonObject* obj = jsonRender.objectQueue;
+                            if (PathToObject(str + value->vStringStart, value->vStringLength, parent, jsonRender, ref obj))
+                            {
+                                return createObjectItems[obj->objectQueueIndex].obj;
+                            }
+                            return UnsafeOperation.GetType(new string(str, value->vStringStart, value->vStringLength));
+                            //if (fieldInfo.fieldType == typeof(Type))
+                            ////if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                            //{
+                            //    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                            //}
+                        default:
+                            //if (fieldInfo.isEnum)
+                            //{
+                            //    var strEnum = new string(str, value->vStringStart, value->vStringLength);
+                            //    Array Arrays = Enum.GetValues(fieldInfo.fieldType);
+                            //    for (int k = 0; k < Arrays.Length; k++)
+                            //    {
+                            //        if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                            //        {
+                            //            GeneralTool.Memcpy(myObject.bytePtr + fieldInfo.offset
+                            //                , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
+                            //                , UnsafeOperation.SizeOfStack(fieldInfo.fieldType)
+                            //                );
+                            //            break;
+                            //        }
+                            //    }
+                            //}
+                            break;
+                    }
+                    break;
+                case JsonValueType.Long:
+                    switch (typeCode)
+                    {
+                        case TypeCode.SByte:
+                            return (SByte)value->valueLong;
+                        case TypeCode.Byte:
+                            return (Byte)value->valueLong;
+                        case TypeCode.Int16:
+                            return (Int16)value->valueLong;
+                        case TypeCode.UInt16:
+                            return (UInt16)value->valueLong;
+                        case TypeCode.Int32:
+                            return (Int32)value->valueLong;
+                        case TypeCode.UInt32:
+                            return (UInt32)value->valueLong;
+                        case TypeCode.Int64:
+                            return value->valueLong;
+                        case TypeCode.UInt64:
+                            return (UInt64)value->valueLong;
+                        case TypeCode.Single:
+                            return (Single)value->valueLong;
+                        case TypeCode.Double:
+                            return (Double)value->valueLong;
+                        case TypeCode.Decimal:
+                            return (Decimal)value->valueLong;
+                    }
+                    break;
+                case JsonValueType.Double:
+                    switch (typeCode)
+                    {
+                        case TypeCode.Single:
+                            return (Single)value->valueDouble;
+                        case TypeCode.Double:
+                            return (Double)value->valueDouble;
+                        case TypeCode.Decimal:
+                            return (Decimal)value->valueDouble;
+                    }
+                    break;
+                case JsonValueType.Boolean:
+                    return value->valueBool;
+            }
+            return null;
+        }
 
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static unsafe bool PathToObject(char* path, int pathLength, JsonRender jsonRender, ref JsonObject* obj)
+        static unsafe bool PathToObject(char* path, int pathLength, JsonObject* nowParent, JsonRender jsonRender, ref JsonObject* obj)
         {
+            if (*path == '$')
+            {
+                if (pathLength == 1)
+                {
+                    return true;
+                }
+                ++path;
+                if (*path == '/')
+                {
+                    ++path;
+                    pathLength -= 2;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
             JsonObject* parent = obj;
+
             //JsonObject* now = jsonRender.objectQueue + obj->objectQueueIndex + 1;
             ++obj;
         Start:

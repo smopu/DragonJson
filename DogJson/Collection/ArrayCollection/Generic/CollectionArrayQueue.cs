@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DogJson
 {
-    [Collection(typeof(Queue<>), true)]
+    [CollectionRead(typeof(Queue<>), true)]
     public unsafe class CollectionArrayQueue<T> : CollectionArrayBase<Queue<T>, Queue<T>>
     {
         TypeCode typeCode;
@@ -15,14 +15,14 @@ namespace DogJson
             typeCode = Type.GetTypeCode(typeof(T));
         }
 
-        protected override void Add(Queue<T> array, int index, object value)
+        protected override void Add(Queue<T> array, int index, object value, ReadCollectionProxy proxy)
         {
             array.Enqueue((T)value);
         }
 
-        protected override void AddValue(Queue<T> array, int index, char* str, JsonValue* value)
+        protected override void AddValue(Queue<T> array, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
         {
-            object set_value = GetValue(typeCode, str, value);
+            object set_value = proxy.callGetValue(typeCode, str, value);
             array.Enqueue((T)set_value);
         }
 

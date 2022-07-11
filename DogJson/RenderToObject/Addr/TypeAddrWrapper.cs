@@ -300,22 +300,16 @@ namespace DogJson
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(out GCHandle gcHandle, out byte* byteP)
+        public object Create(out GCHandle gcHandle, out byte* bytePtr, out byte* objPtr)
         {
             object obj = new byte[sizeByte_1];
-            //gcHandle = new GCHandle();
-            //if (isValueType)
-            //{
-            //    ptr = UnsafeUtility.GetValueAddr(obj);
-            //}
-            //else
-            //{
-            //}
             gcHandle = GCHandle.Alloc(obj, GCHandleType.Pinned);
             IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
             *ptr = typeHead;
-            *(ptr + 1) = new IntPtr(0);
-            byteP = (byte*)ptr;
+            objPtr = (byte*)ptr;
+            ++ptr;
+            *ptr = new IntPtr(0);
+            bytePtr = (byte*)ptr;
             return obj;
         }
 
@@ -327,14 +321,20 @@ namespace DogJson
         public object Create()
         {
             object obj = new byte[sizeByte_1];
-            //IntPtr ptr;
-            //ptr = UnsafeUtility.GetObjectAddr(obj);
-            //*(IntPtr*)ptr = typeHead;
-            *(IntPtr*)GeneralTool.ObjectToVoid(obj) = typeHead;
-
+            IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
+            *ptr = typeHead;
+            *(ptr + 1) = new IntPtr(0);
             return obj;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IntPtr* CreateGetIntPtr(out object obj)
+        {
+            obj = new byte[sizeByte_1];
+            IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
+            *ptr = typeHead;
+            return ptr;
+        }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -347,9 +347,8 @@ namespace DogJson
             }
         }
 
-
-
     }
+
 
     public unsafe class TypeAddrFieldAndProperty
     {
@@ -370,12 +369,14 @@ namespace DogJson
             isEnum = fieldType.IsEnum;
             if (isValueType)
             {
-                stackSize = UnsafeOperation.SizeOf(fieldType);
+                stackSize = UnsafeOperation.SizeOfStack(fieldType);
             }
             else
             {
                 stackSize = UnsafeOperation.PTR_COUNT;
             }
+            heapSize = UnsafeOperation.SizeOf(fieldType);
+
             typeHead = UnsafeOperation.GetTypeHead(fieldType);
         }
         
@@ -401,8 +402,9 @@ namespace DogJson
             {
                 if (isValueType && !TypeAddrReflectionWrapper.IsFundamental(this.fieldType))
                 {
+                    Delegate sourceDelegate;
                     Delegate set = PropertyWrapper.CreateStructIPropertyWrapperTarget(parntType,
-                        propertyInfo, out Delegate sourceDelegate);
+                        propertyInfo, out sourceDelegate);
                     this.propertyDelegateItem = new PropertyDelegateItem2();
                     this.propertyDelegateItem._set = set;
 
@@ -414,7 +416,6 @@ namespace DogJson
                     this.propertyDelegateItem._set = PropertyWrapper.CreateSetTargetDelegate2(parntType, propertyInfo);
                 }
             }
-
 
             typeHead = UnsafeOperation.GetTypeHead(fieldType);
         }
@@ -429,7 +430,9 @@ namespace DogJson
         public Type fieldType;
         public int offset;
         public int stackSize;
+        public int heapSize;
         public TypeCode typeCode;
+
 
         public bool isPropertySet = true;
         public bool isPropertyGet = true;
@@ -532,6 +535,73 @@ namespace DogJson
                 GeneralTool.SetObject(field, value);
             }
         }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe object GetValue(object source)
+        {
+            void* v = GeneralTool.ObjectToVoid(source);
+
+            void* field = (byte*)v + UnsafeOperation.PTR_COUNT + this.offset;
+
+            if (this.isValueType)
+            {
+                switch (this.typeCode)
+                {
+                    case TypeCode.Boolean:
+                        return *(bool*)field;
+                    case TypeCode.Byte:
+                        return *(Byte*)field;
+                    case TypeCode.Char:
+                        return *(Char*)field;
+                    case TypeCode.DateTime:
+                        return *(DateTime*)field;
+                    //case TypeCode.DBNull:
+                    //    return GeneralTool.VoidToObject(field);
+                    //case TypeCode.String:
+                    //    return GeneralTool.VoidToObject(field);
+                    case TypeCode.Decimal:
+                        return *(Decimal*)field;
+                    case TypeCode.Double:
+                        return *(Double*)field;
+                    case TypeCode.Empty:
+                    case TypeCode.Int16:
+                        return *(Int16*)field;
+                    case TypeCode.Int32:
+                        return *(Int32*)field;
+                    case TypeCode.Int64:
+                        return *(Int64*)field;
+                    case TypeCode.SByte:
+                        return *(Int64*)field;
+                    case TypeCode.Single:
+                        return *(Single*)field;
+                    case TypeCode.UInt16:
+                        return *(UInt16*)field;
+                    case TypeCode.UInt32:
+                        return *(UInt32*)field;
+                    case TypeCode.UInt64:
+                        return *(UInt64*)field;
+                    case TypeCode.Object:
+                    default:
+                        //GC.Collect();
+
+                        object obj = new byte[this.stackSize - 1 * UnsafeOperation.PTR_COUNT];
+                        IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
+                        //ptr = UnsafeUtility.GetObjectAddr(obj);
+                        //*(IntPtr*)ptr = typeHead;
+                        *ptr = typeHead;
+                        ++ptr;
+                        GeneralTool.Memcpy(ptr, field, this.stackSize);
+                        //GC.Collect();
+                        return obj;
+                }
+            }
+            else
+            {
+                return GeneralTool.VoidToObject(*(IntPtr**)field);
+            }
+        }
+
     }
 
 

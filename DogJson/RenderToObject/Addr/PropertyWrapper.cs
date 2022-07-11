@@ -420,8 +420,12 @@ namespace DogJson
     public class PropertyWrapperTarget<Value> : IPropertyWrapperTarget
     {
         Action<Value> _set;
+        public Delegate set
+        {
+          get { return _set; }
+          set { _set = (Action<Value>)value; }
+        }
 
-        public Delegate set { get => _set; set => _set = (Action<Value>)value; }
 
         public void Set(object value)
         {
@@ -437,7 +441,11 @@ namespace DogJson
     public class PropertyWrapper<Target, Value> : IGetSetStruct
     {
         public Action<Target, Value> _set;
-        public Delegate set { get => _set; set => _set = (Action<Target, Value>)value; }
+        public Delegate set
+        {
+          get { return _set; }
+          set { _set = (Action<Target, Value>)value; }
+        }
 
         public void SetStruct(Target t, object value)
         {
@@ -453,7 +461,11 @@ namespace DogJson
     public class RefPropertyWrapper<Target, Value> : IGetSetStruct
     {
         public RefAction<Target, Value> _set;
-        public Delegate set { get => _set; set => _set = (RefAction<Target, Value>)value; }
+        public Delegate set
+        {
+          get { return _set; }
+          set { _set = (RefAction<Target, Value>)value; }
+        }
 
         public void SetStruct(ref Target t, object value)
         {

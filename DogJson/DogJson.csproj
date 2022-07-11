@@ -12,6 +12,21 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <PublishUrl>发布\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -24,11 +39,12 @@
     <WarningLevel>2</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -105,14 +121,17 @@
     <Compile Include="Collection\ArrayCollection\Generic\CollectionArrayList.cs" />
     <Compile Include="Collection\ArrayCollection\Generic\CollectionArrayQueue.cs" />
     <Compile Include="Collection\ArrayCollection\Generic\CollectionArrayTuple.cs" />
-    <Compile Include="Collection\ArrayCollection\MulticastDelegate.cs" />
+    <Compile Include="Collection\ArrayCollection\Generic\MulticastDelegate.cs" />
+    <Compile Include="Collection\ArrayCollection\Generic\WriterType.cs" />
     <Compile Include="Collection\CollectionAttribute.cs" />
-    <Compile Include="Collection\ArrayCollection\CollectionArrayBase.cs" />
-    <Compile Include="Collection\ArrayCollection\Generic\CollectionArrayDictionary.cs" />
-    <Compile Include="Collection\JsonManager.cs" />
-    <Compile Include="Collection\ObjectCollection\BoxCollection.cs" />
-    <Compile Include="Collection\ObjectCollection\ConstructorWrapper.cs" />
+    <Compile Include="Collection\CollectionBase.cs" />
+    <Compile Include="Collection\ArrayCollection\Generic\ReaderDictionary.cs" />
+    <Compile Include="Collection\CollectionManager.cs" />
+    <Compile Include="Collection\ArrayCollection\ObjectCollection\BoxCollection.cs" />
+    <Compile Include="Collection\StringCollection\ConstructorWrapper.cs" />
     <Compile Include="Collection\StringCollection\StringCollectionBase.cs" />
+    <Compile Include="Collection\ArrayCollection\Generic\WriterDictionary.cs" />
+    <Compile Include="Collection\ArrayCollection\Generic\WriterEnumerable.cs" />
     <Compile Include="IJsonRenderToObject.cs" />
     <Compile Include="JsonValue.cs" />
     <Compile Include="DataBaseExtend.cs" />
@@ -150,6 +169,28 @@
     <None Include="TextFile1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Collection\Read\" />
+    <Folder Include="Collection\Write\ArrayCollection\" />
+    <Folder Include="Collection\Write\ObjectCollection\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 和 x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

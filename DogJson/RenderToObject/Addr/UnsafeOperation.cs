@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace DogJson
 {
@@ -22,7 +23,16 @@ namespace DogJson
         {
             return *(IntPtr*)&tf;
         }
-
+        
+        /// <summary>
+        /// 获取值类型的地址
+        /// </summary>
+        /// <param name="tf"></param>
+        /// <returns></returns>
+        public unsafe static void* GetValueAddrVoidPtr(TypedReference tf)
+        {
+            return *(void**)&tf;
+        }
         /// <summary>
         /// 获取引用类型的地址
         /// </summary>
@@ -67,9 +77,28 @@ namespace DogJson
         }
 
 
+        static Dictionary<Type, IntPtr> allTypeHead = new Dictionary<Type, IntPtr>();
         public unsafe static IntPtr GetTypeHead(Type type)
         {
+            //if (type.IsArray)
+            //{
+            //    IntPtr value;
+            //    if (allTypeHead.TryGetValue(type, out value))
+            //    {
+            //        return value;
+            //    }
+            //    else
+            //    {
+            //        value = allTypeHead[type] = *(IntPtr*)GeneralTool.ObjectToVoid(
+            //        Array.CreateInstance(type.GetElementType(), new int[type.GetArrayRank()]));
+            //        return value;
+
+            //    }
+            //}
             return type.TypeHandle.Value;
+
+
+            //FormatterServices.GetUninitializedObject(myObject.type);
         }
   
 
@@ -129,6 +158,8 @@ namespace DogJson
 
         }
 
+        public static Dictionary<string, Assembly> dictionaryAllAssembly = new Dictionary<string, Assembly>();
+
         public static Dictionary<string, Type> dictionaryGetType = new Dictionary<string, Type>();
         //public static Dictionary<Type, ICollectionObjectBase> dictionaryGetBox = new Dictionary<Type, ICollectionObjectBase>();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -144,10 +175,30 @@ namespace DogJson
                 if (type == null)
                 {
                     int index = typeName.IndexOf(',');
-                    string assemblyName = typeName.Substring(0, index);
-                    Assembly assembly = Assembly.Load(assemblyName);//WithPartialName
-                    string TypeName2 = typeName.Substring(index + 1, typeName.Length - index - 1);
-                    type = assembly.GetType(TypeName2);
+
+                    if (index > 0)
+                    {
+                        string assemblyName = typeName.Substring(0, index);
+                        Assembly assembly;
+                        if (!dictionaryAllAssembly.TryGetValue(assemblyName, out assembly))
+                        {
+                            assembly = Assembly.Load(assemblyName);//WithPartialName
+                        }
+
+                        string TypeName2 = typeName.Substring(index + 1, typeName.Length - index - 1);
+                        type = assembly.GetType(TypeName2);
+
+                    }
+                    //if (type == null)
+                    //{
+                    //    foreach (var item in dictionaryAllAssembly)
+                    //    {
+
+                    //    }
+                    //    //assembly = Assembly.GetEntryAssembly();
+                    //    //var sss = assembly.GetTypes();
+                    //    return type;
+                    //}
                 }
                 lock (dictionaryGetType)
                 {

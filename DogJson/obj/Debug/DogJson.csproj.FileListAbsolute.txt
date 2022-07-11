@@ -101,3 +101,17 @@ D:\git\DogJson\DogJson\obj\Debug\DogJson.csproj.CoreCompileInputs.cache
 D:\git\DogJson\DogJson\obj\Debug\DogJson.csproj.CopyComplete
 D:\git\DogJson\DogJson\obj\Debug\DogJson.exe
 D:\git\DogJson\DogJson\obj\Debug\DogJson.pdb
+D:\dog-json-master\DogJson\DogJson\bin\Debug\TextFile2.json
+D:\dog-json-master\DogJson\DogJson\bin\Debug\TextFile3.json
+D:\dog-json-master\DogJson\DogJson\bin\Debug\TextFile1.json
+D:\dog-json-master\DogJson\DogJson\bin\Debug\DogJson.exe.config
+D:\dog-json-master\DogJson\DogJson\bin\Debug\DogJson.exe
+D:\dog-json-master\DogJson\DogJson\bin\Debug\DogJson.pdb
+D:\dog-json-master\DogJson\DogJson\bin\Debug\DynamicCustomReflection.dll
+D:\dog-json-master\DogJson\DogJson\bin\Debug\System.Buffers.dll
+D:\dog-json-master\DogJson\DogJson\bin\Debug\System.Buffers.xml
+D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.csproj.AssemblyReference.cache
+D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.csproj.CoreCompileInputs.cache
+D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.csproj.CopyComplete
+D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.exe
+D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.pdb

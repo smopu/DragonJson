@@ -1,35 +1,12 @@
 ﻿{
-
-	"testOB": {
-		"numI": 13,
-		"num": 3.6,
-		"p3_0": {
-			"x": 1.2,
-			"y": -1.8,
-			"z": 33
-		},
-		"p3_2": {
-			"x": -12,
-			"y": 18,
-			"z": 3.3
-		}
-	}
-}
-
-
-{
-	"ddd": {
-		"#type": "System.Double",
-		"#value": -3.14E-12
-	},
 	"objects": [
 		{
-			"#type": "System.Int32",
-			"#value": 12
+			"$type": "System.Int32",
+			"$value": 12
 		},
 		{
-			"#type": "System.Double",
-			"#value": -3.14E-12
+			"$type": "System.Double",
+			"$value": -3.14E-12
 		}
 	],
 	"testEnums": [ "Test002", "Test004", "Test003" ],
@@ -38,16 +15,16 @@
 	"tClass001": {
 		"objects": [
 			{
-				"#type": "System.Int32",
-				"#value": 12
+				"$type": "System.Int32",
+				"$value": 12
 			},
 			{
-				"#type": "System.Double",
-				"#value": -3.14E-12
+				"$type": "System.Double",
+				"$value": -3.14E-12
 			},
 			{
-				"#type": "System.String",
-				"#value": "3213.#$%^&*()"
+				"$type": "System.String",
+				"$value": "3213.$$%^&*()"
 			}
 		],
 		"tClass002s": [
@@ -103,10 +80,10 @@
 		"TestDuble": -3.14E-12
 	},
 
-	"testClassDD": "tClass001/tClass002/tClass003",
-	"testClassDD4": "tClass001/tClass002s/1/tClass003",
-	"testClassDD2": "tClass001/tClass002/tClass003s/2",
-	"testClassDD3": "tClass001/tClass002s/1/tClass003s/2",
+	"testClassDD": "$/tClass001/tClass002/tClass003",
+	"testClassDD4": "$/tClass001/tClass002s/1/tClass003",
+	"testClassDD2": "$/tClass001/tClass002/tClass003s/2",
+	"testClassDD3": "$/tClass001/tClass002s/1/tClass003s/2",
 
 	"arrayRekn": [
 		[
@@ -286,28 +263,38 @@
 		]
 	],
 	"dcc": {
-		"#create": [
+		"$create": [
 			{
-				"#type": "System.String",
-				"#value": "3213.#$%^&*()"
+				"$type": "System.String",
+				"$value": "3213.$$%^&*()"
 			},
 			{
-				"#type": "System.Collections.Generic.List`1[System.Int32]",
-				"#value": [ 14, 24, 34, 44, 54 ]
+				"$type": "System.Collections.Generic.List`1[System.Int32]",
+				"$value": [ 14, 24, 34, 44, 54 ]
 			},
 			{
-				"#type": "System.Double",
-				"#value": -3.14E-12
+				"$type": "System.Double",
+				"$value": -3.14E-12
 			}
 		]
 	},
 
 	"testDelegate2": [
-		[ "DogJson.TClassA", "Fool" ],
-		[ "DogJson.TClassA", "Foo2", "System.Int32", "System.String" ]
+		{
+			"type": "DogJson.TClassA",
+			"name": "Fool",
+			"args": [ "System.Int32", "System.String" ],
+			"target": null
+		},
+		{
+			"type": "DogJson.TClassA",
+			"name": "Foo2",
+			"args": [ "System.Int32", "System.String" ],
+			"target": null
+		}
 	],
 	"Iclass0Z": {
-		"#type": "DogJson.Program+TclassC",
+		"$type": "DogJson.Program+TclassC",
 		"b": 122,
 		"value": 1.444,
 		"bbb": {
@@ -317,8 +304,8 @@
 		}
 	},
 	"arrayint2": {
-		"#type": "System.Collections.Generic.List`1[System.Int32]",
-		"#value": [ 14, 24, 34, 44, 54 ]
+		"$type": "System.Collections.Generic.List`1[System.Int32]",
+		"$value": [ 14, 24, 34, 44, 54 ]
 	},
 
 
@@ -366,3 +353,38 @@
 	]
 
 }
+
+
+
+//-循环引用序列化
+//-字符串为key的字典额外处理
+
+
+//-构造函数注册
+//-数组的元素真类型于数组元素类型不同
+//-数组容器的元素真类型于数组元素类型不同
+
+//-泛型特例容器
+//-委托写入
+
+
+//枚举写入
+//代理读取基本json类型需要同一
+
+
+//字符串匹配优化
+//处理缓存为可变长度
+//root 额外处理
+//null处理
+//注释
+//unity适配
+
+
+//测试用例
+//路径多维数组
+
+
+//字符串自定义代理
+
+
+

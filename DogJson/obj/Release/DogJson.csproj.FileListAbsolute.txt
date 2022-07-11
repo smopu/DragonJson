@@ -93,3 +93,15 @@ D:\git\DogJson\DogJson\bin\Release\DynamicCustomReflection.dll
 D:\git\DogJson\DogJson\bin\Release\System.Buffers.dll
 D:\git\DogJson\DogJson\bin\Release\System.Buffers.xml
 D:\git\DogJson\DogJson\obj\Release\DogJson.csproj.CopyComplete
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\DogJson.exe.config
+D:\程序研究\dog-json-master\DogJson\DogJson\obj\Release\DogJson.exe
+D:\程序研究\dog-json-master\DogJson\DogJson\obj\Release\DogJson.pdb
+D:\程序研究\dog-json-master\DogJson\DogJson\obj\Release\DogJson.csprojResolveAssemblyReference.cache
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\TextFile2.json
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\TextFile3.json
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\TextFile1.json
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\DogJson.exe
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\DogJson.pdb
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\DynamicCustomReflection.dll
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\System.Buffers.dll
+D:\程序研究\dog-json-master\DogJson\DogJson\bin\Release\System.Buffers.xml

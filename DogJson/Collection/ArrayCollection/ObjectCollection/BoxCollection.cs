@@ -18,7 +18,7 @@ namespace DogJson
     }
 
 
-    [Collection(typeof(Box<>), false)]
+    [CollectionRead(typeof(Box<>), false)]
     public unsafe class BoxCollection<T> : CollectionObjectBase<T, Box<T>>
     {
         TypeCode typeCode;
@@ -32,14 +32,14 @@ namespace DogJson
             return typeof(T);
         }
 
-        protected override unsafe void Add(Box<T> obj, char* key, int keyLength, object value)
+        protected override unsafe void Add(Box<T> obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
         {
             obj.value = (T)value;
         }
 
-        protected override unsafe void AddValue(Box<T> obj, char* key, int keyLength, char* str, JsonValue* value)
+        protected override unsafe void AddValue(Box<T> obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
         {
-            obj.value = (T) GetValue(typeCode, str, value);
+            obj.value = (T)proxy.callGetValue(typeCode, str, value);
         }
 
         protected override unsafe Box<T> CreateObject(JsonObject* obj, object parent, Type objectType, Type parentType)

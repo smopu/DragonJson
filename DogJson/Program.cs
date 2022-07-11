@@ -763,16 +763,16 @@ namespace DogJson
             }
         }
 
-        static unsafe void Main44(string[] args)
+        static unsafe void Main(string[] args)
         {
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
-            JsonManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+            CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
 
             JsonRender jsonRender = new JsonRender();
 
             jsonRender.ReadJsonText(str);
-            var o = jsonRender.ReadJsonTextCreateObject<AAXA>(str);
+            var o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
 
             Console.ReadKey();
 
@@ -798,6 +798,11 @@ namespace DogJson
             Console.ReadKey();
         }
 
+        public struct ACE4
+        {
+            public int kk;
+            public string str;
+        }
 
         public class ACE3
         {
@@ -805,106 +810,611 @@ namespace DogJson
             public string str;
         }
 
-        public class ACE1
+        public class ACE5
         {
-            public ACE3[] aCE3s;
-            public bool b;
-            public double num;
+            public int kk;
             public string str;
             public ACE3 aCE3;
-            public int[] ints;
-            public List<int> intLists;
-            public int[,] ints2;
-            public ACE3[,] aCE3s2;
-            public int[,,] ints3;
+            public ACE5(int kk, string str, ACE3 aCE3)
+            {
+                this.kk = kk;
+                this.str = str;
+                this.aCE3 = aCE3;
+            }
+            public ACE5()
+            {
+            }
+            public string Foo3(int kk, string str, ACE3 aCE3)
+            {
+                return "草泥马";
+            }
+            public string Foo4(int kk, string str, ACE3 aCE3)
+            {
+                return "我是傻逼！";
+            }
         }
 
 
-        static unsafe void Main(string[] args)
+        public unsafe class ACE1
         {
+            public Type[] args;
+            public enum TestEnum : byte
+            {
+                ddd,
+                kkk,
+                ffff
+            }
+            public TestEnum testEnum;
+            public Type testType;
+            public ACE3[] aCE3s;
+            public object aCE3;
+            public ACE5 aCE5;
+            public void* dp;
+
+            public ACE3 ACE3_2;
+
+            public Func<int, string, ACE3, string> func;
+            public bool b;
+            public double num;
+            public string str;
+            // public ACE3 aCE3;
+            public ACE4 aCE4;
+            public ACE4[,] ffccc;
+
+            public object ints;
+            //public int[] ints;
+            public List<ACE4> aCE4Lists;
+            public Dictionary<ACE3, ACE4> aCE3Dictionary;
+            public Dictionary<int, ACE4> aCE3Dictionary2;
+            public Dictionary<string, ACE4> aCE3Dictionary4;
+            public List<int> intLists;
+            public Queue<int> intQueues;
+
+            public int[,] ints2;
+            public ACE3[,] aCE3s2;
+            public int[,,] ints3;
+
+            public string Foo1(int kk, string str, ACE3 aCE3)
+            {
+                return "给我跪下！叫我一身爷！";
+            }
+            public string Foo2(int kk, string str, ACE3 aCE3)
+            {
+                return "爷~~~ 我认输了，我是最垃圾的九级野怪！";
+            }
+
+        }
+
+        [CollectionWriteAttribute(typeof(ACE5))]
+        public unsafe class CreateWriter : IWriterCollectionObject
+        {
+            public JsonWriteType GetWriteType() { return JsonWriteType.Object; }
+            public IEnumerable<KeyValueStruct> GetValue(object obj)
+            {
+                var collection = (ACE5)obj;
+
+                if (collection.str != null)
+                {
+                    yield return new KeyValueStruct()
+                    {
+                        key = "$create",
+                        value = new object[] { collection.kk, collection.str, collection.aCE3 },
+                        type = typeof(object[]),
+                    };
+                }
+            }
+        }
+
+
+        //[CollectionWriteAttribute(typeof(ACE5), false)]
+        //public unsafe class ACE5Writer : IWriterObject
+        //{
+        //    public bool IsArray() { return false; }
+        //    public IEnumerable<KeyValueStruct> GetValue(object obj)
+        //    {
+        //        var collection = (ACE5)obj;
+
+        //        if (collection.str != null)
+        //        {
+        //            yield return new KeyValueStruct()
+        //            {
+        //                key = "str",
+        //                value = collection.str,
+        //                type = collection.str.GetType(),
+        //            };
+        //        }
+        //        yield return new KeyValueStruct() {
+        //            key = "kk",
+        //            value = collection.kk,
+        //            type = collection.kk.GetType(),
+        //        };
+        //        if (collection.aCE3 != null)
+        //        {
+        //            yield return new KeyValueStruct() {
+        //                key = "aCE3",
+        //                value = collection.aCE3,
+        //                type = collection.aCE3.GetType(),
+        //            };
+        //        }
+        //    }
+        //}
+
+
+
+        //class DictionString<T> : Dictionary<string, T> { }
+
+
+        public class DictionString<Zero, T> : SpecialCaseGeneric where Zero : Dictionary<string, T> { }
+       
+         interface IGenericType
+        {
+            Type GetGenericType();
+        }
+        
+        class DictionString2<T> : IGenericType {
+            public Type GetGenericType() {
+                return typeof(Dictionary<string, T>);
+            }
+        }
+
+
+
+
+        public struct DDDDDccccfff
+        {
+        }
+        static void K(Type type)
+        { 
+            Console.WriteLine("xxx " + typeof(List<>).MakeGenericType(type).TypeHandle.Value);
+        }
+
+
+        public unsafe delegate void ActionRef2<T>(ref T arg2);
+        public unsafe delegate void ActionVoidPtr2<T>(void* arg1, T arg2);
+        public unsafe delegate void ActionVoidPtr3(void* arg1);
+
+
+        [StructLayout(LayoutKind.Explicit)]
+        public unsafe class PropertyDelegateItem2
+        {
+            [FieldOffset(0)]
+            public Delegate _setDelegate;
+            [FieldOffset(0)]
+            public Action<object> set;
+            [FieldOffset(0)]
+            public ActionVoidPtr3 god;
+        }
+
+        class 统一类 
+        {
+            public PropertyDelegateItem2 property = new PropertyDelegateItem2();
+            public 统一类(接口 s)
+            {
+                property._setDelegate = s.GetDelegate();
+            }
+        }
+
+        interface 接口
+        {
+            Delegate GetDelegate();
+        }
+
+        class 实现类 : 接口
+        {
+            public void Alex(ref V3 v3)
+            {
+                v3.x = 111;
+            }
+            public Delegate GetDelegate() {
+                ActionRef2<V3> ac = (ref V3 v3) =>
+                {
+                    v3.x = 111;
+                };
+                return ac;
+            }
+        }
+
+        class 实现类2 : 接口
+        {
+            public void Alex(ACE5 v3)
+            {
+                v3.kk = 111;
+            }
+            public Delegate GetDelegate()
+            {
+                Action<ACE5> ac = Alex;
+                return ac;
+            }
+        }
+
+        interface 接口2
+        {
+            void Call();
+        }
+        class 实现类3 : 接口2
+        {
+            public void Call()
+            {
+                //new ACE5();
+            }
+        }
+
+
+        static Dictionary<IntPtr, Type> mainType1 = new Dictionary<IntPtr, Type>();
+        static Dictionary<Type, Type> mainType2 = new Dictionary<Type, Type>();
+        static unsafe void Main44(string[] args)
+        {
+            //ReadCollectionLink read;
+            //DictionaryReader2<string, int> dictionaryReader2 = new DictionaryReader2<string, int>(out read);
+            //object obj1;
+            //object temp;
+
+            //DictionaryKV<string, int> kvss = new DictionaryKV<string, int>();
+            //kvss.k = "cnmld";
+            //kvss.v = 4854849;
+
+            //ReadCollectionLink.Create_Args arg1 = new ReadCollectionLink.Create_Args();
+            //JsonObject var_JsonObject = new JsonObject();
+            //arg1.bridge = &(var_JsonObject);
+            //var_JsonObject.arrayCount = 3;
+
+            //read.create(out obj1, out temp, arg1);
+
+            //ReadCollectionLink.Add_Args arg2 = new ReadCollectionLink.Add_Args();
+            ////read.add(GeneralTool.ObjectToVoid(obj1), GeneralTool.ObjectToVoid(kvss), arg2);
+            //read.add3(obj1, kvss, arg2);
+            CollectionManager.Start(new AddrToObject2());
+
+            Console.ReadLine();
+            //Stopwatch oTime = new Stopwatch();
+            //接口2 sss = new 实现类3();
+            //Action action = new 实现类3().Call;
+
+            //oTime.Reset(); oTime.Start();
+            //for (int __1 = 0; __1 < 10000000; __1++)
+            //{
+            //    sss.Call();
+            //}
+            //oTime.Stop();
+            //Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+
+            //oTime.Reset(); oTime.Start();
+            //for (int __1 = 0; __1 < 10000000; __1++)
+            //{
+            //    action();
+            //}
+            //oTime.Stop();
+            //Console.WriteLine("2：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
+            //Console.ReadLine();
+
+
+
+            var aCE522 = new ACE5();
+            V3 v3 = new V3();
+            统一类 s1 = new 统一类(new 实现类());
+            统一类 s2 = new 统一类(new 实现类2());
+
+     
+            //s1.property.god(&v3);
+            s1.property.god(UnsafeOperation.GetValueAddrVoidPtr(__makeref(v3)));
+            s2.property.god(GeneralTool.ObjectToVoid(aCE522));
+
+
+            string adssads = "dassdadad";
+            //GCHandle.Alloc(adssads, GCHandleType.Pinned);
+            List<ACE5> asc = new List<ACE5>(); 
+            for (int i = 0; i < 100000; i++)
+            {
+                asc.Add(new ACE5());
+            }
+            //var aaaaa1 = new ACE1();
+            TypeAddrReflectionWrapper typeReflection = new TypeAddrReflectionWrapper(typeof(ACE1));
+            var aaaaa1 = (ACE1)typeReflection.Create();
+
+            aaaaa1.aCE5  = new ACE5();
+            aaaaa1.dp = GeneralTool.ObjectToVoid(aaaaa1.aCE5);
+            //aaaaa1.str = adssads;
+            typeReflection.nameOfField["str"].SetValue(aaaaa1, adssads) ;
+
+            Console.WriteLine("dp " + (long)aaaaa1.dp);
+
+            IntPtr intPtr = new IntPtr(GeneralTool.ObjectToVoid(aaaaa1.str));
+            Console.WriteLine("intPtr " + intPtr);
+
+            Console.WriteLine(typeof(List<>).TypeHandle.Value);
+            Console.WriteLine(typeof(List<>).MakeGenericType(typeof(Type)).TypeHandle.Value);
+            Console.WriteLine(typeof(List<Type>).TypeHandle.Value);
+            K(typeof(DDDDDccccfff));
+            asc.Clear();
+            GC.Collect();
+            Console.WriteLine(typeof(List<Type>).TypeHandle.Value);
+            Console.WriteLine(typeof(List<>).MakeGenericType(typeof(int)).TypeHandle.Value);
+            K(typeof(DDDDDccccfff));
+
+            intPtr = new IntPtr(GeneralTool.ObjectToVoid(aaaaa1.str));
+            Console.WriteLine("dp " + (long)aaaaa1.dp);
+            Console.WriteLine("intPtr " + intPtr);
+
+
+            var aCE5 = new ACE5();
+            var typeMs = 
+            //typeof(ACE5).GetMethods(BindingFlags.CreateInstance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            typeof(ACE5).GetConstructors(BindingFlags.CreateInstance | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            ConstructorInfo constructor = typeMs[0];
+            ConstructorInfo constructor2 = typeof(ACE5).GetConstructor(new Type[] {
+                  typeof(int),
+                  typeof(string),
+                  typeof(ACE3)
+            });
+
+            object ccc = constructor.Invoke(aCE5, new object[]{
+                55,
+                "revv",
+                new ACE3
+                {
+                    kk = 11111,
+                    str = "wqec3",
+                }
+            });
+            object ccc2 = constructor2.Invoke(aCE5, new object[]{
+                55,
+                "revv",
+                new ACE3
+                {
+                    kk = 11111,
+                    str = "wqec3",
+                }
+            });
+            aCE5.kk = 44444;
+            //Console.ReadKey();
+             
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
-            JsonManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+            CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
 
             JsonRender jsonRender = new JsonRender();
 
-            //jsonRender.ReadJsonText(str);
-            //var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
-
+            jsonRender.ReadJsonText(str);
+            var oCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
 
             JsonWriter jsonWriter = new JsonWriter();
             ACE1 aCE = new ACE1();
-            aCE.aCE3 = new ACE3
+            //aCE.aCE3 = new ACE3
+            //{
+            //    kk = 44,
+            //    str = "E4",
+            //};
+            //aCE.testType = typeof(ACE3);
+
+            aCE.aCE5 = new ACE5
             {
-                kk = 44,
-                str = "E4",
+                kk = 55,
+                str = "revv",
+                aCE3 = new ACE3
+                {
+                    kk = 11111,
+                    str = "wqec3",
+                }
             };
+            aCE.func = aCE.Foo1;
+            aCE.func += aCE.Foo2;
+            aCE.func += aCE.aCE5.Foo3;
+            aCE.func += aCE.aCE5.Foo4;
 
-            aCE.intLists = new List<int>() { 3, 4, 5 };
+            object obj = 999L;
+            long* p = (long*)GeneralTool.ObjectToVoid(obj);
 
-            aCE.ints = new int[] {
-                1,2,3,9
-            };
-            
-            aCE.ints2 = new int[,]
+            List<long> vs = new List<long>();
+            for (int i = 0; i < 10; i++)
             {
-                {1, 2, 3, 4},
-                {11, 12, 13, 14},
-                {101, 102, 103, 104},
-            };
-            aCE.ints3 = new int[,,]
+                vs.Add(p[i]);
+            }
+
+            decimal s = 11111111;
+            int cc = sizeof(decimal);
+            object obj2 = s;
+            long* p2 = (long*)GeneralTool.ObjectToVoid(obj2);
+            List<long> vs2 = new List<long>();
+            for (int i = 0; i < 10; i++)
             {
-                 {
-                    {1, 2, 3, 4},
-                    {11, 12, 13, 14},
-                    {101, 102, 103, 104},
-                },
-                 {
-                    {2001, 2002, 2003, 2004},
-                    {2011, 2012, 2013, 2014},
-                    {2101, 2102, 2103, 2104},
-                },
-            };
-            aCE.aCE3s2 = new ACE3[,]
-            {
-                 {
-                   new ACE3{
-                kk = 4,
-                str = "1", },
-                   new ACE3{
-                kk = 3,
-                str = "2", },
-                },
-                 {
-                   new ACE3{
-                kk = 2,
-                str = "3", },
-                   new ACE3{
-                kk = 1,
-                str = "4", },
-                },
-            };
+                vs2.Add(p2[i]);
+            }
 
-            aCE.aCE3s = new ACE3[] {
-                new ACE3{
-                kk = 4,
-                str = "eewqr", },
-                new ACE3{
-                kk = 2,
-                str = "DE4", },
-                new ACE3{
-                kk = 1,
-                str = "F3", }
-            };
+            int bbbb = 0;
+            //aCE.args = new Type[] {
+            //    typeof(ACE3),
+            //    typeof(ACE5)
+            //};
 
 
-            aCE.b = false;
-            aCE.num = 4.5;
-            aCE.str = "CCCCD";
 
-            List<JsonWriteValue> writers = new List<JsonWriteValue>();
-            writers = jsonWriter.Wirter(aCE);
+            //aCE.ACE3_2 = aCE.aCE5.aCE3;
 
+
+            ////aCE.aCE4 = new ACE4
+            ////{
+            ////    kk = 44,
+            ////    str = "E4",
+            ////};
+
+            //aCE.intLists = new List<int>() { 3, 4, 5 };
+            //aCE.intQueues = new Queue<int>(new List<int>() { 7, 4, 2 });
+            //aCE.aCE3Dictionary = new Dictionary<ACE3, ACE4>(){
+            //    {
+            //        new ACE3{
+            //            kk = 11,
+            //            str = "3",
+            //        },
+            //        new ACE4{
+            //            kk = 44,
+            //            str = "11",
+            //        }
+            //    },
+            //    {
+            //        new ACE3{
+            //            kk = 424,
+            //            str = "E34",
+            //        },
+            //        new ACE4{
+            //            kk = 56546,
+            //            str = "D23CDF",
+            //        }
+            //     },
+            //    {
+            //        new ACE3{
+            //            kk = 43,
+            //            str = "Ed4",
+            //        },
+            //        new ACE4{
+            //            kk = 3,
+            //            str = "11ttt1",
+            //        }
+            //    },
+            //};
+
+            //aCE.aCE3Dictionary2 = new Dictionary<int, ACE4>(){
+            //    {
+            //        1,
+            //        new ACE4{
+            //            kk = 44,
+            //            str = "11",
+            //        }
+            //    },
+            //    {
+            //       2,
+            //        new ACE4{
+            //            kk = 56546,
+            //            str = "D23CDF",
+            //        }
+            //     },
+            //    {
+            //        3,
+            //        new ACE4{
+            //            kk = 3,
+            //            str = "11ttt1",
+            //        }
+            //    },
+            //};
+
+            //aCE.aCE3Dictionary4 = new Dictionary<string, ACE4>(){
+            //    {
+            //        "1w",
+            //        new ACE4{
+            //            kk = 44,
+            //            str = "11",
+            //        }
+            //    },
+            //    {
+            //        "www",
+            //        new ACE4{
+            //            kk = 56546,
+            //            str = "D23CDF",
+            //        }
+            //     },
+            //    {
+            //         "eee",
+            //        new ACE4{
+            //            kk = 3,
+            //            str = "11ttt1",
+            //        }
+            //    },
+            //};
+
+            //aCE.ints = new int[] {
+            //    1,2,3,9
+            //};
+
+            //aCE.ints2 = new int[,]
+            //{
+            //    {1, 2, 3, 4},
+            //    {11, 12, 13, 14},
+            //    {101, 102, 103, 104},
+            //};
+            //aCE.ints3 = new int[,,]
+            //{
+            //     {
+            //        {1, 2, 3, 4},
+            //        {11, 12, 13, 14},
+            //        {101, 102, 103, 104},
+            //    },
+            //     {
+            //        {2001, 2002, 2003, 2004},
+            //        {2011, 2012, 2013, 2014},
+            //        {2101, 2102, 2103, 2104},
+            //    },
+            //};
+
+            //aCE.ffccc = new ACE4[,]
+            //{
+            //     {
+            //       new ACE4{
+            //    kk = 4,
+            //    str = "1", },
+            //       new ACE4{
+            //    kk = 3,
+            //    str = "2", },
+            //    },
+            //     {
+            //       new ACE4{
+            //    kk = 2,
+            //    str = "3", },
+            //       new ACE4{
+            //    kk = 1,
+            //    str = "4", },
+            //    },
+            //};
+            //aCE.aCE3s2 = new ACE3[,]
+            //{
+            //     {
+            //       new ACE3{
+            //    kk = 4,
+            //    str = "1", },
+            //       new ACE3{
+            //    kk = 3,
+            //    str = "2", },
+            //    },
+            //     {
+            //       new ACE3{
+            //    kk = 2,
+            //    str = "3", },
+            //       new ACE3{
+            //    kk = 1,
+            //    str = "4", },
+            //    },
+            //};
+
+            //aCE.aCE3s = new ACE3[] {
+            //    new ACE3{
+            //    kk = 4,
+            //    str = "eewqr", },
+            //    new ACE3{
+            //    kk = 2,
+            //    str = "DE4", },
+            //    new ACE3{
+            //    kk = 1,
+            //    str = "F3", }
+            //};
+            //aCE.aCE4Lists = new List<ACE4> {
+            //    new ACE4{
+            //    kk = 114,
+            //    str = "33", },
+            //    new ACE4{
+            //    kk = 112,
+            //    str = "22", },
+            //    new ACE4{
+            //    kk = 111,
+            //    str = "33", }
+            //};
+
+
+            //aCE.b = false;
+            //aCE.num = 4.5;
+            //aCE.str = "CCCCD";
+            //aCE.testEnum = ACE1.TestEnum.kkk;
+
+            //Type ob1 = aCE.aCE3s2.GetType().BaseType;
+
+            List<JsonWriteValue> writers = jsonWriter.Wirter(aCE);
 
             JsonWriteValue root = new JsonWriteValue();
             root.type = JsonWriteType.Object;
@@ -918,25 +1428,6 @@ namespace DogJson
 
             JsonWriteValue parent = writers[0];
             objStack.Push(parent);
-
-
-            //for (int i = 1; i < writers.Count; i++)
-            //{
-            //    item = parent.back;
-            //    parent = item;
-
-            //    if (item.key != null)
-            //    {
-            //        sb.Append("\"" + item.key + "\": ");
-            //    }
-            //    sb.AppendLine(item.value);
-
-            //}
-
-            //Console.WriteLine(sb.ToString());
-            //Console.ReadKey();
-
-
 
             for (int i = 1; i < writers.Count; i++)
             {
@@ -953,6 +1444,7 @@ namespace DogJson
                 {
                     case JsonWriteType.String:
                         sb.Append(item.value);
+                        Loop:
                         if (item.isLast)
                         {
                             JsonWriteValue parentStack;
@@ -1062,6 +1554,9 @@ namespace DogJson
                         sb.AppendLine("[");
                         objStack.Push(item);
                         break;
+                    case JsonWriteType.None:
+                        sb.Append("null");
+                        goto Loop;
                     default:
                         break;
                 }
@@ -1069,6 +1564,7 @@ namespace DogJson
 
             //sb.AppendLine("}");
             Console.WriteLine(sb.ToString());
+            var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<ACE1>(sb.ToString());
             Console.ReadKey();
         }
 
@@ -1256,7 +1752,7 @@ namespace DogJson
 
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
-            JsonManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+            CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
 
             JsonRender jsonRender = new JsonRender();
 
@@ -1480,7 +1976,7 @@ namespace DogJson
         }
 
         ///* 
-        [Collection(typeof(Program.TestOB2), false)]
+        [CollectionRead(typeof(Program.TestOB2), false)]
         public unsafe class CollectionTestOB2 : CollectionObjectBase<TestOB2, TestOB2>
         {
             public override bool IsRef()
@@ -1504,7 +2000,7 @@ namespace DogJson
                 return typeof(float);
             }
 
-            protected override unsafe void Add(TestOB2 obj, char* key, int keyLength, object value)
+            protected override unsafe void Add(TestOB2 obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
             {
                 string keystring = new string(key, 0, keyLength);
                 switch (keystring)
@@ -1518,7 +2014,7 @@ namespace DogJson
                 }
             }
 
-            protected override unsafe void AddValue(TestOB2 obj, char* key, int keyLength, char* str, JsonValue* value)
+            protected override unsafe void AddValue(TestOB2 obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
             {
                 string keystring = new string(key, 0, keyLength);
                 switch (keystring)
@@ -1557,7 +2053,7 @@ namespace DogJson
             }
         }
 
-        [Collection(typeof(Program.TestOB), false)]
+        [CollectionRead(typeof(Program.TestOB), false)]
         public unsafe class CollectionTestOB : CollectionObjectStructBase<TestOB>
         {
             public override unsafe Type GetItemType(JsonObject* bridge)
@@ -1577,7 +2073,7 @@ namespace DogJson
                 return typeof(float);
             }
 
-            protected override unsafe void Add(Box<TestOB> obj, char* key, int keyLength, object value)
+            protected override unsafe void Add(Box<TestOB> obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
             {
                 string keystring = new string(key, 0, keyLength);
                 switch (keystring)
@@ -1591,7 +2087,7 @@ namespace DogJson
                 }
             }
 
-            protected override unsafe void AddValue(Box<TestOB> obj, char* key, int keyLength, char* str, JsonValue* value)
+            protected override unsafe void AddValue(Box<TestOB> obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
             {
                 string keystring = new string(key, 0, keyLength);
                 switch (keystring)
@@ -1669,7 +2165,7 @@ namespace DogJson
         //}
 
 
-        [Collection(typeof(Program.P_box_3), false)]
+        [CollectionRead(typeof(Program.P_box_3), false)]
         public unsafe class CollectionP_3 : CollectionObjectBase<Program.P_box_3, Box<P_box_3>>
         {
             public override unsafe Type GetItemType(JsonObject* bridge)
@@ -1677,11 +2173,11 @@ namespace DogJson
                 return typeof(float);
             }
 
-            protected override unsafe void Add(Box<P_box_3> obj, char* key, int keyLength, object value)
+            protected override unsafe void Add(Box<P_box_3> obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
             {
             }
 
-            protected override unsafe void AddValue(Box<P_box_3> obj, char* key, int keyLength, char* str, JsonValue* value)
+            protected override unsafe void AddValue(Box<P_box_3> obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
             {
                 switch (value->type)
                 {
@@ -1736,14 +2232,54 @@ namespace DogJson
         }
 
 
-        [Collection(typeof(Program.V3), true)]
+
+        [ReadCollection(typeof(Program.V3), true)]
+        public unsafe class CollectionArrayV3 : CreateTaget<ReadCollectionLink>
+        {
+            public ReadCollectionLink Create()
+            {
+                ReadCollectionLink read = new ReadCollectionLink();
+                read.isRef = true;
+
+                Action<Dictionary<K, V>, DictionaryKV<K, V>, ReadCollectionLink.Add_Args> ac = Add;
+                read.addDelegate = ac;
+                read.create = Create_;
+                read.getItemType = GetItemType;
+                return read;
+            }
+
+            void Add(Dictionary<K, V> dict, DictionaryKV<K, V> kv, ReadCollectionLink.Add_Args arg)
+            {
+                dict[kv.k] = kv.v;
+            }
+
+            void Create_(ref V3 v3, out void* dataStart, out object temp, ReadCollectionLink.Create_Args arg)
+            {
+                if (arg.structPtr == default(void*))
+                {
+
+                }
+                obj = new Dictionary<K, V>(arg.bridge->arrayCount);
+                temp = null;
+                dataStart = ((IntPtr*)GeneralTool.ObjectToVoid(obj)) + 1;
+            }
+
+            Type GetItemType(ReadCollectionLink.GetItemType_Args arg)
+            {
+                return typeof(DictionaryKV<K, V>);
+            }
+        }
+
+
+
+        [CollectionRead(typeof(Program.V3), true)]
         public unsafe class CollectionArrayV3 : CollectionArrayBase<Program.V3, CollectionArrayV3.V3_>
         {
             public class V3_
             {
                 public Program.V3 v3;
             }
-            protected override void AddValue(V3_ obj, int index, char* str, JsonValue* value)
+            protected override void AddValue(V3_ obj, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
             {
                 switch (value->type)
                 {
@@ -1790,7 +2326,7 @@ namespace DogJson
                 return typeof(float);
             }
 
-            protected override void Add(V3_ obj, int index, object value)
+            protected override void Add(V3_ obj, int index, object value, ReadCollectionProxy proxy)
             {
                 throw new NotImplementedException();
             }

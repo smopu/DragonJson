@@ -58,13 +58,13 @@ namespace DogJson
             IJsonRenderToObject jsonRenderToObject = null,
             int jsonStackLength = 1024, int poolLength = 65536)
         {
-            if (JsonManager.IsStart == false)
+            if (CollectionManager.IsStart == false)
             {
-                JsonManager.Start(new ReflectionToObject());
+                CollectionManager.Start(new AddrToObject2());
             }
             if (jsonRenderToObject == null)
             {
-                this.jsonRenderToObject = JsonManager.jsonRenderToObject;
+                this.jsonRenderToObject = CollectionManager.jsonRenderToObject;
                 if (this.jsonRenderToObject == null)
                 {
                     throw new Exception("JsonManager.jsonRenderToObject is null");
@@ -184,8 +184,8 @@ namespace DogJson
             public List<CreateObjectItem> sub = new List<CreateObjectItem>();
             public bool isValueType;
             public int index;
-            public ICollectionObjectBase collectionArray;
-            public ICollectionObjectBase collectionObject;
+            public IReadCollectionObject collectionArray;
+            public IReadCollectionObject collectionObject;
         }
 
 
@@ -307,7 +307,7 @@ namespace DogJson
                                         {
                                             if (*now == ':')
                                             {
-                                                if (*(startChar + keyStringStart) == '#')
+                                                if (*(startChar + keyStringStart) == '$')
                                                 {
                                                     long nameLong = *(long*)(startChar + keyStringStart + 1);
                                                     switch (keyStringLength)
@@ -340,7 +340,7 @@ namespace DogJson
                                                                         case '\n':
                                                                             break;
                                                                         default:
-                                                                            throw new Exception(Debug(startChar, length, i, "#type 后面必须是字符串 " + *now));
+                                                                            throw new Exception(Debug(startChar, length, i, "$type 后面必须是字符串 " + *now));
                                                                     }
                                                                 }
                                                             }
@@ -364,9 +364,9 @@ namespace DogJson
                                                             }
                                                             break;
                                                         default:
-                                                            throw new Exception(Debug(startChar, length, i, "# 未知指令" + *now));
+                                                            throw new Exception(Debug(startChar, length, i, "$ 未知指令" + *now));
                                                     }
-                                                            throw new Exception(Debug(startChar, length, i, "# 未知指令" + *now));
+                                                            throw new Exception(Debug(startChar, length, i, "$ 未知指令" + *now));
                                                 Run3:
                                                     // 下必 ,} 
                                                     for (++i, ++now; i < length; ++i, ++now)

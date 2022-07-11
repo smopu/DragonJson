@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DogJson
 {
 
-    [Collection(typeof(HashSet<>), true)]
+    [CollectionRead(typeof(HashSet<>), true)]
     public unsafe class CollectionArrayHashSet<T> : CollectionArrayBase<HashSet<T>, HashSet<T>>
     {
         TypeCode typeCode;
@@ -16,14 +16,14 @@ namespace DogJson
             typeCode = Type.GetTypeCode(typeof(T));
         }
 
-        protected override void Add(HashSet<T> array, int index, object value)
+        protected override void Add(HashSet<T> array, int index, object value, ReadCollectionProxy proxy)
         {
             array.Add((T)value);
         }
 
-        protected override void AddValue(HashSet<T> array, int index, char* str, JsonValue* value)
+        protected override void AddValue(HashSet<T> array, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
         {
-            object set_value = GetValue(typeCode, str, value);
+            object set_value = proxy.callGetValue(typeCode, str, value);
             array.Add((T)set_value);
         }
 

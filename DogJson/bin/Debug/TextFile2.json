@@ -53,7 +53,7 @@
 
 
 // object type name
-//objects: 0 root   1 gcc  2 bbb  3 array  4 fd    5# 6# 7#
+//objects: 0 root   1 gcc  2 bbb  3 array  4 fd    5$ 6$ 7$
 //0,1-2  2,6-8    0,7    2,9-11     4,14-16  5,18-19   6,21
 
 //1->0   2->0   3->0  4->2  5->2  6->2

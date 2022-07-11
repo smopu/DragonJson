@@ -17,7 +17,7 @@ namespace DogJson
     /// <summary>
     /// 构造方法
     /// </summary>
-    [Collection(typeof(ConstructorWrapper), false)]
+    [CollectionRead(typeof(ConstructorWrapper), false)]
     public unsafe class ConstructorWrapperCollection : CollectionObjectBase<object, ConstructorWrapper>
     {
         long typelong;
@@ -53,10 +53,10 @@ namespace DogJson
             throw new Exception();
         }
 
-        protected override unsafe void Add(ConstructorWrapper obj, char* key, int keyLength, object value)
+        protected override unsafe void Add(ConstructorWrapper obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
         {
-            string keyName = new string(key, 0, keyLength);//#create
-            if (keyName == "#create")
+            string keyName = new string(key, 0, keyLength);//$create
+            if (keyName == "$create")
             {
                 obj.args = (object[])value;
             }
@@ -75,7 +75,7 @@ namespace DogJson
             //throw new Exception();
         }
 
-        protected override unsafe void AddValue(ConstructorWrapper obj, char* key, int keyLength, char* str, JsonValue* value)
+        protected override unsafe void AddValue(ConstructorWrapper obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
         {
             throw new NotImplementedException();
         }
