@@ -10,7 +10,6 @@ namespace DogJson
     {
         const char Mo = '\"';  //'\0';
 
-
         internal class StringTableLive
         {
             internal struct Chake

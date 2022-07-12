@@ -9,12 +9,74 @@ using System.Threading.Tasks;
 namespace DogJson
 {
 
-
     public static class CollectionManager
     {
+        public enum TypeCollectionEnum
+        {
+            Wrapper,
+            Read,
+        }
         //static Dictionary<Type, IWriterObject> writeArrayMap = new Dictionary<Type, IWriterObject>();
         //static readonly Dictionary<Type, Type> writeArrayTypeMap = new Dictionary<Type, Type>();
-        
+        public class TypeAllCollection 
+        {
+            public TypeCollectionEnum typeCollectionEnum;
+            public TypeAddrReflectionWrapper wrapper;
+            public ReadCollectionLink read;
+            public Type type; 
+            public bool IsValueType; 
+        }
+
+        static Dictionary<Type, TypeAllCollection> allTypeCollection = new Dictionary<Type, TypeAllCollection>();
+        static Dictionary<string, TypeAllCollection> allTypeStringCollection = new Dictionary<string, TypeAllCollection>();
+        public static TypeAllCollection GetTypeCollection(Type type)
+        {
+            TypeAllCollection op;
+            if (allTypeCollection.TryGetValue(type, out op))
+            {
+                return op;
+            }
+            // 
+            ReadCollectionLink read = GetReadCollectionLink(type);
+            if (read != null)
+            {
+                op = new TypeAllCollection();
+                op.typeCollectionEnum = TypeCollectionEnum.Read;
+                op.read = read;
+            }
+            else
+            {
+                op = new TypeAllCollection();
+                op.typeCollectionEnum = TypeCollectionEnum.Wrapper;
+                op.wrapper = new TypeAddrReflectionWrapper(type);
+            }
+            op.type = type;
+            op.IsValueType = type.IsValueType;
+            lock (allTypeCollection)
+            {
+               allTypeCollection[type] = op;
+            }
+            return op;
+        }
+
+        public static TypeAllCollection GetTypeCollection(string typeName) 
+        {
+            TypeAllCollection op;
+            if (allTypeStringCollection.TryGetValue(typeName, out op))
+            {
+                return op;
+            }
+            var type = UnsafeOperation.GetType(typeName);
+            op = GetTypeCollection(type);
+            lock (allTypeStringCollection)
+            {
+                allTypeStringCollection[typeName] = op;
+            }
+            return op;
+        }
+
+
+
         static Dictionary<Type, IWriterCollectionObject> writeObjectMap = new Dictionary<Type, IWriterCollectionObject>();
         static readonly Dictionary<Type, TypeCollectionMapItem> writeObjectTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
         
@@ -23,25 +85,26 @@ namespace DogJson
         static readonly HashSet<Type> writeStringInheritedTypeMap = new HashSet<Type>();
 
 
+        //public static readonly Dictionary<Type, IReadCollectionObject> readObjectMap = new Dictionary<Type, IReadCollectionObject>();
+        //static readonly Dictionary<Type, TypeCollectionMapItem> readObjectTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
+
+        //public static readonly Dictionary<Type, IReadCollectionObject> readArrayMap = new Dictionary<Type, IReadCollectionObject>();
+        //static readonly Dictionary<Type, TypeCollectionMapItem> readArrayTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
+
+        //static readonly HashSet<Type> readInheritedTypeMap = new HashSet<Type>();
 
 
-        public static readonly Dictionary<Type, IReadCollectionObject> readObjectMap = new Dictionary<Type, IReadCollectionObject>();
-        static readonly Dictionary<Type, TypeCollectionMapItem> readObjectTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
-
-        public static readonly Dictionary<Type, IReadCollectionObject> readArrayMap = new Dictionary<Type, IReadCollectionObject>();
-        static readonly Dictionary<Type, TypeCollectionMapItem> readArrayTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
-
-        static readonly HashSet<Type> readInheritedTypeMap = new HashSet<Type>();
         static readonly HashSet<Type> writeInheritedTypeMap = new HashSet<Type>();
 
-        static readonly Dictionary<Type, ReadCollectionLink> readArrayMapNew = new Dictionary<Type, ReadCollectionLink>();
-        static readonly Dictionary<Type, TypeCollectionMapItem> readArrayTypeMapNew = new Dictionary<Type, TypeCollectionMapItem>();
+
+
+        static readonly Dictionary<Type, ReadCollectionLink> readMap = new Dictionary<Type, ReadCollectionLink>();
+        static readonly Dictionary<Type, TypeCollectionMapItem> readTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
         static readonly HashSet<Type> readInheritedTypeMapNew = new HashSet<Type>();
 
-
-        public static ReadCollectionLink GetReadArrayCollectionLink(Type type)
+        public static ReadCollectionLink GetReadCollectionLink(Type type)
         {
-            return GetCollection2<ReadCollectionLink>(readArrayMapNew, readArrayTypeMapNew, type, readInheritedTypeMapNew);
+            return GetCollection2<ReadCollectionLink>(readMap, readTypeMap, type, readInheritedTypeMapNew);
         }
 
 
@@ -66,14 +129,14 @@ namespace DogJson
             return GetCollection<IWriterCollectionString>(writeStringMap, writeStringTypeMap, type, writeStringInheritedTypeMap);
         }
 
-        public static IReadCollectionObject GetReadObjectCollection(Type type)
-        {
-            return GetCollection<IReadCollectionObject>(readObjectMap, readObjectTypeMap, type, readInheritedTypeMap);
-        }
-        public static IReadCollectionObject GetReadArrayCollection(Type type)
-        {
-            return GetCollection<IReadCollectionObject>(readArrayMap, readArrayTypeMap, type, readInheritedTypeMap);
-        }
+        //public static IReadCollectionObject GetReadObjectCollection(Type type)
+        //{
+        //    return GetCollection<IReadCollectionObject>(readObjectMap, readObjectTypeMap, type, readInheritedTypeMap);
+        //}
+        //public static IReadCollectionObject GetReadArrayCollection(Type type)
+        //{
+        //    return GetCollection<IReadCollectionObject>(readArrayMap, readArrayTypeMap, type, readInheritedTypeMap);
+        //}
         
         static T GetCollection<T>(Dictionary<Type, T> map, Dictionary<Type, TypeCollectionMapItem> mapType, Type type, HashSet<Type> inheritedTypeMap)
             where T : class
@@ -144,7 +207,10 @@ namespace DogJson
                             Type tagteData;
                             if (item.IsSpecialCaseGeneric(type, out tagteData))
                             {
-                                array = map[type] = (T)Activator.CreateInstance(tagteData);
+                                lock (map)
+                                {
+                                    array = map[type] = ((CreateTaget<T>)Activator.CreateInstance(tagteData)).Create();
+                                }
                                 return array;
                             }
                         }
@@ -153,7 +219,10 @@ namespace DogJson
                     {
                         return array;
                     }
-                    array = map[type] = ((CreateTaget<T>)Activator.CreateInstance(generic.type.MakeGenericType(type.GetGenericArguments()))).Create();
+                    lock (map)
+                    {
+                        array = map[type] = ((CreateTaget<T>)Activator.CreateInstance(generic.type.MakeGenericType(type.GetGenericArguments()))).Create();
+                    }
                 }
                 else
                 {
@@ -238,22 +307,22 @@ namespace DogJson
         {
             foreach (var collectionType in assembly.GetTypes())
             {
-                CollectionReadAttribute attribute = collectionType.GetCustomAttribute<CollectionReadAttribute>();
-                if (attribute != null)
-                {
-                    if (attribute.isArrays)
-                    {
-                        ChakeType<IReadCollectionObject>(readArrayTypeMap, readArrayMap, collectionType, attribute.type);
-                    }
-                    else
-                    {
-                        ChakeType<IReadCollectionObject>(readObjectTypeMap, readObjectMap, collectionType, attribute.type);
-                    }
-                    if (attribute.inherited)
-                    {
-                        readInheritedTypeMap.Add(attribute.type);
-                    }
-                }
+                //CollectionReadAttribute attribute = collectionType.GetCustomAttribute<CollectionReadAttribute>();
+                //if (attribute != null)
+                //{
+                //    if (attribute.isArrays)
+                //    {
+                //        ChakeType<IReadCollectionObject>(readArrayTypeMap, readArrayMap, collectionType, attribute.type);
+                //    }
+                //    else
+                //    {
+                //        ChakeType<IReadCollectionObject>(readObjectTypeMap, readObjectMap, collectionType, attribute.type);
+                //    }
+                //    if (attribute.inherited)
+                //    {
+                //        readInheritedTypeMap.Add(attribute.type);
+                //    }
+                //}
 
                 IEnumerable<CollectionWriteAttribute> attributeWrite = collectionType.GetCustomAttributes<CollectionWriteAttribute>();
                 foreach (var attributeType in attributeWrite)
@@ -338,17 +407,10 @@ namespace DogJson
                 ReadCollectionAttribute readCollectionAttribute = collectionType.GetCustomAttribute<ReadCollectionAttribute>();
                 if (readCollectionAttribute != null)
                 {
-                    if (readCollectionAttribute.isArrays)
-                    {
-                        ChakeType2<ReadCollectionLink>(readArrayTypeMapNew, readArrayMapNew, collectionType, readCollectionAttribute.type);
-                    }
-                    else
-                    {
-                        //ChakeType<IReadCollectionObject>(readObjectTypeMap, readObjectMap, collectionType, attribute.type);
-                    }
+                    ChakeType2<ReadCollectionLink>(readTypeMap, readMap, collectionType, readCollectionAttribute.type);
                     if (readCollectionAttribute.inherited)
                     {
-                        readInheritedTypeMapNew.Add(attribute.type);
+                        readInheritedTypeMapNew.Add(readCollectionAttribute.type);
                     }
                 }
 

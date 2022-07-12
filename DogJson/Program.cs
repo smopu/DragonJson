@@ -765,6 +765,7 @@ namespace DogJson
 
         static unsafe void Main(string[] args)
         {
+            Stopwatch oTime = new Stopwatch();
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
             CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
@@ -772,10 +773,41 @@ namespace DogJson
             JsonRender jsonRender = new JsonRender();
 
             jsonRender.ReadJsonText(str);
+            var wedso = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+
+            StreamReader streamReader2 = new StreamReader(@"TextFile2.json", Encoding.UTF32);
+            string strD = streamReader2.ReadToEnd();
+
+
+            oTime.Reset(); oTime.Start();
+            for (int __1 = 0; __1 < 300000; __1++)
+            {
+                jsonRender.ReadJsonText(str);
+            }
+            oTime.Stop();
+            double time001 = oTime.Elapsed.TotalMilliseconds;
+            Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
             var o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
 
-            Console.ReadKey();
 
+            Stopwatch oTime2 = new Stopwatch();
+            oTime2.Reset(); oTime2.Start();
+            for (int __1 = 0; __1 < 300000; __1++)
+            {
+                var ot = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            }
+
+
+            //GC.Collect();
+            oTime2.Stop();
+            Console.WriteLine("C：{0} 毫秒", (oTime2.Elapsed - oTime.Elapsed).TotalMilliseconds);
+            Console.WriteLine("2：{0} 毫秒", (oTime2.Elapsed).TotalMilliseconds);
+
+            double time002 = (oTime2.Elapsed - oTime.Elapsed).TotalMilliseconds;
+            Console.WriteLine(time002 / time001);
+
+
+            Console.ReadKey();
 
             //AAXA aAXA = new AAXA();
             //var a1_p = GeneralTool.ObjectToVoid(aAXA);
@@ -2236,102 +2268,179 @@ namespace DogJson
         [ReadCollection(typeof(Program.V3), true)]
         public unsafe class CollectionArrayV3 : CreateTaget<ReadCollectionLink>
         {
+            CollectionManager.TypeAllCollection collection;
             public ReadCollectionLink Create()
             {
+                //collection = CollectionManager.GetTypeCollection(typeof(float));
                 ReadCollectionLink read = new ReadCollectionLink();
                 read.isRef = true;
 
-                Action<Dictionary<K, V>, DictionaryKV<K, V>, ReadCollectionLink.Add_Args> ac = Add;
-                read.addDelegate = ac;
-                read.create = Create_;
-                read.getItemType = GetItemType;
+                read.addValueDelegate = (AddValue_)AddValue;
+                read.addValueObjectDelegate = (AddValueObject_)AddValueObject;
+                
+                read.createObject = CreateObject;
+                read.createValueDelegate = (CreateValue_)CreateValue;
+                //read.getItemType = GetItemType;
                 return read;
             }
 
-            void Add(Dictionary<K, V> dict, DictionaryKV<K, V> kv, ReadCollectionLink.Add_Args arg)
+
+            delegate void AddValue_(ref V3 v3, ReadCollectionLink.AddValue_Args arg);
+            void AddValue(ref V3 v3, ReadCollectionLink.AddValue_Args arg)
             {
-                dict[kv.k] = kv.v;
-            }
-
-            void Create_(ref V3 v3, out void* dataStart, out object temp, ReadCollectionLink.Create_Args arg)
-            {
-                if (arg.structPtr == default(void*))
-                {
-
-                }
-                obj = new Dictionary<K, V>(arg.bridge->arrayCount);
-                temp = null;
-                dataStart = ((IntPtr*)GeneralTool.ObjectToVoid(obj)) + 1;
-            }
-
-            Type GetItemType(ReadCollectionLink.GetItemType_Args arg)
-            {
-                return typeof(DictionaryKV<K, V>);
-            }
-        }
-
-
-
-        [CollectionRead(typeof(Program.V3), true)]
-        public unsafe class CollectionArrayV3 : CollectionArrayBase<Program.V3, CollectionArrayV3.V3_>
-        {
-            public class V3_
-            {
-                public Program.V3 v3;
-            }
-            protected override void AddValue(V3_ obj, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
-            {
-                switch (value->type)
+                switch (arg.value->type)
                 {
                     case JsonValueType.Long:
-                        switch (index)
+                        switch (arg.value->arrayIndex)
                         {
                             case 0:
-                                obj.v3.x = (float)value->valueLong;
+                                v3.x = (float)arg.value->valueLong;
                                 break;
                             case 1:
-                                obj.v3.y = (float)value->valueLong;
+                                v3.y = (float)arg.value->valueLong;
                                 break;
                             case 2:
-                                obj.v3.z = (float)value->valueLong;
+                                v3.z = (float)arg.value->valueLong;
                                 break;
                         }
                         break;
                     case JsonValueType.Double:
-                        switch (index)
+                        switch (arg.value->arrayIndex)
                         {
                             case 0:
-                                obj.v3.x = (float)value->valueDouble;
+                                v3.x = (float)arg.value->valueDouble;
                                 break;
                             case 1:
-                                obj.v3.y = (float)value->valueDouble;
+                                v3.y = (float)arg.value->valueDouble;
                                 break;
                             case 2:
-                                obj.v3.z = (float)value->valueDouble;
+                                v3.z = (float)arg.value->valueDouble;
                                 break;
                         }
                         break;
                 }
             }
-            protected override V3_ CreateArray(int arrayCount, object parent, Type arrayType, Type parentType)
+
+            delegate void AddValueObject_(Box<V3> v3, ReadCollectionLink.AddValue_Args arg);
+            void AddValueObject(Box<V3> v3, ReadCollectionLink.AddValue_Args arg)
             {
-                return new V3_();
-            }
-            protected override V3 End(V3_ obj)
-            {
-                return obj.v3;
-            }
-            public override Type GetItemType(int index)
-            {
-                return typeof(float);
+                switch (arg.value->type)
+                {
+                    case JsonValueType.Long:
+                        switch (arg.value->arrayIndex)
+                        {
+                            case 0:
+                                v3.value.x = (float)arg.value->valueLong;
+                                break;
+                            case 1:
+                                v3.value.y = (float)arg.value->valueLong;
+                                break;
+                            case 2:
+                                v3.value.z = (float)arg.value->valueLong;
+                                break;
+                        }
+                        break;
+                    case JsonValueType.Double:
+                        switch (arg.value->arrayIndex)
+                        {
+                            case 0:
+                                v3.value.x = (float)arg.value->valueDouble;
+                                break;
+                            case 1:
+                                v3.value.y = (float)arg.value->valueDouble;
+                                break;
+                            case 2:
+                                v3.value.z = (float)arg.value->valueDouble;
+                                break;
+                        }
+                        break;
+                }
             }
 
-            protected override void Add(V3_ obj, int index, object value, ReadCollectionProxy proxy)
+
+            object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
             {
-                throw new NotImplementedException();
+                temp = null;
+                return new V3();
             }
+
+            delegate void CreateValue_(ref V3 v3, out object temp, ReadCollectionLink.Create_Args arg);
+
+            void CreateValue(ref V3 v3, out object temp, ReadCollectionLink.Create_Args arg)
+            {
+                temp = null;
+                v3 = new V3();
+            }
+            //CollectionManager.TypeAllCollection GetItemType(ReadCollectionLink.GetItemType_Args arg)
+            //{
+            //    return  collection;
+            //}
         }
-     //   */
+
+
+
+        //[CollectionRead(typeof(Program.V3), true)]
+        //public unsafe class CollectionArrayV3 : CollectionArrayBase<Program.V3, CollectionArrayV3.V3_>
+        //{
+        //    public class V3_
+        //    {
+        //        public Program.V3 v3;
+        //    }
+        //    protected override void AddValue(V3_ obj, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
+        //    {
+        //        switch (value->type)
+        //        {
+        //            case JsonValueType.Long:
+        //                switch (index)
+        //                {
+        //                    case 0:
+        //                        obj.v3.x = (float)value->valueLong;
+        //                        break;
+        //                    case 1:
+        //                        obj.v3.y = (float)value->valueLong;
+        //                        break;
+        //                    case 2:
+        //                        obj.v3.z = (float)value->valueLong;
+        //                        break;
+        //                }
+        //                break;
+        //            case JsonValueType.Double:
+        //                switch (index)
+        //                {
+        //                    case 0:
+        //                        obj.v3.x = (float)value->valueDouble;
+        //                        break;
+        //                    case 1:
+        //                        obj.v3.y = (float)value->valueDouble;
+        //                        break;
+        //                    case 2:
+        //                        obj.v3.z = (float)value->valueDouble;
+        //                        break;
+        //                }
+        //                break;
+        //        }
+        //    }
+        //    protected override V3_ CreateArray(int arrayCount, object parent, Type arrayType, Type parentType)
+        //    {
+        //        return new V3_();
+        //    }
+        //    protected override V3 End(V3_ obj)
+        //    {
+        //        return obj.v3;
+        //    }
+        //    public override Type GetItemType(int index)
+        //    {
+        //        return typeof(float);
+        //    }
+
+        //    protected override void Add(V3_ obj, int index, object value, ReadCollectionProxy proxy)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
+        //}
+        //   */
+
+
 
         public class TClass001 {
             public object[] objects;
@@ -2370,6 +2479,10 @@ namespace DogJson
                 get { return num; }
                 set { num = value; }
             }
+
+            public V3 V32 { get => v32; set => v32 = value; }
+            private V3 v32;
+
             public double num;
 
             public LinkedList<long> arrayLinkedList;
@@ -2389,7 +2502,8 @@ namespace DogJson
             public C gcc;
             public E gD;
             public V3 v3;
-
+            public B bb;
+            
             public TestOB testOB;
 
             public TclassDCC dcc;
@@ -2415,7 +2529,7 @@ namespace DogJson
             public Queue<string> arraystring;
             public List<bool> arraybool;
             public Dictionary<int, string> dictionary1;
-            public Dictionary<int, B> dictionary2;
+            public Dictionary<string, B> dictionary2;
             public Dictionary<V3, B> dictionary3;
         }
 

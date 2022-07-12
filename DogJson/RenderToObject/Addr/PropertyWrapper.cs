@@ -11,6 +11,7 @@ namespace DogJson
     public delegate TResult RefFunc<T, out TResult>(ref T arg);
     public delegate void RefAction<T1, T2>(ref T1 arg1, T2 arg2);
     public unsafe delegate void ActionVoidPtr<T2>(void* arg1, T2 arg2);
+    public unsafe delegate void ActionVoidPtrVoidPtr(void* arg1, void* arg2);
 
 
     [StructLayout(LayoutKind.Explicit)]
@@ -159,6 +160,9 @@ namespace DogJson
         [FieldOffset(0)]
         public ActionVoidPtr<object> setObject;
         [FieldOffset(0)]
+        public ActionVoidPtrVoidPtr setVoidPtr;
+
+        [FieldOffset(0)]
         public ActionVoidPtr<bool> setBoolean;
         [FieldOffset(0)]
         public ActionVoidPtr<char> setChar;
@@ -188,6 +192,8 @@ namespace DogJson
         public ActionVoidPtr<DateTime> setDateTime;
         [FieldOffset(0)]
         public ActionVoidPtr<string> setString;
+
+
 
         [FieldOffset(16)]
         public object _get;

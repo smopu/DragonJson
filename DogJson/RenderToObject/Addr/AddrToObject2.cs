@@ -70,7 +70,16 @@ namespace DogJson
                 set
                 {
                     obj = value;
-                    objPtr = (byte*)GeneralTool.ObjectToVoid(value);
+                    
+                    IntPtr* p = (IntPtr*)GeneralTool.ObjectToVoid(obj);
+
+                    objPtr = (byte*)p;
+
+                    //IntPtr head = *p;
+                    //*p = ArrayWrapper.ByteArrayHead;
+                    //gcHandle = GCHandle.Alloc(obj, GCHandleType.Pinned);
+                    //*p = head;
+
                     bytePtr = objPtr + UnsafeOperation.PTR_COUNT;
                 }
             }
@@ -107,17 +116,19 @@ namespace DogJson
                 }
                 //rootItem.wrapper = GetTypeWrapper(type);
                 rootItem.type = type;
-                rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
+
+                rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                //rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
+
                 rootItem.isValueType = type.IsValueType;
 
                 //对象数组创建
                 for (int i = 1; i < jsonRender.objectQueueIndex; i++)
                 {
-                    //if (i == 6)
+                    //if (i == 9)
                     //{
-                    //    int ccc = 0;
+                    //    int kkk = 9;
                     //}
-
                     CreateObjectItem myObject = createObjectItems[i];
                     JsonObject* v = jsonRender.objectQueue + i;
                     JsonObject* parent = jsonRender.objectQueue + v->parentObjectIndex;
@@ -131,58 +142,146 @@ namespace DogJson
                     //string key;
                     if (parent->isObject)
                     {
-                        if (parentCollection == null)
+                        //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
+
+                        //优先级 typeLength >  parentCollection.GetItemType > fieldInfo.fieldType;
+
+                        if (v->typeLength > 0)
                         {
-                            fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
-                            //key = new string(v->keyStringStart, 0, v->keyStringLength);
-                            //var fieldInfo = parentObject.wrapper.nameOfField[key];
-                            if (fieldInfo.isProperty)
+                            string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                            var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+
+                            if (v->isCommandValue)
                             {
-                                myObject.isProperty = true;
-                                myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                                myObject.type = typeof(Box<>).MakeGenericType(typeAllCollection.type);
+                                throw new Exception("To DO");
                             }
                             else
                             {
-                                myObject.offset = fieldInfo.offset;
+                                myObject.type = typeAllCollection.type;
+                                switch (typeAllCollection.typeCollectionEnum)
+                                {
+                                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                                        myObject.wrapper = typeAllCollection.wrapper;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.Read:
+                                        myObject.collectionObject = typeAllCollection.read;
+                                        break;
+                                }
                             }
-
-                            myObject.type = fieldInfo.fieldType;
-                        }
-
-                    }
-                    else
-                    {
-                        if (parentCollection == null)
-                        {
-                            myObject.offset = parentObject.ArrayNowItemSize * v->arrayIndex;
-                            myObject.type = parentObject.ArrayItemType;
-                        }
-                    }
-
-                    //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
-                    if (v->typeLength > 0)
-                    {
-                        string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                        var valueType = UnsafeOperation.GetType(typeName);
-
-                        if (v->isCommandValue)
-                        {
-                            myObject.type = typeof(Box<>).MakeGenericType(valueType);
+                            myObject.isValueType = typeAllCollection.IsValueType;
                         }
                         else
                         {
-                            myObject.type = valueType;
+                            if (parentCollection != null)
+                            {
+                                var typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
+                                switch (typeAllCollection.typeCollectionEnum)
+                                {
+                                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                                        myObject.wrapper = typeAllCollection.wrapper;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.Read:
+                                        myObject.collectionObject = typeAllCollection.read;
+                                        break;
+                                }
+                                myObject.isValueType = typeAllCollection.IsValueType;
+                                myObject.type = typeAllCollection.type;
+                            }
+                            else
+                            {
+                                fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                                //key = new string(v->keyStringStart, 0, v->keyStringLength);
+                                //var fieldInfo = parentObject.wrapper.nameOfField[key];
+                                if (fieldInfo.isProperty)
+                                {
+                                    myObject.isProperty = true;
+                                    myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                                }
+                                else
+                                {
+                                    myObject.offset = fieldInfo.offset;
+                                }
+
+                                myObject.type = fieldInfo.fieldOrPropertyType;
+                                myObject.collectionObject = fieldInfo.read;
+                                if (myObject.collectionObject == null)
+                                {
+                                    var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                                    switch (typeAllCollection.typeCollectionEnum)
+                                    {
+                                        case CollectionManager.TypeCollectionEnum.Wrapper:
+                                            myObject.wrapper = typeAllCollection.wrapper;
+                                            break;
+                                        case CollectionManager.TypeCollectionEnum.Read:
+                                            myObject.collectionObject = typeAllCollection.read;
+                                            break;
+                                    }
+                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                }
+                                else
+                                {
+                                    myObject.isValueType = fieldInfo.isValueType;
+                                }
+                            }
                         }
                     }
                     else
                     {
-                        if (parentCollection != null)
+                        //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
+                        if (v->typeLength > 0)
                         {
-                            myObject.type = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
+                            string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                            var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+
+                            if (v->isCommandValue)
+                            {
+                                myObject.type = typeof(Box<>).MakeGenericType(typeAllCollection.type);
+                                throw new Exception("To DO");
+                            }
+                            else
+                            {
+                                myObject.type = typeAllCollection.type;
+                                switch (typeAllCollection.typeCollectionEnum)
+                                {
+                                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                                        myObject.wrapper = typeAllCollection.wrapper;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.Read:
+                                        myObject.collectionObject = typeAllCollection.read;
+                                        break;
+                                }
+                            }
+                            myObject.isValueType = typeAllCollection.IsValueType;
+                        }
+                        else
+                        {
+                            CollectionManager.TypeAllCollection typeAllCollection;
+                            if (parentCollection != null)
+                            {
+                                typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
+                                myObject.type = typeAllCollection.type;
+                            }
+                            else
+                            {
+                                myObject.offset = parentObject.ArrayNowItemSize * v->arrayIndex;
+                                myObject.type = parentObject.ArrayItemType;
+                                typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                            }
+                            switch (typeAllCollection.typeCollectionEnum)
+                            {
+                                case CollectionManager.TypeCollectionEnum.Wrapper:
+                                    myObject.wrapper = typeAllCollection.wrapper;
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.Read:
+                                    myObject.collectionObject = typeAllCollection.read;
+                                    break;
+                            }
+                            myObject.isValueType = typeAllCollection.IsValueType;
                         }
                     }
 
-                    myObject.isValueType = myObject.type.IsValueType;
+
                     myObject.sourceType = myObject.type;
 
                     //"$create"
@@ -190,21 +289,11 @@ namespace DogJson
                     {
                         myObject.type = typeof(ConstructorWrapper);
                     }
+                    myObject.obj = null;
 
                     if (v->isObject)
                     {
-                        ReadCollectionLink collection = null;
-                        if (!allTypeWrapper.TryGetValue(myObject.type, out myObject.wrapper))
-                        {
-                            collection = CollectionManager.GetReadArrayCollectionLink(myObject.type);
-                            if (collection == null)
-                            {
-                                myObject.collectionObject = null;
-                                //myObject.wrapper = GetTypeWrapper(myObject.type);
-                                myObject.wrapper = allTypeWrapper[myObject.type] = new TypeAddrReflectionWrapper(myObject.type);
-                            }
-                        }
-
+                        ReadCollectionLink collection = myObject.collectionObject;
 
                         if (collection == null)
                         {
@@ -227,7 +316,7 @@ namespace DogJson
                                     //对象是值类型字段就取指针
                                     if (myObject.isValueType)
                                     {
-                                        myObject.objPtr = myObject.bytePtr = (byte*)(parentObject.bytePtr + myObject.offset);
+                                        myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
                                     }
                                     else
                                     {
@@ -240,7 +329,6 @@ namespace DogJson
                         else
                         {
                             //collection != null
-                            myObject.collectionObject = collection;
 
                             ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
                             arg.objectType = myObject.sourceType;
@@ -251,7 +339,7 @@ namespace DogJson
                             //父对象是容器就延迟赋值
                             if (parentCollection != null)
                             {
-                                collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                myObject.obj = collection.createObject(out myObject.temp, arg);
                                 setValues[setValuesIndex++] = i;
                             }
                             else
@@ -259,7 +347,7 @@ namespace DogJson
                                 //对象是属性延迟赋值
                                 if (myObject.isProperty)
                                 {
-                                    collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                    myObject.obj = collection.createObject(out myObject.temp, arg);
                                     setValues[setValuesIndex++] = i;
                                 }
                                 else
@@ -267,25 +355,22 @@ namespace DogJson
                                     //对象是值类型字段就取指针
                                     if (myObject.isValueType)
                                     {
-                                        arg.structPtr = (byte*)(parentObject.bytePtr + myObject.offset);
-                                        collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                        myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+                                        collection.createValue(myObject.objPtr, out myObject.temp, arg);
                                     }
                                     else
                                     {
-                                        collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
+                                        myObject.obj = collection.createObject(out myObject.temp, arg);
                                         GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
                                     }
                                 }
                             }
-
-
                         }
-
                     }
                     //array
                     else
                     {
-                        ReadCollectionLink collection = CollectionManager.GetReadArrayCollectionLink(myObject.type);
+                        ReadCollectionLink collection = CollectionManager.GetReadCollectionLink(myObject.type);
                         if (collection == null)
                         {
                             myObject.collectionObject = null;
@@ -381,8 +466,37 @@ namespace DogJson
                             arg.bridge = v;
                             arg.parent = parentObject.objPtr;
 
-                            collection.createByte(out myObject.objPtr, out myObject.bytePtr, out myObject.temp, arg);
-                            setValues[setValuesIndex++] = i;
+                            //父对象是容器就延迟赋值
+                            if (parentCollection != null)
+                            {
+                                myObject.obj = collection.createObject(out myObject.temp, arg);
+                                setValues[setValuesIndex++] = i;
+                            }
+                            else
+                            {
+                                //对象是属性延迟赋值
+                                if (myObject.isProperty)
+                                {
+                                    myObject.obj = collection.createObject(out myObject.temp, arg);
+                                    setValues[setValuesIndex++] = i;
+                                }
+                                else
+                                {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                        myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+                                        collection.createValue(myObject.objPtr, out myObject.temp, arg);
+                                    }
+                                    else
+                                    {
+                                        myObject.obj = collection.createObject(out myObject.temp, arg);
+                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                    }
+                                }
+                            }
+
+
                         }
                     }
                 }
@@ -405,8 +519,15 @@ namespace DogJson
                             addValue_Args.str = vs;
                             addValue_Args.value = jsonRender.pool + i;
 
+                            if (myObject.obj == null)
+                            {
+                                collection.addValue(myObject.objPtr, addValue_Args);
+                            }
+                            else
+                            {
+                                collection.addValueObject(myObject.obj, addValue_Args);
+                            }
                             //parentCollection.add(parentObject.bytePtr, myObject.bytePtr, add_Args);
-                            collection.addValue(myObject.objPtr, addValue_Args);
                         }
                         else
                         {
@@ -457,7 +578,7 @@ namespace DogJson
                                                 }
                                                 //var k2 = new string(vs, v.vStringStart, v.vStringLength);
 
-                                                if (fieldInfo.fieldType == typeof(Type))
+                                                if (fieldInfo.fieldOrPropertyType == typeof(Type))
                                                 //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                                 { 
                                                     GeneralTool.SetObject(bytePtr + fieldInfo.offset,
@@ -470,7 +591,7 @@ namespace DogJson
                                                 if (fieldInfo.isEnum)
                                                 {
                                                     var strEnum = new string(vs, v.vStringStart, v.vStringLength);
-                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldType);
+                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldOrPropertyType);
                                                     for (int k = 0; k < Arrays.Length; k++)
                                                     {
                                                         if (Arrays.GetValue(k).ToString().Equals(strEnum))
@@ -597,7 +718,7 @@ namespace DogJson
                                                       createObjectItems[obj->objectQueueIndex].obj);
                                                     break;
                                                 }
-                                                if (fieldInfo.fieldType == typeof(Type))
+                                                if (fieldInfo.fieldOrPropertyType == typeof(Type))
                                                 //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                                 {
                                                     GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
@@ -610,14 +731,14 @@ namespace DogJson
                                                 if (fieldInfo.isEnum)
                                                 {
                                                     var strEnum = new string(vs, v.vStringStart, v.vStringLength);
-                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldType);
+                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldOrPropertyType);
                                                     for (int k = 0; k < Arrays.Length; k++)
                                                     {
                                                         if (Arrays.GetValue(k).ToString().Equals(strEnum))
                                                         {
                                                             GeneralTool.Memcpy(myObject.bytePtr + fieldInfo.offset
                                                                 , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
-                                                                , UnsafeOperation.SizeOfStack(fieldInfo.fieldType)
+                                                                , UnsafeOperation.SizeOfStack(fieldInfo.fieldOrPropertyType)
                                                                 );
                                                             break;
                                                         }
@@ -699,7 +820,15 @@ namespace DogJson
                             addValue_Args.str = vs;
                             addValue_Args.value = jsonRender.pool + i;
 
-                            collection.addValue(myObject.objPtr, addValue_Args);
+                            if (myObject.obj == null)
+                            {
+                                collection.addValue(myObject.objPtr, addValue_Args);
+                            }
+                            else
+                            {
+                                collection.addValueObject(myObject.obj, addValue_Args);
+                            }
+                            //collection.addValue(myObject.objPtr, addValue_Args);
                             //collection.AddValue(myObject.obj, vs, jsonRender.pool + i, proxy);
                         }
                         else
@@ -879,7 +1008,6 @@ namespace DogJson
                        //SetValue setValue = setValues[i];
                        JsonObject* objValue = jsonRender.objectQueue + setValues[i];
 
-
                        //CreateObjectItem myObject = setValue.myObject;
                        CreateObjectItem myObject = createObjectItems[objValue->objectQueueIndex];
                        JsonObject* parent = jsonRender.objectQueue + objValue->parentObjectIndex;
@@ -890,29 +1018,36 @@ namespace DogJson
                         }
                         else
                        {
-                           //object over = myObject.obj;
-                           if (myObject.collectionObject == null
+                            if (myObject.collectionObject == null
                                && myObject.temp != null
                                )
                            {
-                               myObject.collectionObject.end(myObject.temp);
-                           }
+                                if (myObject.obj == null)
+                                {
+                                    myObject.collectionObject.end(myObject.objPtr, myObject.temp);
+                                }
+                                else
+                                {
+                                    myObject.collectionObject.endObject(myObject.obj, myObject.temp);
+                                }
+                            }
 
                            if (parentObject.collectionObject == null)
                            {
-                               if (myObject.isValueType)
-                               {
-                                   //var byteP = setValue.parentObject.byteP + myObject.offset;
-                                   GeneralTool.Memcpy(parentObject.bytePtr + myObject.offset
-                                   , myObject.objPtr
-                                   , UnsafeOperation.SizeOfStack(myObject.type)
-                                   );
-                               }
-                               else
-                               {
-                                    *(IntPtr*)(parentObject.bytePtr + myObject.offset) = (IntPtr)myObject.objPtr;
-                                   //GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, over);
-                               }
+                                throw new Exception("Error");
+                                //if (myObject.isValueType)
+                                //{
+                                //    //var byteP = setValue.parentObject.byteP + myObject.offset;
+                                //    GeneralTool.Memcpy(parentObject.bytePtr + myObject.offset
+                                //    , myObject.objPtr
+                                //    , UnsafeOperation.SizeOfStack(myObject.type)
+                                //    );
+                                //}
+                                //else
+                                //{
+                                //     *(IntPtr*)(parentObject.bytePtr + myObject.offset) = (IntPtr)myObject.objPtr;
+                                //    //GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, over);
+                                //}
                            }
                            else
                            {
@@ -920,7 +1055,7 @@ namespace DogJson
                                 arg.bridge = objValue;
 
                                 //* (IntPtr*)(parentObject.bytePtr + myObject.offset) = (IntPtr)myObject.objPtr;
-                               parentObject.collectionObject.add(parentObject.objPtr, myObject.objPtr, arg);
+                               parentObject.collectionObject.add3(parentObject.obj, myObject.obj, arg);
                                //void Add(void* obj, void* value, Add_Args arg);
                            }
                        }
@@ -1051,7 +1186,7 @@ namespace DogJson
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static unsafe bool PathToObject(char* path, int pathLength, JsonObject* nowParent, JsonRender jsonRender, ref JsonObject* obj)
+        static unsafe bool PathToObject(char* path, int pathLength, JsonObject* nowParent, JsonRender render, ref JsonObject* obj)
         {
             if (*path == '$')
             {
@@ -1120,7 +1255,7 @@ namespace DogJson
                 path += keySize;
                 if (*path == '/')
                 {
-                    if (obj->objectQueueIndex + 1 >= jsonRender.objectQueueIndex)
+                    if (obj->objectQueueIndex + 1 >= render.objectQueueIndex)
                     {
                         return false;
                     }
@@ -1131,11 +1266,11 @@ namespace DogJson
                 }
             False:
                 //寻找下一个
-                if (obj->objectNext >= jsonRender.objectQueueIndex)
+                if (obj->objectNext >= render.objectQueueIndex)
                 {
                     return false;
                 }
-                var next = jsonRender.objectQueue + obj->objectNext;
+                var next = render.objectQueue + obj->objectNext;
                 //如果下一个的父对象不是和之前的一样
                 //next->keyStringStart == null || 
                 if (next->parentObjectIndex != obj->parentObjectIndex)
@@ -1173,7 +1308,7 @@ namespace DogJson
                 }
                 for (int i = 0; i < pathIndex; i++)
                 {
-                    obj = jsonRender.objectQueue + obj->objectNext;
+                    obj = render.objectQueue + obj->objectNext;
                 }
                 path += pathSize + 1;
                 pathLength -= pathSize + 1;

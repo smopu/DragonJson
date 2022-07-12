@@ -14,6 +14,7 @@ namespace DogJson.ArrayCollection
         /// 方法所属类
         /// </summary>
         public Type type;
+
         /// <summary>
         /// 方法名称
         /// </summary>

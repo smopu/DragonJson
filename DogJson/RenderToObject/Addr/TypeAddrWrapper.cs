@@ -11,6 +11,7 @@ namespace DogJson
 {
     public unsafe class TypeAddrReflectionWrapper
     {
+        public IntPtr byteArrayHead = default(IntPtr);
         public static Dictionary<string, FieldInfo> GetAllFieldInfo(Type type) 
         {
             Dictionary<string, FieldInfo> nameOfField = new Dictionary<string, FieldInfo>();
@@ -352,6 +353,16 @@ namespace DogJson
 
     public unsafe class TypeAddrFieldAndProperty
     {
+        public ReadCollectionLink read;
+        //
+        public void StartReadCollectionLink() 
+        {
+            if (fieldOrPropertyType != typeof(object))
+            {
+                read = CollectionManager.GetReadCollectionLink(fieldOrPropertyType);
+            }
+        }
+
         /// <summary>
         ///  class struct
         /// </summary>
@@ -361,35 +372,36 @@ namespace DogJson
         {
             this.isProperty = false;
             this.fieldInfo = fieldInfo;
-            this.fieldType = fieldInfo.FieldType;
+            this.fieldOrPropertyType = fieldInfo.FieldType;
             offset = UnsafeOperation.GetFeildOffset(fieldInfo);
-            typeCode = Type.GetTypeCode(fieldType);
-            isValueType = fieldType.IsValueType;
-            isArray = fieldType.IsArray;
-            isEnum = fieldType.IsEnum;
+            typeCode = Type.GetTypeCode(fieldOrPropertyType);
+            isValueType = fieldOrPropertyType.IsValueType;
+            isArray = fieldOrPropertyType.IsArray;
+            isEnum = fieldOrPropertyType.IsEnum;
             if (isValueType)
             {
-                stackSize = UnsafeOperation.SizeOfStack(fieldType);
+                stackSize = UnsafeOperation.SizeOfStack(fieldOrPropertyType);
             }
             else
             {
                 stackSize = UnsafeOperation.PTR_COUNT;
             }
-            heapSize = UnsafeOperation.SizeOf(fieldType);
+            heapSize = UnsafeOperation.SizeOf(fieldOrPropertyType);
 
-            typeHead = UnsafeOperation.GetTypeHead(fieldType);
+            typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
+            StartReadCollectionLink();
         }
-        
+
 
         public TypeAddrFieldAndProperty(Type parntType,  PropertyInfo propertyInfo)
         {
             this.isProperty = true;
             this.propertyInfo = propertyInfo;
-            this.fieldType = propertyInfo.PropertyType;
-            this.typeCode = Type.GetTypeCode(fieldType);
-            this.isValueType = fieldType.IsValueType;
-            this.isArray = fieldType.IsArray;
-            this.isEnum = fieldType.IsEnum;
+            this.fieldOrPropertyType = propertyInfo.PropertyType;
+            this.typeCode = Type.GetTypeCode(fieldOrPropertyType);
+            this.isValueType = fieldOrPropertyType.IsValueType;
+            this.isArray = fieldOrPropertyType.IsArray;
+            this.isEnum = fieldOrPropertyType.IsEnum;
 
             this.isPropertySet = propertyInfo.SetMethod != null;
             this.isPropertyGet = propertyInfo.GetMethod != null;
@@ -400,7 +412,7 @@ namespace DogJson
             }
             if (this.isPropertySet) 
             {
-                if (isValueType && !TypeAddrReflectionWrapper.IsFundamental(this.fieldType))
+                if (isValueType && !TypeAddrReflectionWrapper.IsFundamental(this.fieldOrPropertyType))
                 {
                     Delegate sourceDelegate;
                     Delegate set = PropertyWrapper.CreateStructIPropertyWrapperTarget(parntType,
@@ -417,7 +429,8 @@ namespace DogJson
                 }
             }
 
-            typeHead = UnsafeOperation.GetTypeHead(fieldType);
+            typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
+            StartReadCollectionLink();
         }
 
 
@@ -427,7 +440,7 @@ namespace DogJson
 
         public FieldInfo fieldInfo;
         public IntPtr typeHead;
-        public Type fieldType;
+        public Type fieldOrPropertyType;
         public int offset;
         public int stackSize;
         public int heapSize;

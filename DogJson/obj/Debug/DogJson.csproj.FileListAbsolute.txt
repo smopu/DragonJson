@@ -115,3 +115,17 @@ D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.csproj.CoreCompileInputs.ca
 D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.csproj.CopyComplete
 D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.exe
 D:\dog-json-master\DogJson\DogJson\obj\Debug\DogJson.pdb
+G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.csprojAssemblyReference.cache
+G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.csproj.CoreCompileInputs.cache
+G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.exe
+G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.pdb
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\TextFile2.json
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\TextFile3.json
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\TextFile1.json
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\DogJson.exe.config
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\DogJson.exe
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\DogJson.pdb
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\DynamicCustomReflection.dll
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\System.Buffers.dll
+G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\System.Buffers.xml
+G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.csproj.CopyComplete

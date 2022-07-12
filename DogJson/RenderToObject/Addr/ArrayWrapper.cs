@@ -11,6 +11,18 @@ namespace DogJson
     public unsafe class ArrayWrapper
     {
         private static IntPtr byteArrayHead = default(IntPtr);
+        public static IntPtr ByteArrayHead
+        {
+            get
+            {
+                if (!isStart)
+                {
+                    Start();
+                }
+                return byteArrayHead;
+            }
+        }
+
         private static bool isObjectArrayAddOffcet = false;
         public static bool IsObjectArrayAddOffcet { 
             get
@@ -22,6 +34,8 @@ namespace DogJson
                 return isObjectArrayAddOffcet;
             } 
         }
+
+
 
         public static int objectArray1StartOffcet = UnsafeOperation.PTR_COUNT * 2;
         public static int objectArray1StartOffcetAdd = 2;

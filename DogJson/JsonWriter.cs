@@ -506,7 +506,7 @@ namespace DogJson
                             object value = item.Value.GetValue(parent.data);
                             //object value = GeneralTool.VoidToObject(((byte*)GeneralTool.ObjectToVoid(parent.data)) + sizeof(IntPtr) + item.Value.offset);
                             //GC.Collect();
-                            previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldType, value);
+                            previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                         }
                         previous.back = last;
                         previous.isLast = true;

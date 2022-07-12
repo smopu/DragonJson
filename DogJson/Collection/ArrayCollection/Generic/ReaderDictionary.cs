@@ -151,49 +151,98 @@ namespace DogJson
         public V v;
     }
 
-    [CollectionRead(typeof(DictionString<,>), false)]
-    public unsafe class CollectionArrayDictionString<V> : CollectionObjectBase<Dictionary<string, V>, Dictionary<string, V>>
-    //public unsafe class BoxCollection<T> : CollectionObjectBase<T, Box<T>>
+    //[ReadCollection(typeof(DictionString<,>), false)]
+    //public unsafe class CollectionArrayDictionString<V> : CollectionObjectBase<Dictionary<string, V>, Dictionary<string, V>>
+    ////public unsafe class BoxCollection<T> : CollectionObjectBase<T, Box<T>>
+    //{
+    //    TypeCode typeCode;
+    //    public CollectionArrayDictionString()
+    //    {
+    //        typeCode = Type.GetTypeCode(typeof(V));
+    //    }
+
+    //    public override unsafe Type GetItemType(JsonObject* bridge)
+    //    {
+    //        return typeof(V);
+    //    }
+
+    //    public override bool IsRef()
+    //    {
+    //        return false;
+    //    }
+
+    //    protected override unsafe void Add(Dictionary<string, V> obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
+    //    {
+    //        obj[new string(key, 0, keyLength)] = (V)value;
+    //    }
+
+    //    protected override unsafe void AddValue(Dictionary<string, V> obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
+    //    {
+    //        obj[new string(key, 0, keyLength)] = (V)proxy.callGetValue(typeCode, str, value);
+    //    }
+
+    //    protected override unsafe Dictionary<string, V> CreateObject(JsonObject* obj, object parent, Type objectType, Type parentType)
+    //    {
+    //        return new Dictionary<string, V>();
+    //    }
+
+    //    protected override Dictionary<string, V> End(Dictionary<string, V> obj)
+    //    {
+    //        return obj;
+    //    }
+    //}
+
+
+    [ReadCollection(typeof(DictionString<,>), false, true)]
+    public unsafe class CollectionArrayDictionString<V> : CreateTaget<ReadCollectionLink>
     {
-        TypeCode typeCode;
+        TypeCode typeCodeV;
         public CollectionArrayDictionString()
         {
-            typeCode = Type.GetTypeCode(typeof(V));
+            typeCodeV = Type.GetTypeCode(typeof(V));
+            if (typeCodeV == TypeCode.Object)
+            {
+                collection = CollectionManager.GetTypeCollection(typeof(V));
+            }
         }
 
-        public override unsafe Type GetItemType(JsonObject* bridge)
+        CollectionManager.TypeAllCollection collection;
+        public ReadCollectionLink Create()
         {
-            return typeof(V);
+            ReadCollectionLink read = new ReadCollectionLink();
+            read.isRef = true;
+
+            Action<Dictionary<string, V>, object, ReadCollectionLink.Add_Args> ac = Add;
+            read.addDelegate = ac;
+            read.createObject = CreateObject;
+            Action<Dictionary<string, V>, ReadCollectionLink.AddValue_Args> ac2 = AddValue;
+            read.addValueDelegate = ac2;
+            read.getItemType = GetItemType;
+            return read;
         }
 
-        public override bool IsRef()
+        static void Add(Dictionary<string, V> obj, object value, ReadCollectionLink.Add_Args arg)
         {
-            return false;
+            obj[new string(arg.bridge->keyStringStart, 0, arg.bridge->keyStringLength)] = (V)value;
         }
 
-        protected override unsafe void Add(Dictionary<string, V> obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
+        void AddValue(Dictionary<string, V> obj, ReadCollectionLink.AddValue_Args arg)
         {
-            obj[new string(key, 0, keyLength)] = (V)value;
+            obj[new string(arg.str, arg.value->keyStringStart, arg.value->keyStringLength)] = (V)arg.callGetValue(typeCodeV, arg.str, arg.value);
         }
 
-        protected override unsafe void AddValue(Dictionary<string, V> obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
+        object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
         {
-            obj[new string(key, 0, keyLength)] = (V)proxy.callGetValue(typeCode, str, value);
-        }
-
-        protected override unsafe Dictionary<string, V> CreateObject(JsonObject* obj, object parent, Type objectType, Type parentType)
-        {
+            temp = null;
             return new Dictionary<string, V>();
         }
 
-        protected override Dictionary<string, V> End(Dictionary<string, V> obj)
+        CollectionManager.TypeAllCollection GetItemType(ReadCollectionLink.GetItemType_Args arg)
         {
-            return obj;
+            return collection;
         }
 
     }
-
-
 
 
     [ReadCollection(typeof(DictionaryKV<,>), true)]
@@ -205,8 +254,18 @@ namespace DogJson
         {
             typeCodeK = Type.GetTypeCode(typeof(K));
             typeCodeV = Type.GetTypeCode(typeof(V));
+            if (typeCodeK == TypeCode.Object)
+            {
+                collectionK = CollectionManager.GetTypeCollection(typeof(K));
+            }
+            if (typeCodeV == TypeCode.Object)
+            {
+                collectionV = CollectionManager.GetTypeCollection(typeof(V));
+            }
         }
 
+        CollectionManager.TypeAllCollection collectionK;
+        CollectionManager.TypeAllCollection collectionV;
         public ReadCollectionLink Create()
         {
             ReadCollectionLink read = new ReadCollectionLink();
@@ -214,7 +273,7 @@ namespace DogJson
 
             Action<DictionaryKV<K, V>, object, ReadCollectionLink.Add_Args> ac = Add;
             read.addDelegate = ac;
-            read.create = Create_; 
+            read.createObject = CreateObject; 
             Action<DictionaryKV<K, V>, ReadCollectionLink.AddValue_Args> ac2 = AddValue;
             read.addValueDelegate = ac2;
             read.getItemType = GetItemType;
@@ -257,21 +316,21 @@ namespace DogJson
                 kv.v = (V)set_value;
             }
         }
-        void Create_(out object obj, out void* dataStart,  out object temp, ReadCollectionLink.Create_Args arg)
+
+        object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
         {
-            obj = new DictionaryKV<K, V>();
             temp = null;
-            dataStart = ((IntPtr*)GeneralTool.ObjectToVoid(obj)) + 1;
+            return new DictionaryKV<K, V>();
         }
 
-        Type GetItemType(ReadCollectionLink.GetItemType_Args arg)
+        CollectionManager.TypeAllCollection GetItemType(ReadCollectionLink.GetItemType_Args arg)
         {
             int index = arg.bridge->arrayIndex;
             if (index == 0)
             {
-                return typeof(K);
+                return collectionK;
             }
-            return typeof(V);
+            return collectionV;
         }
     }
 
@@ -279,14 +338,16 @@ namespace DogJson
     [ReadCollection(typeof(Dictionary<,>), true)]
     public unsafe class DictionaryReader<K, V> : CreateTaget<ReadCollectionLink>
     {
+        CollectionManager.TypeAllCollection collection;
         public ReadCollectionLink Create()
         {
+            collection =  CollectionManager.GetTypeCollection(typeof(DictionaryKV<K, V>));
             ReadCollectionLink read = new ReadCollectionLink();
             read.isRef = true;
 
             Action<Dictionary<K, V>, DictionaryKV<K, V>, ReadCollectionLink.Add_Args> ac = Add;
             read.addDelegate = ac;
-            read.create = Create_;
+            read.createObject = CreateObject;
             read.getItemType = GetItemType;
             return read;
         }
@@ -296,21 +357,19 @@ namespace DogJson
             dict[kv.k] = kv.v;
         }
 
-        void Create_(out object obj, out void* dataStart,  out object temp, ReadCollectionLink.Create_Args arg)
+        object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
         {
-            obj = new Dictionary<K, V>(arg.bridge->arrayCount);
             temp = null;
-            dataStart = ((IntPtr*)GeneralTool.ObjectToVoid(obj)) + 1;
+            return new Dictionary<K, V>(arg.bridge->arrayCount);
         }
 
-        Type GetItemType(ReadCollectionLink.GetItemType_Args arg)
+        CollectionManager.TypeAllCollection GetItemType(ReadCollectionLink.GetItemType_Args arg)
         {
-            return typeof(DictionaryKV<K, V>);
+            return collection;
         }
     }
 
 
 #endif
-
 
 }

@@ -187,7 +187,6 @@ namespace DogJson
         {
             public JsonObject* bridge;
             public void* parent;
-            public void* structPtr;
            
             //public object parent;
             public Type objectType;
@@ -200,22 +199,36 @@ namespace DogJson
         }
 
         public unsafe delegate void AddValue(void* obj, AddValue_Args arg);
+        public unsafe delegate void AddValueObject(object obj, AddValue_Args arg);
+
         public unsafe delegate void Add(void* obj, void* value, Add_Args arg);
         public unsafe delegate void Add1(object obj, void* value, Add_Args arg);
         public unsafe delegate void Add2(void* obj, object value, Add_Args arg);
         public unsafe delegate void Add3(object obj, object value, Add_Args arg);
 
-        public unsafe delegate void Create(out object obj, out void* dataStart, out object temp, Create_Args arg);
-        public unsafe delegate void Create2(out void* obj, out void* dataStart, out object temp, Create_Args arg);
+        public unsafe delegate object CreateObject(out object temp, Create_Args arg);
+        public unsafe delegate void CreateValue(void* obj, out object temp, Create_Args arg);
+
+        public unsafe delegate void Create2(out object obj, out void* dataStart, out object temp, Create_Args arg);
         public unsafe delegate void CreateByte(out byte* obj, out byte* dataStart, out object temp, Create_Args arg);
 
-        public unsafe delegate void End(object temp);
-        public unsafe delegate Type GetItemType(GetItemType_Args arg);
+        public unsafe delegate void End(void* obj, object temp);
+        public unsafe delegate void EndObject(object obj, object temp);
+
+        public unsafe delegate CollectionManager.TypeAllCollection GetItemType(GetItemType_Args arg);
+
+
 
         [FieldOffset(0)]
         public Delegate addValueDelegate;
         [FieldOffset(0)]
         public AddValue addValue;
+
+        [FieldOffset(56)]
+        public Delegate addValueObjectDelegate;
+        [FieldOffset(56)]
+        public AddValueObject addValueObject;
+
 
         [FieldOffset(8)]
         public Delegate addDelegate;
@@ -228,25 +241,34 @@ namespace DogJson
         [FieldOffset(8)]
         public Add3 add3;
 
+
+
         [FieldOffset(16)]
-        public Delegate createDelegate;
+        public Delegate createObjectDelegate;
         [FieldOffset(16)]
-        public Create create;
-        [FieldOffset(16)]
-        public CreateByte createByte;
+        public CreateObject createObject;
 
         [FieldOffset(24)]
-        public bool isRef;
+        public Delegate createValueDelegate;
+        [FieldOffset(24)]
+        public CreateValue createValue;
 
         [FieldOffset(32)]
         public Delegate endDelegate;
         [FieldOffset(32)]
         public End end;
+        [FieldOffset(32)]
+        public EndObject endObject;
+
 
         [FieldOffset(40)]
         public Delegate getItemTypeDelegate;
         [FieldOffset(40)]
         public GetItemType getItemType;
+
+        [FieldOffset(48)]
+        public bool isRef;
+
     }
 
 
@@ -298,63 +320,6 @@ namespace DogJson
         {
             return End((TempCollectionType)obj);
         }
-
-        //protected object GetValue(TypeCode typeCode, char* str, JsonValue* value)
-        //{
-        //    switch (value->type)
-        //    {
-        //        case JsonValueType.String:
-        //            switch (typeCode)
-        //            {
-        //                case TypeCode.Char:
-        //                    return str[value->vStringStart];
-        //                case TypeCode.String:
-        //                    return new string(str, value->vStringStart, value->vStringLength);
-        //            }
-        //            break;
-        //        case JsonValueType.Long:
-        //            switch (typeCode)
-        //            {
-        //                case TypeCode.SByte:
-        //                    return (SByte)value->valueLong;
-        //                case TypeCode.Byte:
-        //                    return (Byte)value->valueLong;
-        //                case TypeCode.Int16:
-        //                    return (Int16)value->valueLong;
-        //                case TypeCode.UInt16:
-        //                    return (UInt16)value->valueLong;
-        //                case TypeCode.Int32:
-        //                    return (Int32)value->valueLong;
-        //                case TypeCode.UInt32:
-        //                    return (UInt32)value->valueLong;
-        //                case TypeCode.Int64:
-        //                    return value->valueLong;
-        //                case TypeCode.UInt64:
-        //                    return (UInt64)value->valueLong;
-        //                case TypeCode.Single:
-        //                    return (Single)value->valueLong;
-        //                case TypeCode.Double:
-        //                    return (Double)value->valueLong;
-        //                case TypeCode.Decimal:
-        //                    return (Decimal)value->valueLong;
-        //            }
-        //            break;
-        //        case JsonValueType.Double:
-        //            switch (typeCode)
-        //            {
-        //                case TypeCode.Single:
-        //                    return (Single)value->valueDouble;
-        //                case TypeCode.Double:
-        //                    return (Double)value->valueDouble;
-        //                case TypeCode.Decimal:
-        //                    return (Decimal)value->valueDouble;
-        //            }
-        //            break;
-        //        case JsonValueType.Boolean:
-        //            return value->valueBool;
-        //    }
-        //    return null;
-        //}
 
         protected virtual void Add(TempCollectionType obj, char* key, int keyLength, object value, ReadCollectionProxy proxy) { }
         protected virtual void AddValue(TempCollectionType obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy) { }
