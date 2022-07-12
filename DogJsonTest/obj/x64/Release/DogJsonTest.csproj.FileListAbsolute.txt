@@ -1,0 +1,1 @@
+D:\程序研究\dog-json-master\DogJson\DogJsonTest\obj\x64\Release\DogJsonTest.csprojResolveAssemblyReference.cache
