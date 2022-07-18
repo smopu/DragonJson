@@ -59,7 +59,7 @@ namespace DogJsonTest
         public TClass003 testClassDD2;
         public TClass003 testClassDD3;
         public TClass003 testClassDD4;
-        //public TestEnum testEnum;
+        public TestEnum testEnum;
         //public TestEnum[] testEnums;
 
         public IList<int> arrayint2;

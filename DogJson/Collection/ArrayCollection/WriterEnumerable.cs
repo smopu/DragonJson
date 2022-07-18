@@ -40,21 +40,28 @@ namespace DogJson.Collection.ArrayCollection
     }
 
 
-    [CollectionWriteAttribute(typeof(EnumWrap))]
+    [CollectionWriteAttribute(typeof(EnumWrapper))]
     public unsafe class WriterEnum : IWriterCollectionObject
     {
         public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
-            var inEnum = ((EnumWrap)obj).inEnum;
+            var inEnum = ((EnumWrapper)obj).inEnum;
             var type = inEnum.GetType();
             EnumTypeWrap enumTypeWrap = CollectionManager.GetEnumTypeWrap(type);
-
-            foreach (var item in enumTypeWrap.GetValue(inEnum))
+            long source;
+            List<string> vs = enumTypeWrap.GetValue(inEnum, out source);
+            if (vs.Count == 0)
+            {
+                yield return new KeyValueStruct() { value = source, type = typeof(long) };
+            }
+            foreach (var item in vs)
             {
                 yield return new KeyValueStruct() { value = item, type = typeof(string) };
             }
+
         }
+
 
     }
 

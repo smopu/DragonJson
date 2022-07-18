@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace DogJson
 {
-    public class EnumWrap<T>
+    public class EnumWrapper<T>
     {
-        public EnumWrap(T inEnum)
+        public EnumWrapper(T inEnum)
         {
             this.inEnum = inEnum;
         }
         public T inEnum;
     }
-    public class EnumWrap
+    public class EnumWrapper
     {
-        public EnumWrap(object inEnum)
+        public EnumWrapper(object inEnum)
         {
             this.inEnum = inEnum;
         }

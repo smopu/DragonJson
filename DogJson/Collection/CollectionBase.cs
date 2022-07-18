@@ -81,8 +81,9 @@ namespace DogJson
             }
         }
 
-        public IEnumerable<string> GetValue(object inEnum)
+        public List<string> GetValue(object inEnum, out long source)
         {
+            List<string> all = new List<string>();
             long data = 0;
             switch (typeCode)
             {
@@ -111,11 +112,13 @@ namespace DogJson
                     data = (long)(UInt64)inEnum;
                     break;
             }
+            source = data;
 
             string name;
             if (valueToName.TryGetValue(data, out name))
             {
-                yield return name;
+                all.Add(name);
+                return all;
             }
             else
             {
@@ -125,7 +128,7 @@ namespace DogJson
                     if ((data & id) == id)
                     {
                         data &= ~id;
-                        yield return names[i];
+                        all.Add(names[i]);
                         if (data == 0)
                         {
                             break;
@@ -134,7 +137,11 @@ namespace DogJson
                 }
             }
 
-
+            if (data != 0)
+            {
+                all.Clear();
+            }
+            return all;
         }
 
         public long GetValue(IEnumerable<string> vs)

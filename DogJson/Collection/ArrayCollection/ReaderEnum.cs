@@ -6,16 +6,8 @@ using System.Threading.Tasks;
 
 namespace DogJson.Collection.ArrayCollection
 {
-    public class EnumWrap<T>
-    {
-        public EnumWrap(T inEnum)
-        {
-            this.inEnum = inEnum;
-        }
-        public T inEnum;
-    }
 
-    [ReadCollection(typeof(EnumWrap<>), true)]
+    [ReadCollection(typeof(EnumWrapper<>), true)]
     public unsafe class EnumWrapCollection<T> : CreateTaget<ReadCollectionLink>
     {
         CollectionManager.TypeAllCollection collection;

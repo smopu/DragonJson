@@ -485,7 +485,18 @@ namespace DogJson
                         ReadCollectionLink collection = CollectionManager.GetReadCollectionLink(myObject.type);
                         if (collection == null)
                         {
+                            if (myObject.type.IsEnum)
+                            {
+                                myObject.type = typeof(EnumWrapper<>).MakeGenericType(myObject.type);
+                                var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                                collection = myObject.collectionObject = typeAllCollection.read;
+                            }
+                        }
+
+                        if (collection == null)
+                        {
                             myObject.collectionObject = null;
+
                             if (myObject.type.IsArray)
                             {
                                 var rank = myObject.type.GetArrayRank();

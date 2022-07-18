@@ -736,7 +736,7 @@ namespace DogJson
                 if (fieldType.IsEnum)
                 {
                     now = new JsonWriteValue(writers.Count, parent);
-                    now.data = new EnumWrap(value);
+                    now.data = new EnumWrapper(value);
                     now.key = key;
                     previous.back = now;
                     writers.Add(now);
