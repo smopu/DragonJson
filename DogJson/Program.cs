@@ -2634,7 +2634,7 @@ namespace DogJson
                 read.addValueClassDelegate = (AddValueObject_)AddValueObject;
                 
                 read.createObject = CreateObject;
-                read.createValueDelegate = (CreateValue_)CreateValue;
+                read.createStructDelegate = (CreateValue_)CreateValue;
                 //read.getItemType = GetItemType;
                 return read;
             }

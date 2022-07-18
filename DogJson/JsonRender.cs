@@ -527,8 +527,8 @@ namespace DogJson
                                             poolNow->type = JsonValueType.String;
                                             poolNow->keyStringLength = keyStringLength;
                                             poolNow->keyStringStart = keyStringStart;
-                                            poolNow->vStringStart = vStringStart;
-                                            poolNow->vStringLength = vStringLength;
+                                            poolNow->valueStringStart = vStringStart;
+                                            poolNow->valueStringLength = vStringLength;
                                             poolNow->objectQueue = stackNow;
 
                                             ++poolIndex;
@@ -540,8 +540,8 @@ namespace DogJson
                                             poolNow->type = JsonValueType.String;
                                             poolNow->keyStringLength = keyStringLength;
                                             poolNow->keyStringStart = keyStringStart;
-                                            poolNow->vStringStart = vStringStart;
-                                            poolNow->vStringLength = vStringLength;
+                                            poolNow->valueStringStart = vStringStart;
+                                            poolNow->valueStringLength = vStringLength;
                                             poolNow->objectQueue = stackNow;
                                             ++poolIndex;
 
@@ -875,8 +875,8 @@ namespace DogJson
                                             if (*now == ',')
                                             {
                                                 json_value->type = JsonValueType.String;
-                                                json_value->vStringStart = vStringStart;
-                                                json_value->vStringLength = vStringLength;
+                                                json_value->valueStringStart = vStringStart;
+                                                json_value->valueStringLength = vStringLength;
                                                 json_value->objectQueue = stackNow;
                                                 json_value->arrayIndex = stackNow->arrayCount;
 
@@ -886,8 +886,8 @@ namespace DogJson
                                             else if (*now == ']')
                                             {
                                                 json_value->type = JsonValueType.String;
-                                                json_value->vStringStart = vStringStart;
-                                                json_value->vStringLength = vStringLength;
+                                                json_value->valueStringStart = vStringStart;
+                                                json_value->valueStringLength = vStringLength;
                                                 json_value->objectQueue = stackNow;
                                                 json_value->arrayIndex = stackNow->arrayCount;
 

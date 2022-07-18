@@ -40,16 +40,6 @@ namespace DogJson.Collection.ArrayCollection
     }
 
 
-    public class EnumWrap
-    {
-        public EnumWrap(object inEnum)
-        {
-            this.inEnum = inEnum;
-        }
-        public object inEnum;
-    }
-
-
     [CollectionWriteAttribute(typeof(EnumWrap))]
     public unsafe class WriterEnum : IWriterCollectionObject
     {

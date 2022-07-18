@@ -457,7 +457,7 @@ namespace DogJson
                                     if (myObject.isValueType)
                                     {
                                         myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
-                                        collection.createValue(myObject.objPtr, out myObject.temp, arg);
+                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                         if (collection.isLaze)
                                         {
                                             setValues[setValuesIndex++] = i;
@@ -623,7 +623,7 @@ namespace DogJson
                                         }
                                         else
                                         {
-                                            collection.createValue(myObject.objPtr, out myObject.temp, arg);
+                                            collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                         }
                                     }
                                     else
@@ -703,14 +703,14 @@ namespace DogJson
                                         switch (itemTypeCode)
                                         {
                                             case TypeCode.Char:
-                                                fieldInfo.propertyDelegateItem.setChar(bytePtr, vs[v.vStringStart]);
+                                                fieldInfo.propertyDelegateItem.setChar(bytePtr, vs[v.valueStringStart]);
                                                 break;
                                             case TypeCode.String:
-                                                fieldInfo.propertyDelegateItem.setString(bytePtr, jsonRender.EscapeString(vs + v.vStringStart, v.vStringLength));
+                                                fieldInfo.propertyDelegateItem.setString(bytePtr, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
                                                 break;
                                             case TypeCode.Object:
                                                 JsonObject* obj = jsonRender.objectQueue;
-                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, parent, jsonRender, ref obj))
+                                                if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
                                                 {
                                                     var taget = createObjectItems[obj->objectQueueIndex];
                                                     if (taget.collectionNoRef)
@@ -729,7 +729,7 @@ namespace DogJson
                                                 //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                                 { 
                                                     GeneralTool.SetObject(bytePtr + fieldInfo.offset,
-                                                        UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                        UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
                                                         );
                                                 }
                                                 break;
@@ -737,7 +737,7 @@ namespace DogJson
 
                                                 if (fieldInfo.isEnum)
                                                 {
-                                                    var strEnum = new string(vs, v.vStringStart, v.vStringLength);
+                                                    var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
                                                     Array Arrays = Enum.GetValues(fieldInfo.fieldOrPropertyType);
                                                     for (int k = 0; k < Arrays.Length; k++)
                                                     {
@@ -836,7 +836,7 @@ namespace DogJson
                                         if (myObject.type == (typeof(Type)))
                                         {
                                             fieldInfo.propertyDelegateItem.setObject(bytePtr,
-                                                UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
                                                 );
                                         }
                                         break;
@@ -852,14 +852,14 @@ namespace DogJson
                                         switch (itemTypeCode)
                                         {
                                             case TypeCode.Char:
-                                                *(char*)(myObject.bytePtr + fieldInfo.offset) = vs[v.vStringStart];
+                                                *(char*)(myObject.bytePtr + fieldInfo.offset) = vs[v.valueStringStart];
                                                 break;
                                             case TypeCode.String:
-                                                GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset, jsonRender.EscapeString(vs + v.vStringStart, v.vStringLength));
+                                                GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
                                                 break;
                                             case TypeCode.Object:
                                                 JsonObject* obj = jsonRender.objectQueue;
-                                                if (PathToObject(vs + v.vStringStart, v.vStringLength, parent, jsonRender, ref obj))
+                                                if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
                                                 {
                                                     GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
                                                       createObjectItems[obj->objectQueueIndex].obj);
@@ -869,7 +869,7 @@ namespace DogJson
                                                 //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                                 {
                                                     GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
-                                                        UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                        UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
                                                         );
                                                 }
                                                 break;
@@ -877,7 +877,7 @@ namespace DogJson
 
                                                 if (fieldInfo.isEnum)
                                                 {
-                                                    var strEnum = new string(vs, v.vStringStart, v.vStringLength);
+                                                    var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
                                                     Array Arrays = Enum.GetValues(fieldInfo.fieldOrPropertyType);
                                                     for (int k = 0; k < Arrays.Length; k++)
                                                     {
@@ -1002,14 +1002,14 @@ namespace DogJson
                                     switch (itemTypeCode)
                                     {
                                         case TypeCode.Char:
-                                            *(char*)(pByte) = vs[v.vStringStart];
+                                            *(char*)(pByte) = vs[v.valueStringStart];
                                             break;
                                         case TypeCode.String:
-                                            GeneralTool.SetObject(pByte, jsonRender.EscapeString(vs + v.vStringStart, v.vStringLength));
+                                            GeneralTool.SetObject(pByte, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
                                             break;
                                         case TypeCode.Object:
                                             JsonObject* obj = jsonRender.objectQueue;
-                                            if (PathToObject(vs + v.vStringStart, v.vStringLength, parent, jsonRender, ref obj))
+                                            if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
                                             {
                                                 GeneralTool.SetObject(pByte,
                                                   createObjectItems[obj->objectQueueIndex].obj);
@@ -1019,7 +1019,7 @@ namespace DogJson
                                             //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                             {
                                                 GeneralTool.SetObject(pByte,
-                                                    UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength))
+                                                    UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
                                                     );
                                             }
                                             //set_value = PathToObject(vs + v.vStringStart, v.vStringLength, createObjectItems[0]);
@@ -1027,7 +1027,7 @@ namespace DogJson
                                         default:
                                             if (itemType.IsEnum)
                                             {
-                                                var strEnum = new string(vs, v.vStringStart, v.vStringLength);
+                                                var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
                                                 Array Arrays = Enum.GetValues(myObject.ArrayItemType);
                                                 for (int k = 0; k < Arrays.Length; k++)
                                                 {
@@ -1104,7 +1104,7 @@ namespace DogJson
                                     if (myObject.type == (typeof(Type)))
                                     {
                                         GeneralTool.SetObject(pByte,
-                                            UnsafeOperation.GetType(new string(vs, v.vStringStart, v.vStringLength)));
+                                            UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength)));
                                     }
                                     break;
                             }
@@ -1214,11 +1214,11 @@ namespace DogJson
                                     //对象是值类型字段就取指针
                                     if (myObject.isValueType)
                                     {
-                                        collection.createValue(myObject.objPtr, out myObject.temp, arg);
+                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                     }
                                     else
                                     {
-                                        collection.createValue(myObject.objPtr, out myObject.temp, arg);
+                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                     }
                                 }
                                 else {
@@ -1302,14 +1302,14 @@ namespace DogJson
                     switch (typeCode)
                     {
                         case TypeCode.Char:
-                            return str[value->vStringStart];
+                            return str[value->valueStringStart];
 
                         case TypeCode.String:
-                            return new string(str, value->vStringStart, value->vStringLength);
+                            return new string(str, value->valueStringStart, value->valueStringLength);
 
                         case TypeCode.Object:
                             JsonObject* obj = jsonRender.objectQueue;
-                            if (PathToObject(str + value->vStringStart, value->vStringLength, parent, jsonRender, ref obj))
+                            if (PathToObject(str + value->valueStringStart, value->valueStringLength, parent, jsonRender, ref obj))
                             {
                                 return createObjectItems[obj->objectQueueIndex].obj;
                             }
@@ -1317,14 +1317,14 @@ namespace DogJson
                             if (myObject.type == typeof(Type))
                             //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                             {
-                                return UnsafeOperation.GetType(new string(str, value->vStringStart, value->vStringLength));
+                                return UnsafeOperation.GetType(new string(str, value->valueStringStart, value->valueStringLength));
                             }
                             break;
                         default:
                              myObject = createObjectItems[value->objectQueue->objectQueueIndex];
                             if (myObject.type.IsEnum)
                             {
-                                var strEnum = new string(str, value->vStringStart, value->vStringLength);
+                                var strEnum = new string(str, value->valueStringStart, value->valueStringLength);
                                 Array Arrays = Enum.GetValues(myObject.type);
                                 for (int k = 0; k < Arrays.Length; k++)
                                 {

@@ -269,8 +269,8 @@ namespace DogJson
 
 
 
-        public unsafe delegate object CreateObject(out object temp, Create_Args arg);
-        public unsafe delegate void CreateValue(void* obj, out object temp, Create_Args arg);
+        public unsafe delegate object CreateClass(out object temp, Create_Args arg);
+        public unsafe delegate void CreateStruct(void* obj, out object temp, Create_Args arg);
 
         public unsafe delegate void Create2(out object obj, out void* dataStart, out object temp, Create_Args arg);
         public unsafe delegate void CreateByte(out byte* obj, out byte* dataStart, out object temp, Create_Args arg);
@@ -292,7 +292,6 @@ namespace DogJson
         const int Siez_9 = 8 * 9;
         const int Siez_10 = 8 * 10;
 
-
         /// <summary>
         /// 添加基本json类型时 容器是class
         /// </summary>
@@ -300,7 +299,6 @@ namespace DogJson
         public Delegate addValueStructDelegate;
         [FieldOffset(Siez_0)]
         public AddValueStruct addValueStruct;
-
 
         /// <summary>
         /// 添加基本json类型时 容器是class
@@ -324,14 +322,14 @@ namespace DogJson
 
 
         [FieldOffset(Siez_4)]
-        public Delegate createObjectDelegate;
+        public Delegate createClassDelegate;
         [FieldOffset(Siez_4)]
-        public CreateObject createObject;
+        public CreateClass createObject;
 
         [FieldOffset(Siez_5)]
-        public Delegate createValueDelegate;
+        public Delegate createStructDelegate;
         [FieldOffset(Siez_5)]
-        public CreateValue createValue;
+        public CreateStruct createStruct;
 
         [FieldOffset(Siez_6)]
         public Delegate endDelegate;

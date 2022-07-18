@@ -59,7 +59,7 @@ namespace DogJsonTest
         public TClass003 testClassDD2;
         public TClass003 testClassDD3;
         public TClass003 testClassDD4;
-        public TestEnum testEnum;
+        //public TestEnum testEnum;
         //public TestEnum[] testEnums;
 
         public IList<int> arrayint2;
@@ -244,7 +244,7 @@ namespace DogJsonTest
             read.addValueClassDelegate = (Action<Box<TestOB>, ReadCollectionLink.AddValue_Args>)AddValueClass;
             read.addValueStructDelegate = (AddValueStruct_)AddValueStruct;
 
-            read.createValueDelegate = (CeateValue_)CeateValue;
+            read.createStructDelegate = (CeateValue_)CeateValue;
             read.createObject = CreateObject;
             
             read.getItemType = GetItemType;
@@ -561,7 +561,7 @@ namespace DogJsonTest
             read.addValueClassDelegate = (AddValueObject_)AddValueObject;
 
             read.createObject = CreateObject;
-            read.createValueDelegate = (CreateValue_)CreateValue;
+            read.createStructDelegate = (CreateValue_)CreateValue;
             //read.getItemType = GetItemType;
             return read;
         }

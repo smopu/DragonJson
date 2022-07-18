@@ -391,6 +391,10 @@ namespace DogJson
             heapSize = UnsafeOperation.SizeOf(fieldOrPropertyType);
 
             typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
+            if (isEnum)
+            {
+                fieldOrPropertyType = typeof(EnumWrap<>).MakeGenericType(fieldOrPropertyType);
+            }
             StartReadCollectionLink();
         }
 
@@ -433,6 +437,10 @@ namespace DogJson
             }
 
             typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
+            if (isEnum)
+            {
+                fieldOrPropertyType = typeof(EnumWrap<>).MakeGenericType(fieldOrPropertyType);
+            }
             StartReadCollectionLink();
         }
 

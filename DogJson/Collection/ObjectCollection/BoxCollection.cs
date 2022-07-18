@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace DogJson
 {
-
     public class Box<T> : IBox
     {
         public T value;
@@ -26,8 +25,6 @@ namespace DogJson
     {
         void SetObject(object ob);
     }
-
-
 
     [ReadCollection(typeof(Box<>), false)]
     public unsafe class BoxCollection<T> : CreateTaget<ReadCollectionLink>

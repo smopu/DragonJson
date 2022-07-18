@@ -30,13 +30,13 @@ namespace DogJson
             if (typeof(T).IsValueType)
             {
                 read.endDelegate = (End_)End;
-                read.createValueDelegate = (CreateValue_)CreateValue;
+                read.createStructDelegate = (CreateValue_)CreateValue;
             }
             else
             {
                 
                 read.endDelegate = (EndObject_)EndObject;
-                read.createObjectDelegate = (CreateObject_)CreateObject;
+                read.createClassDelegate = (CreateObject_)CreateObject;
             }
 
             read.addObjectStructDelegate = (AddObjectClass_)AddObjectClass;

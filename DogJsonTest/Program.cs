@@ -219,7 +219,7 @@ namespace DogJsonTest
                     new List<int>{1, 2, 4 }
                 },
                 //testEnums = new TestEnum[] { TestEnum.Test002, TestEnum.Test004, TestEnum.Test003 },
-                testEnum = TestEnum.Test008 | TestEnum.Test002 | TestEnum.Test003,
+                //testEnum = TestEnum.Test008 | TestEnum.Test002 | TestEnum.Test003,
 
 
                 listB = new List<B> {

@@ -59,9 +59,9 @@ namespace DogJson
         public bool valueBool;
 
         [FieldOffset(8)]
-        public int vStringStart;
+        public int valueStringStart;
         [FieldOffset(12)]
-        public int vStringLength;
+        public int valueStringLength;
 
         [FieldOffset(16)]
         public JsonObject* objectQueue;
