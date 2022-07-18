@@ -1,4 +1,52 @@
 ﻿{
+	"p3": {
+		"x": 2,
+		"y": 1,
+		"z": 33
+	},
+	"dictionary3": [
+		[
+			[
+				3,
+				2,
+				1
+			],
+			{
+				"b": false,
+				"num": 11111,
+				"str": "rradads"
+			}
+		],
+		[
+			[
+				1,
+				4,
+				-9.8
+			],
+			{
+				"b": false,
+				"num": 888,
+				"str": "热热我"
+			}
+		],
+		[
+			[
+				-3.2E-13,
+				3E+13,
+				0.99
+			],
+			{
+				"b": false,
+				"num": 999999,
+				"str": "特别强势人物了"
+			}
+		]
+	]
+} {
+	"bb": {
+		"num": 999999,
+		"str": "特别强势人物了"
+	},
 	"dictionary2": {
 		"猫仙洞": {
 			"b": false,
@@ -11,9 +59,6 @@
 			"str": "四叉树在"
 		}
 	},
-	"V32": [ 4, 5, 6 ],
-	"v3": [ 1, 2, 3 ],
-
 	"dictionary3": [
 		[
 			[ 3, 2, 1 ],
@@ -36,13 +81,12 @@
 				"str": "特别强势人物了"
 			}
 		]
-	]
+	],
 
-}
+	"V32": [ 4, 5, 6 ],
+	"v3": [ 1, 2, 3 ]
 
-
-
-{
+} {
 	"dictionary1": [
 		[
 			1,
@@ -58,16 +102,7 @@
 		]
 	]
 
-}
-
-
-
-	"b": true,
-	"num": 33.56,
-	"kk": -15,
-	"str": "4ERWRds",
-
-{
+} "b": true, "num": 33.56, "kk": -15, "str": "4ERWRds", {
 	"objects": [
 		{
 			"$type": "System.Int32",
@@ -424,29 +459,29 @@
 }
 
 
-//代理读取基本json类型需要同一
+//-代理读取基本json类型需要同一
 
 //枚举写入
-
-//字符串自定义代理
+//字符串匹配优化
 
 
 //处理缓存为可变长度
 //root 额外处理
 //注释
-//字符串匹配优化
-	
-	
+
 //null处理
-//路径多维数组
 //测试用例
+//路径多维数组
 
 //unity适配
-
 	
+//x 字符串自定义代理
+
+
+
 
 //-循环引用序列化 可能需要调整顺序，使得路径恒为前缀生成
-	
+
 //-字符串为key的字典额外处理
 
 
@@ -459,39 +494,24 @@
 
 
 
-CollectionManager
-TypeAddrReflectionWrapper
-
-类型
-TypeAllCollection{
- enum TypeSerialization{
-	Wrapper,
-	CollectionObject,
-	CollectionArray,
-	String,
-}
- 	TypeAddrReflectionWrapper wrapper
- 	TypeAddrReflectionWrapper wrapper rapper 
- 	IWriterCollectionObject 
- 	IWriterCollectionObject 
- 	IReadCollectionString
- 	IReadCollectionString
-}
-
-
-CollectionManager.MainType Dictionary<Type,TypeAllCollection>
-CollectionManager.MainType Dictionary<String,TypeAllCollection>
-TypeAddrReflectionWrapper
-{
-	TypeAddrFieldAndProperty {
-	bool isCollection
-	bool isCollectionString
-	IWriterCollectionObject 
- 	IWriterCollectionObject 
- 	IReadCollectionString
- 	IReadCollectionString
+CollectionManager TypeAddrReflectionWrapper 类型 TypeAllCollection {
+	enum TypeSerialization
+	{
+		Wrapper,
+		CollectionObject,
+		CollectionArray,
+		String,
 	}
-}
-IsRef = true ：容器类必须在初始化时创建对象  全部使用统一指针
-IsRef = false： 容器类不能在序列化时被重复引用
-IsOutTemp = true 容器类弹出一个临时对象
+	TypeAddrReflectionWrapper wrapper
+	TypeAddrReflectionWrapper wrapper
+	rapper IWriterCollectionObject
+	IWriterCollectionObject IReadCollectionString
+	IReadCollectionString
+} CollectionManager.MainType Dictionary<Type,TypeAllCollection> CollectionManager.MainType Dictionary<String,TypeAllCollection> TypeAddrReflectionWrapper {
+	TypeAddrFieldAndProperty {
+		bool isCollection
+		bool isCollectionString
+		IWriterCollectionObject IWriterCollectionObject
+		IReadCollectionString IReadCollectionString
+	}
+} IsRef = true ：容器类必须在初始化时创建对象 全部使用统一指针 IsRef = false： 容器类不能在序列化时被重复引用 IsOutTemp = true 容器类弹出一个临时对象

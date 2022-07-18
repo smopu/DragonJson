@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace DogJson.Collection
 {
-    [CollectionWriteAttribute(typeof(KeyValuePair<,>))]
+     
+    [CollectionWrite(typeof(KeyValuePair<,>))]
     public unsafe class WriterKeyValuePair<K, V> : IWriterCollectionObject
     {
         public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
@@ -28,17 +29,10 @@ namespace DogJson.Collection
             //yield return collection.Key;
             //yield return collection.Value;
         }
-        //public Type GetItemType(int index)
-        //{
-        //    if (index == 0)
-        //    {
-        //        return typeof(K);
-        //    }
-        //    return typeof(V);
-        //}
     }
 
-    [CollectionWriteAttribute(typeof(Dictionary<,>))]
+
+    [CollectionWrite(typeof(Dictionary<,>))]
     public unsafe class WriterDictionary<K, V> : IWriterCollectionObject
     {
         public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
@@ -59,9 +53,8 @@ namespace DogJson.Collection
         //}
     }
 
-    public class DictionString<Zero, T> : SpecialCaseGeneric where Zero : Dictionary<string, T> { }
 
-    [CollectionWriteAttribute(typeof(DictionString<,>))]
+    [CollectionWrite(typeof(DictionString<,>))]
     public unsafe class DictionaryStringWriter<V> : IWriterCollectionObject
     {
         public JsonWriteType GetWriteType() { return JsonWriteType.Object; }
@@ -80,4 +73,6 @@ namespace DogJson.Collection
         }
     }
 
+    public class DictionString<Zero, T> : SpecialCaseGeneric where Zero : Dictionary<string, T> { }
 }
+

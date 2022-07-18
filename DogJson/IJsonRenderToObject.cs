@@ -12,4 +12,8 @@ namespace DogJson
         object CreateObject(JsonRender jsonRender, Type type, char* startChar, int length);
     }
 
+    public unsafe interface IJsonWriterToObject
+    {
+        List<JsonWriteValue> ReadObject(object data);
+    }
 }

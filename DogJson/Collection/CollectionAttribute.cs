@@ -36,7 +36,6 @@ namespace DogJson
     }
 
 
-
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]
      public class CollectionWriteAttribute : Attribute
      {
@@ -48,6 +47,8 @@ namespace DogJson
              this.inherited = inherited;
         }
     }
+
+
 
 
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = true)]

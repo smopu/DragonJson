@@ -43,7 +43,7 @@ namespace DogJsonTest
         [Test]
         public void ReadNumber()
         {
-            JsonManager.Start(new AddrToObject2());//ReflectionToObject
+            CollectionManager.Start();//ReflectionToObject
             JsonRender jsonRender = new JsonRender();
 
             string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadNumber) + ".json";
@@ -76,7 +76,7 @@ namespace DogJsonTest
         [Test]
         public void ReadPropertyNumber()
         {
-            JsonManager.Start(new AddrToObject2());//ReflectionToObject
+            CollectionManager.Start();//ReflectionToObject
             JsonRender jsonRender = new JsonRender();
 
             string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadPropertyNumber) + ".json";
@@ -123,7 +123,7 @@ namespace DogJsonTest
                 varLong = 18,
                 varLong2 = -18
             };
-            JsonManager.Start(new AddrToObject2());//ReflectionToObject
+            CollectionManager.Start();//ReflectionToObject
             JsonRender jsonRender = new JsonRender();
 
             string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadPropertyNumber) + ".json";

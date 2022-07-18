@@ -32,7 +32,6 @@ namespace DogJsonTest
         [Test]
         public void TestWrite()
         {
-            JsonWriter jsonWriter = new JsonWriter();
             ACE1 inputData = new ACE1();
             inputData.aCE3 = new ACE3
             {
@@ -70,175 +69,14 @@ namespace DogJsonTest
             inputData.num = 4.5;
             inputData.str = "CCCCD";
 
-            List<JsonWriteValue> writers = new List<JsonWriteValue>();
-            writers = jsonWriter.Wirter(inputData);
+            JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
+            string dataStr = jsonWriter.Writer(inputData);
 
-
-            JsonWriteValue root = new JsonWriteValue();
-            root.type = JsonWriteType.Object;
-            root.isLast = true;
-
-            JsonWriteValue item = new JsonWriteValue();
-
-            StringBuilder sb = new StringBuilder();
-            Stack<JsonWriteValue> objStack = new Stack<JsonWriteValue>();
-            sb.AppendLine("{");
-
-            JsonWriteValue parent = writers[0];
-            objStack.Push(parent);
-
-
-            //for (int i = 1; i < writers.Count; i++)
-            //{
-            //    item = parent.back;
-            //    parent = item;
-
-            //    if (item.key != null)
-            //    {
-            //        sb.Append("\"" + item.key + "\": ");
-            //    }
-            //    sb.AppendLine(item.value);
-
-            //}
-
-            //Console.WriteLine(sb.ToString());
-            //Console.ReadKey();
-
-            for (int i = 1; i < writers.Count; i++)
-            {
-                sb.Append('\t', objStack.Count);
-                item = parent.back;
-                parent = item;
-
-                if (item.key != null)
-                {
-                    sb.Append("\"" + item.key + "\": ");
-                }
-
-                switch (item.type)
-                {
-                    case JsonWriteType.String:
-                        sb.Append(item.value);
-                        if (item.isLast)
-                        {
-                            JsonWriteValue parentStack;
-                            sb.AppendLine();
-                            if (item.back == null)
-                            {
-                                while (objStack.Count > 0)//item.back != null &&  
-                                {
-                                    parentStack = objStack.Pop();
-                                    sb.Append('\t', objStack.Count);
-
-                                    if (parentStack.isLast)
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("}");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("]");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("},");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("],");
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                            else
-                            {
-
-                                while (objStack.Peek().parent != item.back.parent)//item.back != null &&  
-                                {
-                                    parentStack = objStack.Pop();
-                                    sb.Append('\t', objStack.Count);
-
-                                    if (parentStack.isLast)
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("}");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("]");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("},");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("],");
-                                        }
-                                    }
-                                }
-                                parentStack = objStack.Pop();
-                                sb.Append('\t', objStack.Count);
-
-                                if (parentStack.isLast)
-                                {
-                                    if (parentStack.type == JsonWriteType.Object)
-                                    {
-                                        sb.AppendLine("}");
-                                    }
-                                    else
-                                    {
-                                        sb.AppendLine("]");
-                                    }
-                                }
-                                else
-                                {
-                                    if (parentStack.type == JsonWriteType.Object)
-                                    {
-                                        sb.AppendLine("},");
-                                    }
-                                    else
-                                    {
-                                        sb.AppendLine("],");
-                                    }
-                                }
-                            }
-
-
-                        }
-                        else
-                        {
-                            sb.AppendLine(",");
-                        }
-                        break;
-                    case JsonWriteType.Object:
-                        sb.AppendLine("{");
-                        objStack.Push(item);
-                        break;
-                    case JsonWriteType.Array:
-                        sb.AppendLine("[");
-                        objStack.Push(item);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            //sb.AppendLine("}");
+            Console.WriteLine(dataStr);
 
             JsonRender jsonRender = new JsonRender();
-            var outData = jsonRender.ReadJsonTextCreateObject<ACE1>(sb.ToString());
+            var outData = jsonRender.ReadJsonTextCreateObject<ACE1>(dataStr);
 
-            Console.WriteLine(sb.ToString());
             Assert.AreEqualObject(outData, inputData);
             //Console.ReadKey();
         }

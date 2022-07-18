@@ -1,25 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DogJson
 {
 
-    public class ConstructorWrapper
+    public class ConstructorWrapper<T>
     {
-        public Type myType;
-        public Type[] types;
+        //public Type[] types;
         public object[] args;
     }
 
     /// <summary>
     /// 构造方法
     /// </summary>
-    [CollectionRead(typeof(ConstructorWrapper), false)]
-    public unsafe class ConstructorWrapperCollection : CollectionObjectBase<object, ConstructorWrapper>
+    [ReadCollection(typeof(ConstructorWrapper<>), false)]
+    public unsafe class ConstructorWrapperCollection<T> : CreateTaget<ReadCollectionLink>
     {
+        CollectionManager.TypeAllCollection collection;
+        public ReadCollectionLink Create()
+        {
+            ReadCollectionLink read = new ReadCollectionLink();
+            read.isLaze = true;
+
+            if (typeof(T).IsValueType)
+            {
+                read.endDelegate = (End_)End;
+                read.createValueDelegate = (CreateValue_)CreateValue;
+            }
+            else
+            {
+                
+                read.endDelegate = (EndObject_)EndObject;
+                read.createObjectDelegate = (CreateObject_)CreateObject;
+            }
+
+            read.addObjectStructDelegate = (AddObjectClass_)AddObjectClass;
+            read.addObjectClassDelegate = (AddObjectClass_)AddObjectClass;
+
+
+            read.getItemType = GetItemType;
+            //read.endDelegate = (Action<Stack<T>, T[]>)EndObject;
+            return read;
+        }
+
+
         long typelong;
         long argslong;
         public ConstructorWrapperCollection()
@@ -34,64 +63,67 @@ namespace DogJson
             }
         }
 
-
-        public override unsafe Type GetItemType(JsonObject* bridge)
+        delegate void AddObjectClass_(object obj, object[] value, ReadCollectionLink.Add_Args arg);
+        void AddObjectClass(object obj, object[] value, ReadCollectionLink.Add_Args arg)
         {
-            return typeof(object[]);
-            //if (keyLength == 4)
+            //string keyName = new string(arg.bridge->keyStringStart, 0, arg.bridge->keyStringLength);//$create
+            //if (keyName == "$create")
             //{
-            //    long nameLong = *(long*)key;
-            //    if (nameLong == typelong)
-            //    {
-            //        return typeof(Type[]);
-            //    }
-            //    else if (nameLong == argslong)
-            //    {
-            //        return typeof(object[]);
-            //    }
             //}
-            throw new Exception();
+            ConstructorWrapper<T> wrapper = (ConstructorWrapper<T>)arg.temp;
+            wrapper.args = (object[])value;
         }
 
-        protected override unsafe void Add(ConstructorWrapper obj, char* key, int keyLength, object value, ReadCollectionProxy proxy)
+        delegate void CreateValue_(ref T value, out object temp, ReadCollectionLink.Create_Args arg);
+        void CreateValue(ref T value, out object temp, ReadCollectionLink.Create_Args arg)
         {
-            string keyName = new string(key, 0, keyLength);//$create
-            if (keyName == "$create")
+            temp = new ConstructorWrapper<T>();
+            value = (T)FormatterServices.GetUninitializedObject(typeof(T));
+        }
+
+        delegate object CreateObject_(out object temp, ReadCollectionLink.Create_Args arg);
+        object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
+        {
+            temp = new ConstructorWrapper<T>();
+            return FormatterServices.GetUninitializedObject(typeof(T));
+        }
+
+        CollectionManager.TypeAllCollection GetItemType(ReadCollectionLink.GetItemType_Args arg)
+        {
+            if (collection == null)
             {
-                obj.args = (object[])value;
+                collection = CollectionManager.GetTypeCollection(typeof(object[]));
             }
-            //if (keyLength == 4)
-            //{
-            //    long nameLong = *(long*)key;
-            //    if (nameLong == typelong)
-            //    {
-            //        obj.types = (Type[])value;
-            //    }
-            //    else if (nameLong == argslong)
-            //    {
-            //        obj.args = (object[])value;
-            //    }
-            //}
-            //throw new Exception();
+            return collection;
         }
 
-        protected override unsafe void AddValue(ConstructorWrapper obj, char* key, int keyLength, char* str, JsonValue* value, ReadCollectionProxy proxy)
+        delegate object EndObject_(object obj, ConstructorWrapper<T> temp);
+        object EndObject(object obj, ConstructorWrapper<T> temp)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override ConstructorWrapper CreateObject(JsonObject* obj, object parent, Type objectType, Type parentType)
-        {
-            return new ConstructorWrapper()
+            var types = new Type[temp.args.Length];
+            for (int i = 0; i < types.Length; i++)
             {
-                myType = objectType
-            };
+                types[i] = temp.args[i].GetType();
+            }
+            ConstructorInfo constructor = typeof(T).GetConstructor(types);
+            constructor.Invoke(obj, temp.args);
+            return obj;
         }
 
-        protected override object End(ConstructorWrapper obj)
+        delegate void End_(ref T value, ConstructorWrapper<T> temp);
+        void End(ref T value, ConstructorWrapper<T> temp)
         {
-            return Activator.CreateInstance(obj.myType, obj.args);
-            //return obj.myType.GetConstructor(obj.types).Invoke(obj.args);   
+            //var types = new Type[temp.args.Length];
+            //for (int i = 0; i < types.Length; i++)
+            //{
+            //    types[i] = temp.args[i].GetType();
+            //}
+            value = (T)Activator.CreateInstance(typeof(T), temp.args);
         }
+
+
+
     }
+
+
 }

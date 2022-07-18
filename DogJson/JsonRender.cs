@@ -60,15 +60,11 @@ namespace DogJson
         {
             if (CollectionManager.IsStart == false)
             {
-                CollectionManager.Start(new AddrToObject2());
+                CollectionManager.Start();
             }
             if (jsonRenderToObject == null)
             {
-                this.jsonRenderToObject = CollectionManager.jsonRenderToObject;
-                if (this.jsonRenderToObject == null)
-                {
-                    throw new Exception("JsonManager.jsonRenderToObject is null");
-                }
+                this.jsonRenderToObject = new AddrToObject2();
             }
             else
             {
@@ -597,19 +593,27 @@ namespace DogJson
 
                             case '[':
                                 //新建array赋予string名字 array入栈
-                                objectNow = objectQueue + objectQueueIndex;
-                                objectNow->objectQueueIndex = objectQueueIndex;
-                                objectNow->parentObjectIndex = stackNow->objectQueueIndex;
-                                objectNow->keyStringStart = startChar + keyStringStart;
-                                objectNow->keyStringLength = keyStringLength;
-                                objectNow->isObject = false;
-                                objectNow->arrayCount = 0;
+                                if (stackNow->isCommandValue)
+                                {
+                                    stackNow->isObject = false;
+                                    stackNow->arrayCount = 0;
+                                    goto State_Array;
+                                }
+                                else
+                                {
+                                    objectNow = objectQueue + objectQueueIndex;
+                                    objectNow->objectQueueIndex = objectQueueIndex;
+                                    objectNow->parentObjectIndex = stackNow->objectQueueIndex;
+                                    objectNow->keyStringStart = startChar + keyStringStart;
+                                    objectNow->keyStringLength = keyStringLength;
+                                    objectNow->isObject = false;
+                                    objectNow->arrayCount = 0;
 
-                                stack[++stackIndex] = objectNow; stackNow = stack[stackIndex];
-                                ++objectQueueIndex;
+                                    stack[++stackIndex] = objectNow; stackNow = stack[stackIndex];
+                                    ++objectQueueIndex;
 
-                                goto State_Array;
-
+                                    goto State_Array;
+                                }
 
                             case 't':
                                 if (i < length + 4)
@@ -690,6 +694,12 @@ namespace DogJson
                                     {
                                         if (*now == '.')
                                         {
+                                            goto Dot;
+                                        }
+                                        else if (*now == 'E' || *now == 'e')
+                                        {
+                                            --now;
+                                            --i;
                                             goto Dot;
                                         }
                                         else
@@ -851,7 +861,7 @@ namespace DogJson
                         switch (*now)
                         {
                             case '"':
-                                json_value = pool+(poolIndex++);
+                                json_value = pool + (poolIndex++);
                                 vStringStart = i + 1;
                                 //再找" 
                                 for (++i, ++now; i < length; ++i, ++now)
@@ -869,7 +879,7 @@ namespace DogJson
                                                 json_value->vStringLength = vStringLength;
                                                 json_value->objectQueue = stackNow;
                                                 json_value->arrayIndex = stackNow->arrayCount;
-                                                
+
                                                 ++stackNow->arrayCount;
                                                 goto State_Array;
                                             }
@@ -880,7 +890,7 @@ namespace DogJson
                                                 json_value->vStringLength = vStringLength;
                                                 json_value->objectQueue = stackNow;
                                                 json_value->arrayIndex = stackNow->arrayCount;
-                                                
+
                                                 //objectNext 赋值
                                                 stack[stackIndex]->objectNext = objectQueueIndex;
                                                 ++stackNow->arrayCount;
@@ -929,7 +939,7 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == truelong)
                                     {
-                                        json_value = pool+(poolIndex++);
+                                        json_value = pool + (poolIndex++);
                                         json_value->type = JsonValueType.Boolean;
                                         json_value->valueBool = true;
                                         now += 4;
@@ -944,7 +954,7 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == nulllong)
                                     {
-                                        json_value = pool+(poolIndex++);
+                                        json_value = pool + (poolIndex++);
                                         json_value->type = JsonValueType.None;
                                         now += 4;
                                         i += 4;
@@ -960,7 +970,7 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == alselong)
                                     {
-                                        json_value = pool+(poolIndex++);
+                                        json_value = pool + (poolIndex++);
                                         json_value->type = JsonValueType.Boolean;
                                         json_value->valueBool = false;
                                         now += 4;
@@ -994,7 +1004,7 @@ namespace DogJson
                                         throw new Exception("key:value后面必须要跟,或者}" + *now);
                                     }
                                 }
-                                json_value = pool+(poolIndex++);
+                                json_value = pool + (poolIndex++);
                                 v_long = (*now - '0');
                                 for (++i, ++now; i < length; ++i, ++now)
                                 {
@@ -1002,6 +1012,12 @@ namespace DogJson
                                     {
                                         if (*now == '.')
                                         {
+                                            goto Dot2;
+                                        }
+                                        else if (*now == 'E' || *now == 'e')
+                                        {
+                                            --now;
+                                            --i;
                                             goto Dot2;
                                         }
                                         else
@@ -1090,7 +1106,7 @@ namespace DogJson
 
                             Value2:
                                 json_value->objectQueue = stackNow;
-                                
+
                                 for (; i < length; ++i, ++now)
                                 {
                                     switch (*now)
@@ -1104,18 +1120,71 @@ namespace DogJson
                                         case ',':
                                             json_value->arrayIndex = stackNow->arrayCount;
                                             ++stackNow->arrayCount;
-                                            
+
                                             goto State_Array;
                                         case ']':
-                                            //出栈 
-                                            json_value->arrayIndex = stackNow->arrayCount;
-                                            ++stackNow->arrayCount;
-                                            
-                                            //objectNext 赋值
-                                            stack[stackIndex]->objectNext = objectQueueIndex;
-                                            
-                                            --stackIndex; stackNow = stack[stackIndex];
-                                            goto Loop;
+
+                                            if (stackNow->isCommandValue)
+                                            {
+                                                //下面必是 }
+                                                for (++i, ++now; i < length; ++i, ++now)
+                                                {
+                                                    switch (*now)
+                                                    {
+                                                        case ' ':
+                                                        case '\t':
+                                                        case '\r':
+                                                        case '\n':
+                                                            break;
+
+                                                        case '}':
+                                                            //出栈 
+                                                            json_value->arrayIndex = stackNow->arrayCount;
+                                                            ++stackNow->arrayCount;
+                                                            //objectNext 赋值
+                                                            stackNow->objectNext = objectQueueIndex;
+                                                            //出栈 
+                                                            --stackIndex; stackNow = stack[stackIndex];
+                                                            if (stackIndex == -1)
+                                                            {
+                                                                goto BACK;
+                                                            }
+                                                            if (stackNow->isObject)
+                                                            {
+                                                                goto State_Object;
+                                                            }
+                                                            else
+                                                            {
+                                                                stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                                ++stackNow->arrayCount;
+                                                                goto State_Array;
+                                                            }
+
+                                                        case '"':
+                                                        case '{':
+                                                        case ':':
+                                                        case '[':
+                                                        case ']':
+                                                        case ',':
+                                                        default:
+                                                            throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是} 现在是:" + *now));
+                                                    }
+                                                }
+                                                throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是}"));
+
+                                            }
+                                            else
+                                            {
+                                                //出栈 
+                                                json_value->arrayIndex = stackNow->arrayCount;
+                                                ++stackNow->arrayCount;
+
+                                                //objectNext 赋值
+                                                stack[stackIndex]->objectNext = objectQueueIndex;
+
+                                                --stackIndex; stackNow = stack[stackIndex];
+                                                goto Loop;
+                                            }
                                         default:
                                             throw new Exception(Debug(startChar, length, i, "array后面必须要跟,或者] , " + *now));
                                     }
@@ -1129,13 +1198,62 @@ namespace DogJson
                             case ',':
                                 break;
                             case ']':
-                                //(*jsonStackNow)->objectIndex = poolIndex;
-                                //objectNext 赋值
-                                stack[stackIndex]->objectNext = objectQueueIndex;
-                                //出栈 
-                                --stackIndex; stackNow = stack[stackIndex];
-                                goto Loop;
+                                if (stackNow->isCommandValue)
+                                {
+                                    //下面必是 }
+                                    for (++i, ++now; i < length; ++i, ++now)
+                                    {
+                                        switch (*now)
+                                        {
+                                            case ' ':
+                                            case '\t':
+                                            case '\r':
+                                            case '\n':
+                                                break;
 
+                                            case '}':
+                                                //出栈 
+                                                //(*jsonStackNow)->objectIndex = poolIndex;
+                                                //objectNext 赋值
+                                                stackNow->objectNext = objectQueueIndex;
+                                                //出栈 
+                                                --stackIndex; stackNow = stack[stackIndex];
+                                                if (stackIndex == -1)
+                                                {
+                                                    goto BACK;
+                                                }
+                                                if (stackNow->isObject)
+                                                {
+                                                    goto State_Object;
+                                                }
+                                                else
+                                                {
+                                                    stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                    ++stackNow->arrayCount;
+                                                    goto State_Array;
+                                                }
+                                            case '"':
+                                            case '{':
+                                            case ':':
+                                            case '[':
+                                            case ']':
+                                            case ',':
+                                            default:
+                                                throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是} 现在是:" + *now));
+                                        }
+                                    }
+                                    throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是}"));
+
+                                }
+                                else
+                                {
+                                    //(*jsonStackNow)->objectIndex = poolIndex;
+                                    //objectNext 赋值
+                                    stack[stackIndex]->objectNext = objectQueueIndex;
+                                    //出栈 
+                                    --stackIndex; stackNow = stack[stackIndex];
+                                    goto Loop;
+                                }
                             case ':':
                             case '}':
                                 throw new Exception("key:后面不能是" + *now);

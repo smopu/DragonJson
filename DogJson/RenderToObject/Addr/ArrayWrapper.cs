@@ -200,7 +200,7 @@ namespace DogJson
                 objPtr = (byte*)p;
                 *p = arrayWrapperItem.heads[rank]; ++p;
                 *p = (IntPtr)arraySize; ++p;
-                *p = UnsafeOperation.GetTypeHead(type);
+                *p = type.TypeHandle.Value;
                 ++p;
 
                 GeneralTool.Memcpy(p, array_lengths, rank * 4);

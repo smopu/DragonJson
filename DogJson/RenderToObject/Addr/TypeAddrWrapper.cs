@@ -353,6 +353,7 @@ namespace DogJson
 
     public unsafe class TypeAddrFieldAndProperty
     {
+        public TypeAddrReflectionWrapper wrapper;
         public ReadCollectionLink read;
         //
         public void StartReadCollectionLink() 
@@ -370,6 +371,7 @@ namespace DogJson
 
         public TypeAddrFieldAndProperty(FieldInfo fieldInfo)
         {
+            this.isPublic = fieldInfo.IsPublic;
             this.isProperty = false;
             this.fieldInfo = fieldInfo;
             this.fieldOrPropertyType = fieldInfo.FieldType;
@@ -395,6 +397,7 @@ namespace DogJson
 
         public TypeAddrFieldAndProperty(Type parntType,  PropertyInfo propertyInfo)
         {
+            this.isPublic = true;
             this.isProperty = true;
             this.propertyInfo = propertyInfo;
             this.fieldOrPropertyType = propertyInfo.PropertyType;
@@ -437,7 +440,8 @@ namespace DogJson
         public bool isArray = false;
         public bool isEnum = false;
         public bool isProperty = false;
-
+        public bool isPublic = false;
+        
         public FieldInfo fieldInfo;
         public IntPtr typeHead;
         public Type fieldOrPropertyType;
@@ -598,7 +602,7 @@ namespace DogJson
                     default:
                         //GC.Collect();
 
-                        object obj = new byte[this.stackSize - 1 * UnsafeOperation.PTR_COUNT];
+                        object obj = new byte[this.heapSize - 1 * UnsafeOperation.PTR_COUNT];
                         IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
                         //ptr = UnsafeUtility.GetObjectAddr(obj);
                         //*(IntPtr*)ptr = typeHead;

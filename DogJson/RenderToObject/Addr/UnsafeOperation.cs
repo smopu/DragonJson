@@ -80,21 +80,28 @@ namespace DogJson
         static Dictionary<Type, IntPtr> allTypeHead = new Dictionary<Type, IntPtr>();
         public unsafe static IntPtr GetTypeHead(Type type)
         {
-            //if (type.IsArray)
-            //{
-            //    IntPtr value;
-            //    if (allTypeHead.TryGetValue(type, out value))
-            //    {
-            //        return value;
-            //    }
-            //    else
-            //    {
-            //        value = allTypeHead[type] = *(IntPtr*)GeneralTool.ObjectToVoid(
-            //        Array.CreateInstance(type.GetElementType(), new int[type.GetArrayRank()]));
-            //        return value;
+            if (type.IsArray)
+            {
+                IntPtr value;
+                if (allTypeHead.TryGetValue(type, out value))
+                {
+                    return value;
+                }
+                else
+                {
+                    value = allTypeHead[type] = *(IntPtr*)GeneralTool.ObjectToVoid(
+                    Array.CreateInstance(type.GetElementType(), new int[type.GetArrayRank()]));
+                    return value;
 
-            //    }
-            //}
+                }
+            }
+            else
+            {
+                //object v = FormatterServices.GetUninitializedObject(type);
+                //IntPtr value = allTypeHead[type] = *(IntPtr*)GeneralTool.ObjectToVoid(v);
+                //return value;
+                return type.TypeHandle.Value;
+            }
             return type.TypeHandle.Value;
 
 

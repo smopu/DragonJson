@@ -15,6 +15,7 @@ namespace DogJson
         {
             Wrapper,
             Read,
+            Array,
         }
         //static Dictionary<Type, IWriterObject> writeArrayMap = new Dictionary<Type, IWriterObject>();
         //static readonly Dictionary<Type, Type> writeArrayTypeMap = new Dictionary<Type, Type>();
@@ -26,9 +27,29 @@ namespace DogJson
             public Type type; 
             public bool IsValueType; 
         }
-
+        
         static Dictionary<Type, TypeAllCollection> allTypeCollection = new Dictionary<Type, TypeAllCollection>();
         static Dictionary<string, TypeAllCollection> allTypeStringCollection = new Dictionary<string, TypeAllCollection>();
+
+        static Dictionary<Type, EnumTypeWrap> allTypeEnumTypeWrap = new Dictionary<Type, EnumTypeWrap>();
+
+
+        public static EnumTypeWrap GetEnumTypeWrap(Type type)
+        {
+            EnumTypeWrap wrap;
+            if (allTypeEnumTypeWrap.TryGetValue(type, out wrap))
+            {
+                return wrap;
+            }
+            wrap = new EnumTypeWrap(type);
+            lock (allTypeEnumTypeWrap)
+            {
+                allTypeEnumTypeWrap[type] = wrap;
+            }
+            return wrap;
+        }
+
+
         public static TypeAllCollection GetTypeCollection(Type type)
         {
             TypeAllCollection op;
@@ -245,8 +266,7 @@ namespace DogJson
         static bool isStart = false;
         static object lockObj = new object();
         public static bool IsStart{ get{ return isStart; } }
-        public static IJsonRenderToObject jsonRenderToObject;
-        public static void Start(IJsonRenderToObject defaultJsonRenderToObject)
+        public static void Start()
         {
             lock (lockObj)
             {
@@ -257,7 +277,6 @@ namespace DogJson
                         return;
                     }
 
-                    jsonRenderToObject = defaultJsonRenderToObject;
 
                     var assembly = Assembly.GetAssembly(typeof(IReadCollectionObject));
 

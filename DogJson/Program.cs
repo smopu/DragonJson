@@ -763,12 +763,366 @@ namespace DogJson
             }
         }
 
-        static unsafe void Main(string[] args)
+        public static unsafe void Main(string[] args)
+        {
+            TestJsonClassA inputData = new TestJsonClassA()
+            {
+                b = true,
+                Num = 33.56,
+                kk = -15,
+                str = "4ERWRds",
+                BB = new B
+                {
+                    str = "Wvs",
+                    b = true,
+                    num = -9999.232
+                },
+                //gcc = new C
+                //{
+                //    k = 12,
+                //    bbb = {
+                //        str = "cc",
+                //        b = true,
+                //        num = -8.56
+                //    }
+                //},
+                //p3 = {
+                //    x = 2,
+                //    y = 1,
+                //    z = 33
+                //},
+                //testOB = {
+                //    numI = 13,
+                //    num = 3.6,
+                //    p3_0 = new P_box_3 {
+                //        x = 1.2f,
+                //        y = -1.8f,
+                //        z = 33
+                //    },
+                //    p3_2 = {
+                //        x = -12,
+                //        y = 18,
+                //        z = 3.3f
+                //    }
+                //},
+                //gD = new E
+                //{
+                //    k = -3.14E-12,
+                //    str = "3特瑞aV",
+                //    b = true
+                //},
+                //arrayArray3 = new int[] { 1, 2, 3, 4, 5 },
+                //arrayArray4 = new int[][] {
+                //    new int[] { 1, 2, 3, 4, 5 },
+                //    new int[] { 11, 12, 13, 14, 15 },
+                //    new int[] { 21, 22, 23, 24, 25 }
+                //},
+                //arrayArray1 = new int[,,] {
+                //    {
+                //        { 1, 2, 3, 4, 5 },
+                //        { 11, 12, 13, 14, 15 },
+                //        { 21, 22, 23, 24, 25 }
+                //    },
+                //    {
+                //        { 101, 102, 103, 104, 105 },
+                //        { 1011, 1012, 1013, 1014, 1015 },
+                //        { 1021, 1022, 1023, 1024, 1025 }
+                //    }
+                //},
+                //arrayArray2 = new int[,][] {
+                //    {
+                //        new int[] { 1, 2, 3, 4, 5 },
+                //        new int[] { 11, 12, 13, 14, 15 },
+                //        new int[] { 21, 22, 23, 24, 25 }
+                //    },
+                //    {
+                //        new int[] { 101, 102, 103, 104, 105 },
+                //        new int[] { 1011, 1012, 1013, 1014, 1015 },
+                //        new int[] { 1021, 1022, 1023, 1024, 1025 }
+                //    }
+                //},
+                //arrayArray5 = new int[,,] {
+                //{
+                //    { 1, 2, 3, 4, 5 },
+                //    { 11, 12, 13, 14, 15 },
+                //    { 21, 22, 23, 24, 25 }
+                //    },
+                //{
+                //    { 1001, 1002, 1003, 1004, 1005 },
+                //    { 1011, 1012, 1013, 1014, 1015 },
+                //    { 1021, 1022, 1023, 1024, 1025 }
+                //    }
+                //},
+
+                //ddd = (System.Double)(-3.14E-12),
+                //objects = new object[] {
+                //    (System.Int32)(12),
+                //    (System.Double)(-3.14E-12)
+                //},
+                //testEnums = new TestEnum[] { TestEnum.Test002, TestEnum.Test004, TestEnum.Test003 },
+                //testEnum = TestEnum.Test002,
+
+
+                //listB = new List<B> {
+                //    new B {
+                //        str = "00001",
+                //        b = true,
+                //        num = -8.56
+                //    },
+                //    new B {
+                //        str = "aaaa2",
+                //        b = false,
+                //        num = 10000888.999
+                //    },
+                //},
+
+                //arrayLinkedList = new LinkedList<long>(new List<long> { 1L, 2L, 3L, 4L, 7L }),// { 1L, 2l, 3l, 4l, 7l }
+
+                //arrayStack = new Stack<int>(new List<int> { 3, 4, 5 }),
+
+                //arraydouble = new HashSet<double>() {
+                //    3.333,
+                //    -4.8888,
+                //    -5.34E+108
+                //},
+                //arraystring = new Queue<string>(
+                //   new List<string> {
+                //       "true",
+                //       "null",
+                //       "ed false"
+                //   }
+                //),
+                //arraybool = new List<bool>() {
+                //    false,
+                //    true,
+                //    false
+                //},
+
+                //arrayint2 = new List<System.Int32> { 14, 24, 34, 44, 54 },
+
+                //fd = new B[] {
+                //    new B {
+                //        b = true,
+                //        num = -3.14E-12,
+                //        str = "ddd"
+                //    },
+                //    new B {
+                //        b = false,
+                //        num = 34.5
+                //    },
+                //    new B {
+                //        num = 999999
+                //    }
+                //},
+
+                //dcc = new TclassDCC("3213.#$%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
+
+                //Iclass0Z = new DogJsonTest.TclassC
+                //{
+                //    b = 122,
+                //    value = 1.444,
+                //    bbb = new B
+                //    {
+                //        b = true,
+                //        num = -3.14E-12,
+                //        str = "hello world"
+                //    }
+                //},
+                //v3 = new V3(3, 2, 1),
+                //testDelegate2 = TClassA.Fool,
+
+                //arrayRekn = new B[,,]
+                //{
+                //    {
+                //        {
+                //            new B {
+                //                num = 1
+                //            },
+                //            new B {
+                //                num = 2,
+                //                str = "ddd"
+                //            }
+                //        },
+                //        {
+                //            new B {
+                //                num = 3
+                //            },
+                //            new B {
+                //                num = 4
+                //            }
+                //        }
+                //    },
+                //    {
+                //        {
+                //            new B {
+                //                num = 5,
+                //                str = "5"
+                //            },
+                //            new B {
+                //                num = 6,
+                //                str = "6"
+                //            }
+                //        },
+                //        {
+                //            new B {
+                //                num = 7,
+                //                str = "7"
+                //            },
+                //            new B {
+                //                num = 8,
+                //                str = "8"
+                //            }
+                //        }
+                //    },
+                //    {
+                //        {
+                //            new B {
+                //                num = 9,
+                //                str = "9"
+                //            },
+                //            new B {
+                //                num = 10,
+                //                str = "10"
+                //            }
+                //        },
+                //        {
+                //            new B {
+                //                num = 11,
+                //                str = "11"
+                //            },
+                //            new B {
+                //                num = 12,
+                //                str = "12"
+                //            }
+                //        }
+                //    }
+                //},
+
+                //tClass001 = new TClass001
+                //{
+                //    objects = new object[] {
+                //        (System.Int32)12,
+                //        -(System.Double)3.14E-12,
+                //        (System.String)"3213.#$%^&*()",
+                //    },
+                //    tClass002s = new TClass002[] {
+                //        new TClass002 {
+                //            size = 1,
+                //            testString = "A@0"
+                //        },
+                //        new TClass002 {
+                //            size = 2,
+                //            testString = "A@1",
+                //            tClass003 = new TClass003 {
+                //                testString = "testClassDD4"
+                //            },
+                //            tClass003s = new TClass003[] {
+                //                new TClass003 {
+                //                    testString = "0000"
+                //                },
+                //                new TClass003 {
+                //                    testString = "0001"
+                //                },
+                //                new TClass003 {
+                //                    testString = "testClassDD3"
+                //                }
+                //            }
+                //        },
+                //        new TClass002 {
+                //            size = 3,
+                //            testString = "asdede"
+                //        }
+                //    },
+
+                //    tClass002 = new TClass002
+                //    {
+                //        size = 12,
+                //        tClass003 = new TClass003
+                //        {
+                //            testString = "testClassDD"
+                //        },
+                //        tClass003s = new TClass003[] {
+                //            new TClass003 {
+                //                testString = "0000"
+                //            },
+                //            new TClass003 {
+                //                testString = "0001"
+                //            },
+                //            new TClass003 {
+                //                testString = "testClassDD2"
+                //            },
+                //            new TClass003 {
+                //                testString = "0003"
+                //            }
+                //        },
+
+                //        testString = "A@2"
+                //    },
+                //    TestDuble = -3.14E-12
+                //},
+
+                //dictionary3 = new Dictionary<V3, B>()
+                //{
+                //    {
+                //       new V3( 3, 2, 1 ),
+                //       new B {
+                //            num = 11111,
+                //            str= "rradads"
+                //        }
+                //    },
+
+                //    {
+                //       new V3( 1, 4, -9.8f  ),
+                //       new B {
+                //            num = 888,
+                //            str= "热热我"
+                //        }
+                //    },
+
+                //    {
+                //       new V3( -3.2E-13f, 3.0E+13f, 0.99f ),
+                //       new B {
+                //            num = 999999,
+                //            str= "特别强势人物了"
+                //        }
+                //    }
+                //},
+                //tstructA = new TstructA
+                //{
+                //    value = 3.6,
+                //    b = new TstructB
+                //    {
+                //        kk = "FC",
+                //        c = new TstructC
+                //        {
+                //            Id = 21443,
+                //        }
+                //    }
+                //}
+            };
+
+
+
+            JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
+            string dataStr = jsonWriter.Writer(inputData);
+
+            Console.WriteLine(dataStr);
+
+            JsonRender jsonRender = new JsonRender();
+            var outData = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(dataStr);
+
+            //bool isOk = Assert.AreEqualObject(outData, inputData);
+            //Console.WriteLine(isOk);
+            Console.WriteLine();
+
+        }
+
+        static unsafe void Main444(string[] args)
         {
             Stopwatch oTime = new Stopwatch();
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
-            CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+            CollectionManager.Start();//ReflectionToObject  AddrToObject2
 
             JsonRender jsonRender = new JsonRender();
 
@@ -1095,7 +1449,7 @@ namespace DogJson
             //ReadCollectionLink.Add_Args arg2 = new ReadCollectionLink.Add_Args();
             ////read.add(GeneralTool.ObjectToVoid(obj1), GeneralTool.ObjectToVoid(kvss), arg2);
             //read.add3(obj1, kvss, arg2);
-            CollectionManager.Start(new AddrToObject2());
+            CollectionManager.Start();
 
             Console.ReadLine();
             //Stopwatch oTime = new Stopwatch();
@@ -1202,14 +1556,14 @@ namespace DogJson
              
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
-            CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+            CollectionManager.Start();//ReflectionToObject  AddrToObject2
 
             JsonRender jsonRender = new JsonRender();
 
             jsonRender.ReadJsonText(str);
             var oCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
 
-            JsonWriter jsonWriter = new JsonWriter();
+            JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
             ACE1 aCE = new ACE1();
             //aCE.aCE3 = new ACE3
             //{
@@ -1446,157 +1800,158 @@ namespace DogJson
 
             //Type ob1 = aCE.aCE3s2.GetType().BaseType;
 
-            List<JsonWriteValue> writers = jsonWriter.Wirter(aCE);
+            //List<JsonWriteValue> writers = jsonWriter.Write(aCE);
 
-            JsonWriteValue root = new JsonWriteValue();
-            root.type = JsonWriteType.Object;
-            root.isLast = true;
+            //JsonWriteValue root = new JsonWriteValue();
+            //root.type = JsonWriteType.Object;
+            //root.isLast = true;
 
-            JsonWriteValue item = new JsonWriteValue();
+            //JsonWriteValue item = new JsonWriteValue();
 
-            StringBuilder sb = new StringBuilder();
-            Stack<JsonWriteValue> objStack = new Stack<JsonWriteValue>();
-            sb.AppendLine("{");
+            //StringBuilder sb = new StringBuilder();
+            //Stack<JsonWriteValue> objStack = new Stack<JsonWriteValue>();
+            //sb.AppendLine("{");
 
-            JsonWriteValue parent = writers[0];
-            objStack.Push(parent);
+            //JsonWriteValue parent = writers[0];
+            //objStack.Push(parent);
 
-            for (int i = 1; i < writers.Count; i++)
-            {
-                sb.Append('\t', objStack.Count);
-                item = parent.back;
-                parent = item;
+            //for (int i = 1; i < writers.Count; i++)
+            //{
+            //    sb.Append('\t', objStack.Count);
+            //    item = parent.back;
+            //    parent = item;
 
-                if (item.key != null)
-                {
-                    sb.Append("\"" + item.key + "\": ");
-                }
+            //    if (item.key != null)
+            //    {
+            //        sb.Append("\"" + item.key + "\": ");
+            //    }
 
-                switch (item.type)
-                {
-                    case JsonWriteType.String:
-                        sb.Append(item.value);
-                        Loop:
-                        if (item.isLast)
-                        {
-                            JsonWriteValue parentStack;
-                            sb.AppendLine();
-                            if (item.back == null)
-                            {
-                                while (objStack.Count > 0)//item.back != null &&  
-                                {
-                                    parentStack = objStack.Pop();
-                                    sb.Append('\t', objStack.Count);
+            //    switch (item.type)
+            //    {
+            //        case JsonWriteType.String:
+            //            sb.Append(item.value);
+            //            Loop:
+            //            if (item.isLast)
+            //            {
+            //                JsonWriteValue parentStack;
+            //                sb.AppendLine();
+            //                if (item.back == null)
+            //                {
+            //                    while (objStack.Count > 0)//item.back != null &&  
+            //                    {
+            //                        parentStack = objStack.Pop();
+            //                        sb.Append('\t', objStack.Count);
 
-                                    if (parentStack.isLast)
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("}");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("]");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("},");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("],");
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                            else
-                            {
+            //                        if (parentStack.isLast)
+            //                        {
+            //                            if (parentStack.type == JsonWriteType.Object)
+            //                            {
+            //                                sb.AppendLine("}");
+            //                            }
+            //                            else
+            //                            {
+            //                                sb.AppendLine("]");
+            //                            }
+            //                        }
+            //                        else
+            //                        {
+            //                            if (parentStack.type == JsonWriteType.Object)
+            //                            {
+            //                                sb.AppendLine("},");
+            //                            }
+            //                            else
+            //                            {
+            //                                sb.AppendLine("],");
+            //                            }
+            //                        }
+            //                    }
+            //                    break;
+            //                }
+            //                else
+            //                {
 
-                                while (objStack.Peek().parent != item.back.parent)//item.back != null &&  
-                                {
-                                    parentStack = objStack.Pop();
-                                    sb.Append('\t', objStack.Count);
+            //                    while (objStack.Peek().parent != item.back.parent)//item.back != null &&  
+            //                    {
+            //                        parentStack = objStack.Pop();
+            //                        sb.Append('\t', objStack.Count);
 
-                                    if (parentStack.isLast)
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("}");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("]");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (parentStack.type == JsonWriteType.Object)
-                                        {
-                                            sb.AppendLine("},");
-                                        }
-                                        else
-                                        {
-                                            sb.AppendLine("],");
-                                        }
-                                    }
-                                }
-                                parentStack = objStack.Pop();
-                                sb.Append('\t', objStack.Count);
+            //                        if (parentStack.isLast)
+            //                        {
+            //                            if (parentStack.type == JsonWriteType.Object)
+            //                            {
+            //                                sb.AppendLine("}");
+            //                            }
+            //                            else
+            //                            {
+            //                                sb.AppendLine("]");
+            //                            }
+            //                        }
+            //                        else
+            //                        {
+            //                            if (parentStack.type == JsonWriteType.Object)
+            //                            {
+            //                                sb.AppendLine("},");
+            //                            }
+            //                            else
+            //                            {
+            //                                sb.AppendLine("],");
+            //                            }
+            //                        }
+            //                    }
+            //                    parentStack = objStack.Pop();
+            //                    sb.Append('\t', objStack.Count);
 
-                                if (parentStack.isLast)
-                                {
-                                    if (parentStack.type == JsonWriteType.Object)
-                                    {
-                                        sb.AppendLine("}");
-                                    }
-                                    else
-                                    {
-                                        sb.AppendLine("]");
-                                    }
-                                }
-                                else
-                                {
-                                    if (parentStack.type == JsonWriteType.Object)
-                                    {
-                                        sb.AppendLine("},");
-                                    }
-                                    else
-                                    {
-                                        sb.AppendLine("],");
-                                    }
-                                }
-                            }
+            //                    if (parentStack.isLast)
+            //                    {
+            //                        if (parentStack.type == JsonWriteType.Object)
+            //                        {
+            //                            sb.AppendLine("}");
+            //                        }
+            //                        else
+            //                        {
+            //                            sb.AppendLine("]");
+            //                        }
+            //                    }
+            //                    else
+            //                    {
+            //                        if (parentStack.type == JsonWriteType.Object)
+            //                        {
+            //                            sb.AppendLine("},");
+            //                        }
+            //                        else
+            //                        {
+            //                            sb.AppendLine("],");
+            //                        }
+            //                    }
+            //                }
 
 
-                        }
-                        else
-                        {
-                            sb.AppendLine(",");
-                        }
-                        break;
-                    case JsonWriteType.Object:
-                        sb.AppendLine("{");
-                        objStack.Push(item);
-                        break;
-                    case JsonWriteType.Array:
-                        sb.AppendLine("[");
-                        objStack.Push(item);
-                        break;
-                    case JsonWriteType.None:
-                        sb.Append("null");
-                        goto Loop;
-                    default:
-                        break;
-                }
-            }
+            //            }
+            //            else
+            //            {
+            //                sb.AppendLine(",");
+            //            }
+            //            break;
+            //        case JsonWriteType.Object:
+            //            sb.AppendLine("{");
+            //            objStack.Push(item);
+            //            break;
+            //        case JsonWriteType.Array:
+            //            sb.AppendLine("[");
+            //            objStack.Push(item);
+            //            break;
+            //        case JsonWriteType.None:
+            //            sb.Append("null");
+            //            goto Loop;
+            //        default:
+            //            break;
+            //    }
+            //}
 
             //sb.AppendLine("}");
-            Console.WriteLine(sb.ToString());
-            var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<ACE1>(sb.ToString());
+            var dats = jsonWriter.Writer(aCE);
+            Console.WriteLine();
+            var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<ACE1>(dats);
             Console.ReadKey();
         }
 
@@ -1784,7 +2139,7 @@ namespace DogJson
 
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
-            CollectionManager.Start(new AddrToObject2());//ReflectionToObject  AddrToObject2
+            CollectionManager.Start();//ReflectionToObject  AddrToObject2
 
             JsonRender jsonRender = new JsonRender();
 
@@ -2273,10 +2628,10 @@ namespace DogJson
             {
                 //collection = CollectionManager.GetTypeCollection(typeof(float));
                 ReadCollectionLink read = new ReadCollectionLink();
-                read.isRef = true;
+                read.isLaze = false;
 
-                read.addValueDelegate = (AddValue_)AddValue;
-                read.addValueObjectDelegate = (AddValueObject_)AddValueObject;
+                read.addValueStructDelegate = (AddValue_)AddValue;
+                read.addValueClassDelegate = (AddValueObject_)AddValueObject;
                 
                 read.createObject = CreateObject;
                 read.createValueDelegate = (CreateValue_)CreateValue;
@@ -2474,16 +2829,25 @@ namespace DogJson
 
         public class TestJsonClassA
         {
+            public Action<int, string> testDelegate2;
+            ///*
+            private double num;
             public double Num
             {
                 get { return num; }
                 set { num = value; }
             }
 
+            private B bb;
+            public B BB
+            {
+                get { return bb; }
+                set { bb = value; }
+            }
+
             public V3 V32 { get => v32; set => v32 = value; }
             private V3 v32;
 
-            public double num;
 
             public LinkedList<long> arrayLinkedList;
             public int[,,] arrayArray1;
@@ -2502,7 +2866,6 @@ namespace DogJson
             public C gcc;
             public E gD;
             public V3 v3;
-            public B bb;
             
             public TestOB testOB;
 
@@ -2522,7 +2885,6 @@ namespace DogJson
             public TclassA Iclass0Z;
             public P_box_3 p3;
             public B[,,] arrayRekn;
-            public Action<int, string> testDelegate2;
             public Stack<int> arrayStack;
             public B[] fd;
             public HashSet<double> arraydouble;

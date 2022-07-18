@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="Assert.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Read\Addr\JsonWriteReadTestClassA.cs" />
     <Compile Include="Read\Addr\PropertyWrapperTest.cs" />
     <Compile Include="Read\JsonReadStringCollectionTest.cs" />
     <Compile Include="Read\JsonReadTest.cs" />

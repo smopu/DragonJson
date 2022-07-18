@@ -123,6 +123,7 @@
     <Compile Include="Collection\ArrayCollection\Generic\CollectionArrayTuple.cs" />
     <Compile Include="Collection\ArrayCollection\Generic\MulticastDelegate.cs" />
     <Compile Include="Collection\ArrayCollection\Generic\WriterType.cs" />
+    <Compile Include="Collection\ArrayCollection\ObjectCollection\WriterBox.cs" />
     <Compile Include="Collection\CollectionAttribute.cs" />
     <Compile Include="Collection\CollectionBase.cs" />
     <Compile Include="Collection\ArrayCollection\Generic\ReaderDictionary.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="JsonReflection.cs" />
     <Compile Include="JsonRender.cs" />
     <Compile Include="JsonWriter.cs" />
+    <Compile Include="WriterToObject\WriterReflection.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RenderToObject\Addr\AddrToObject.cs" />
