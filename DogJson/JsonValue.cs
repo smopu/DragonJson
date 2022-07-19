@@ -20,12 +20,12 @@ namespace DogJson
         public bool isObject;
 
         /// <summary>
-        /// $create
+        /// #create
         /// </summary>
         public bool isConstructor;
 
         /// <summary>
-        /// $value
+        /// #value
         /// </summary>
         public bool isCommandValue;
 

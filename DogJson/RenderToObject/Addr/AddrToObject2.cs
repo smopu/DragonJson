@@ -38,7 +38,7 @@ namespace DogJson
         class CreateObjectItem
         {
             public Type type;
-            //public Type sourceType;
+            public Type collectionType;
             public bool isValueType;
             public ReadCollectionLink collectionObject;
             public ReadCollectionLink parentCollection;
@@ -382,11 +382,11 @@ namespace DogJson
                     }
 
 
-                    //"$create"
+                    //"#create"
                     if (v->isConstructor)
                     {
-                        myObject.type = typeof(ConstructorWrapper<>).MakeGenericType(myObject.type);
-                        var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                        myObject.collectionType = typeof(ConstructorWrapper<>).MakeGenericType(myObject.type);
+                        var typeAllCollection = CollectionManager.GetTypeCollection(myObject.collectionType);
                         myObject.collectionObject = typeAllCollection.read;
                     }
 
@@ -432,7 +432,7 @@ namespace DogJson
                             //collection != null
 
                             ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
-                            //arg.objectType = myObject.sourceType;
+                            arg.objectType = myObject.type;
                             arg.bridge = v;
                             //arg.parent = parentObject.objPtr;
 
@@ -487,8 +487,8 @@ namespace DogJson
                         {
                             if (myObject.type.IsEnum)
                             {
-                                myObject.type = typeof(EnumWrapper<>).MakeGenericType(myObject.type);
-                                var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                                myObject.collectionType = typeof(EnumWrapper<>).MakeGenericType(myObject.type);
+                                var typeAllCollection = CollectionManager.GetTypeCollection(myObject.collectionType);
                                 collection = myObject.collectionObject = typeAllCollection.read;
                             }
                         }
@@ -603,7 +603,7 @@ namespace DogJson
                             myObject.collectionObject = collection;
 
                             ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
-                            //arg.objectType = myObject.sourceType;
+                            arg.objectType = myObject.type;
                             arg.bridge = v;
                             //arg.parent = parentObject.objPtr;
 
@@ -627,14 +627,11 @@ namespace DogJson
                                     if (myObject.isValueType)
                                     {
                                         myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
 
                                         if (collection.isLaze)
                                         {
                                             setValues[setValuesIndex++] = i;
-                                        }
-                                        else
-                                        {
-                                            collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                         }
                                     }
                                     else
@@ -1210,7 +1207,65 @@ namespace DogJson
                             //对象是属性
                             if (myObject.isProperty)
                             {
-                                myObject.propertyDelegateItem.setObject(parentObject.objPtr, myObject.obj);
+                                TypeCode typeCode = Type.GetTypeCode(myObject.type);
+                                switch (typeCode)
+                                {
+                                    case TypeCode.Boolean:
+                                        myObject.propertyDelegateItem.setBoolean(parentObject.objPtr, (bool)myObject.obj);
+                                        break;
+                                    case TypeCode.Char:
+                                        myObject.propertyDelegateItem.setChar(parentObject.objPtr, (Char)myObject.obj);
+                                        break;
+                                    case TypeCode.SByte:
+                                        myObject.propertyDelegateItem.setSByte(parentObject.objPtr, (SByte)myObject.obj);
+                                        break;
+                                    case TypeCode.Byte:
+                                        myObject.propertyDelegateItem.setByte(parentObject.objPtr, (Byte)myObject.obj);
+                                        break;
+                                    case TypeCode.Int16:
+                                        myObject.propertyDelegateItem.setInt16(parentObject.objPtr, (Int16)myObject.obj);
+                                        break;
+                                    case TypeCode.UInt16:
+                                        myObject.propertyDelegateItem.setUInt16(parentObject.objPtr, (UInt16)myObject.obj);
+                                        break;
+                                    case TypeCode.Int32:
+                                        myObject.propertyDelegateItem.setInt32(parentObject.objPtr, (Int32)myObject.obj);
+                                        break;
+                                    case TypeCode.UInt32:
+                                        myObject.propertyDelegateItem.setUInt32(parentObject.objPtr, (UInt32)myObject.obj);
+                                        break;
+                                    case TypeCode.Int64:
+                                        myObject.propertyDelegateItem.setInt64(parentObject.objPtr, (Int64)myObject.obj);
+                                        break;
+                                    case TypeCode.UInt64:
+                                        myObject.propertyDelegateItem.setUInt64(parentObject.objPtr, (UInt64)myObject.obj);
+                                        break;
+                                    case TypeCode.Single:
+                                        myObject.propertyDelegateItem.setSingle(parentObject.objPtr, (Single)myObject.obj);
+                                        break;
+                                    case TypeCode.Double:
+                                        myObject.propertyDelegateItem.setDouble(parentObject.objPtr, (Double)myObject.obj);
+                                        break;
+                                    case TypeCode.Decimal:
+                                        myObject.propertyDelegateItem.setDecimal(parentObject.objPtr, (Decimal)myObject.obj);
+                                        break;
+                                    case TypeCode.DateTime:
+                                        myObject.propertyDelegateItem.setDateTime(parentObject.objPtr, (DateTime)myObject.obj);
+                                        break;
+                                    case TypeCode.Object:
+                                    case TypeCode.String:
+                                        if (myObject.obj == null)
+                                        {
+                                            myObject.propertyDelegateItem.setVoidPtr(parentObject.objPtr, myObject.objPtr);
+                                        }
+                                        else
+                                        {
+                                            myObject.propertyDelegateItem.setObject(parentObject.objPtr, myObject.obj);
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                             else
                             {

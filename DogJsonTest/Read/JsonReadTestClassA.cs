@@ -361,7 +361,7 @@ namespace DogJsonTest.Read
             var kkk = Assembly.GetAssembly(typeof(TclassC));
             //
             test1.testDelegate2 += TClassA.Foo2;
-
+            
             CollectionManager.Start();//ReflectionToObject
             JsonRender jsonRender = new JsonRender();
 

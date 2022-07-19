@@ -19,11 +19,16 @@ namespace DogJson
         {
             this.value = (T)obj;
         }
+        public object GetObject()
+        {
+            return value;
+        }
     }
 
     public interface IBox
     {
         void SetObject(object ob);
+        object GetObject();
     }
 
     [ReadCollection(typeof(Box<>), false)]

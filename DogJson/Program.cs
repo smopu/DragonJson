@@ -1151,7 +1151,6 @@ namespace DogJson
                 var ot = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
             }
 
-
             //GC.Collect();
             oTime2.Stop();
             Console.WriteLine("C：{0} 毫秒", (oTime2.Elapsed - oTime.Elapsed).TotalMilliseconds);
@@ -1159,7 +1158,6 @@ namespace DogJson
 
             double time002 = (oTime2.Elapsed - oTime.Elapsed).TotalMilliseconds;
             Console.WriteLine(time002 / time001);
-
 
             Console.ReadKey();
 
@@ -1274,7 +1272,7 @@ namespace DogJson
         [CollectionWriteAttribute(typeof(ACE5))]
         public unsafe class CreateWriter : IWriterCollectionObject
         {
-            public JsonWriteType GetWriteType() { return JsonWriteType.Object; }
+            public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Object; }
             public IEnumerable<KeyValueStruct> GetValue(object obj)
             {
                 var collection = (ACE5)obj;
@@ -1283,7 +1281,7 @@ namespace DogJson
                 {
                     yield return new KeyValueStruct()
                     {
-                        key = "$create",
+                        key = "#create",
                         value = new object[] { collection.kk, collection.str, collection.aCE3 },
                         type = typeof(object[]),
                     };

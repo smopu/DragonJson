@@ -42,7 +42,7 @@ namespace DogJson
             {
                 item = parent.back;
                 parent = item;
-
+                isNext = false;
                 if (!isNext)
                 {
                     sb.Append(' ', objStack.Count * backCount);
@@ -169,12 +169,12 @@ namespace DogJson
                         }
                         else
                         {
-                            sb.Append(",");
-                            isNext = true;
+                            sb.AppendLine(","); 
+                            //sb.Append(","); 
+                            //isNext = true;
                         }
                         break;
                     case JsonWriteType.Object:
-                        isNext = false;
                         sb.AppendLine("{");
                         isNext = false;
                         objStack.Push(item);

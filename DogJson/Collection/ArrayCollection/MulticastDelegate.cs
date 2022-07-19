@@ -10,6 +10,7 @@ namespace DogJson.ArrayCollection
 {
     public unsafe class MulticastDelegateWrapper
     {
+
         /// <summary>
         /// 方法所属类
         /// </summary>
@@ -49,40 +50,45 @@ namespace DogJson.ArrayCollection
         public MulticastDelegateWrapper[] allDelegate;
     }
 
-    [CollectionRead(typeof(MulticastDelegate), true, true)]
-    public unsafe class CollectionArrayMulticastDelegate : CollectionArrayBase<Delegate, MulticastDelegateListWrapper>
+
+
+    [ReadCollection(typeof(MulticastDelegate), true, true)]
+    public unsafe class CollectionArrayMulticastDelegate : CreateTaget<ReadCollectionLink>
     {
-        public CollectionArrayMulticastDelegate()
+        CollectionManager.TypeAllCollection collection;
+        public ReadCollectionLink Create()
         {
-        }
-        protected override void Add(MulticastDelegateListWrapper wrapper, int index, object value, ReadCollectionProxy proxy)
-        {
-            MulticastDelegateWrapper b = (MulticastDelegateWrapper)value;
-            wrapper.allDelegate[index] = b;
-            //if (wrapper.now == null)
-            //{
-            //    wrapper.now = b;
-            //}
-            //else
-            //{
-            //    wrapper.now = MulticastDelegate.Combine(wrapper.now, b);
-            //}
+            collection = CollectionManager.GetTypeCollection(typeof(MulticastDelegateWrapper));
+            ReadCollectionLink read = new ReadCollectionLink();
+            read.isLaze = true;
+
+            read.addObjectClassDelegate = (Action<MulticastDelegateListWrapper, MulticastDelegateWrapper, ReadCollectionLink.Add_Args>)AddObjectClass;
+            read.createObject = CreateObject;
+            read.getItemType = GetItemType;
+            read.endDelegate = (Func<MulticastDelegateListWrapper, object, Delegate>)End;
+            return read;
         }
 
-        protected override MulticastDelegateListWrapper CreateArray(int arrayCount, object parent, Type arrayType, Type parentType)
+        void AddObjectClass(MulticastDelegateListWrapper wrapper, MulticastDelegateWrapper value, ReadCollectionLink.Add_Args arg)
         {
+            wrapper.allDelegate[arg.bridge->arrayIndex] = value;
+        }
+
+        object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
+        {
+            temp = null;
             MulticastDelegateListWrapper wrapper = new MulticastDelegateListWrapper();
-            wrapper.delegateType = arrayType; 
-            wrapper.allDelegate = new MulticastDelegateWrapper[arrayCount]; 
+            wrapper.delegateType = arg.objectType;
+            wrapper.allDelegate = new MulticastDelegateWrapper[arg.bridge->arrayCount];
             return wrapper;
         }
 
-        public override Type GetItemType(int index)
+        CollectionManager.TypeAllCollection GetItemType(ReadCollectionLink.GetItemType_Args arg)
         {
-            return typeof(MulticastDelegateWrapper);
+            return collection;
         }
 
-        protected override Delegate End(MulticastDelegateListWrapper wrapper)
+        Delegate End(MulticastDelegateListWrapper wrapper, object temp)
         {
             Delegate[] delegates = new Delegate[wrapper.allDelegate.Length];
             for (int i = 0; i < delegates.Length; i++)
@@ -104,15 +110,78 @@ namespace DogJson.ArrayCollection
                     delegates[i] = method.CreateDelegate(wrapper.delegateType, item.target);
                 }
             }
-            Delegate nowDelegate = MulticastDelegate.Combine(delegates);
+            Delegate nowDelegate = Delegate.Combine(delegates);
             return nowDelegate;
         }
 
-        protected override unsafe void AddValue(MulticastDelegateListWrapper obj, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
-        {
-            throw new NotImplementedException();
-        }
     }
+
+
+
+    //[CollectionRead(typeof(MulticastDelegate), true, true)]
+    //public unsafe class CollectionArrayMulticastDelegate2 : CollectionArrayBase<Delegate, MulticastDelegateListWrapper>
+    //{
+    //    public CollectionArrayMulticastDelegate2()
+    //    {
+    //    }
+    //    protected override void Add(MulticastDelegateListWrapper wrapper, int index, object value, ReadCollectionProxy proxy)
+    //    {
+    //        MulticastDelegateWrapper b = (MulticastDelegateWrapper)value;
+    //        wrapper.allDelegate[index] = b;
+    //        //if (wrapper.now == null)
+    //        //{
+    //        //    wrapper.now = b;
+    //        //}
+    //        //else
+    //        //{
+    //        //    wrapper.now = MulticastDelegate.Combine(wrapper.now, b);
+    //        //}
+    //    }
+
+    //    protected override MulticastDelegateListWrapper CreateArray(int arrayCount, object parent, Type arrayType, Type parentType)
+    //    {
+    //        MulticastDelegateListWrapper wrapper = new MulticastDelegateListWrapper();
+    //        wrapper.delegateType = arrayType; 
+    //        wrapper.allDelegate = new MulticastDelegateWrapper[arrayCount]; 
+    //        return wrapper;
+    //    }
+
+    //    public override Type GetItemType(int index)
+    //    {
+    //        return typeof(MulticastDelegateWrapper);
+    //    }
+
+    //    protected override Delegate End(MulticastDelegateListWrapper wrapper)
+    //    {
+    //        Delegate[] delegates = new Delegate[wrapper.allDelegate.Length];
+    //        for (int i = 0; i < delegates.Length; i++)
+    //        {
+    //            MulticastDelegateWrapper item = wrapper.allDelegate[i];
+
+    //            MethodInfo method = item.type.GetMethod(
+    //                item.name,
+    //                BindingFlags.NonPublic | BindingFlags.Instance
+    //                | BindingFlags.Public | BindingFlags.Static,
+    //                   null, item.args, null);
+
+    //            if (item.target == null)
+    //            {
+    //                delegates[i] = method.CreateDelegate(wrapper.delegateType);
+    //            }
+    //            else
+    //            {
+    //                delegates[i] = method.CreateDelegate(wrapper.delegateType, item.target);
+    //            }
+    //        }
+    //        Delegate nowDelegate = MulticastDelegate.Combine(delegates);
+    //        return nowDelegate;
+    //    }
+
+    //    protected override unsafe void AddValue(MulticastDelegateListWrapper obj, int index, char* str, JsonValue* value, ReadCollectionProxy proxy)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 
 
 
@@ -188,18 +257,19 @@ namespace DogJson.ArrayCollection
     //}
 
 
-
-
-
     public unsafe class DelegateWrapper
     {
         public Delegate now;
     }
 
     [CollectionWrite(typeof(MulticastDelegate), true)]
-    public unsafe class MulticastDelegateWriter : IWriterCollectionObject
+    public unsafe class MulticastDelegateWriter : IWriterCollectionObject, IWriterCollectionObjectIsCopy
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public bool IsCopy(object obj) 
+        {
+            return false;
+        }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             MulticastDelegate collection = (MulticastDelegate)obj;
@@ -226,82 +296,9 @@ namespace DogJson.ArrayCollection
             }
         }
 
-
-        //[CollectionWrite(typeof(MulticastDelegateWrapper))]
-        //public unsafe class MulticastDelegateListWrapperWriter : IWriterCollectionObject
-        //{
-        //    public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
-        //    public IEnumerable<KeyValueStruct> GetValue(object obj)
-        //    {
-        //        DelegateWrapper collection = (DelegateWrapper)obj;
-        //        var method = collection.now.Method;
-
-        //        var declaringType = method.DeclaringType;
-
-        //        yield return new KeyValueStruct()
-        //        {
-        //            value = declaringType.Assembly.GetName().Name + "," + declaringType.ToString(),
-        //            type = typeof(string),
-        //        };
-        //        yield return new KeyValueStruct()
-        //        {
-        //            value = method.Name ,
-        //            type = typeof(string),
-        //        };
-
-        //        foreach (var arg in method.GetParameters())
-        //        {
-        //            yield return new KeyValueStruct()
-        //            {
-        //                value = arg.ParameterType.ToString(),
-        //                type = typeof(string),
-        //            };
-        //        }
-
-        //    }
-        //}
-
-
-
-        //public unsafe class CollectionArrayMulticastDelegate : CollectionArrayBase<Delegate, MulticastDelegateListWrapper>
-        //{
-        //    public CollectionArrayMulticastDelegate()
-        //    {
-        //    }
-        //    protected override void Add(MulticastDelegateListWrapper wrapper, int index, object value)
-        //    {
-        //        Delegate b = (Delegate)value;
-        //        if (wrapper.now == null)
-        //        {
-        //            wrapper.now = b;
-        //        }
-        //        else
-        //        {
-        //            wrapper.now = MulticastDelegate.Combine(wrapper.now, b);
-        //        }
-        //    }
-
-        //    protected override MulticastDelegateListWrapper CreateArray(int arrayCount, object parent, Type arrayType, Type parentType)
-        //    {
-        //        MulticastDelegateListWrapper wrapper = new MulticastDelegateListWrapper();
-        //        wrapper.type = arrayType;
-        //        return wrapper;
-        //    }
-
-        //    public override Type GetItemType(int index)
-        //    {
-        //        return typeof(MulticastDelegateWrapper);
-        //    }
-        //    protected override Delegate End(MulticastDelegateListWrapper wrapper)
-        //    {
-        //        return wrapper.now;
-        //    }
-
-        //    protected override unsafe void AddValue(MulticastDelegateListWrapper obj, int index, char* str, JsonValue* value)
-        //    {
-        //        throw new NotImplementedException();
-        //    }
-        //}
-
     }
+
+
+
+
 }

@@ -10,7 +10,15 @@ namespace DogJsonTest
 {
     public class TestJsonClassA
     {
+        public Action<int, string> testDelegate;
         public Action<int, string> testDelegate2;
+        public Action<int, string> testDelegate3;
+        public void Fool(int a, string b)
+        {
+        }
+        public void Foo2(int a, string b)
+        {
+        }
         ///*
         private double num;
         public double Num
@@ -25,7 +33,6 @@ namespace DogJsonTest
             get { return bb; }
             set { bb = value; }
         }
-
 
         public LinkedList<long> arrayLinkedList;
         public int[,,] arrayArray1;
@@ -45,7 +52,6 @@ namespace DogJsonTest
         public E gD;
         public E[] gDs;
         public Vector3 v3;
-
         public TestOB testOB;
 
         public TclassDCC dcc;
@@ -60,7 +66,8 @@ namespace DogJsonTest
         public TClass003 testClassDD3;
         public TClass003 testClassDD4;
         public TestEnum testEnum;
-        //public TestEnum[] testEnums;
+        public TestEnum testEnum2 { get; set; }
+        public TestEnum[] testEnums;
 
         public IList<int> arrayint2;
         public TclassA Iclass0Z;
@@ -83,6 +90,12 @@ namespace DogJsonTest
     public class TclassA
     {
         public int b;
+        public void Fool(int a, string b)
+        {
+        }
+        public void Foo2(int a, string b)
+        {
+        }
     }
 
     public class TclassC : TclassA
@@ -185,7 +198,7 @@ namespace DogJsonTest
     [CollectionWriteAttribute(typeof(TclassDCC3))]
     public unsafe class CreateWriterTclassDCC3 : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Object; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Object; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             var collection = (TclassDCC3)obj;
@@ -194,7 +207,7 @@ namespace DogJsonTest
             {
                 yield return new KeyValueStruct()
                 {
-                    key = "$create",
+                    key = "#create",
                     value = new object[] { collection.str, collection.array, collection.num },
                     type = typeof(object[]),
                 };
@@ -205,7 +218,7 @@ namespace DogJsonTest
     [CollectionWriteAttribute(typeof(TclassDCC))]
     public unsafe class CreateWriterTclassDCC : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Object; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Object; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             var collection = (TclassDCC)obj;
@@ -214,7 +227,7 @@ namespace DogJsonTest
             {
                 yield return new KeyValueStruct()
                 {
-                    key = "$create",
+                    key = "#create",
                     value = new object[] { collection.str, collection.array, collection.num },
                     type = typeof(object[]),
                 };
@@ -659,7 +672,7 @@ namespace DogJsonTest
     [CollectionWrite(typeof(DogJsonTest.Vector3), true)]
     public unsafe class WriteCollectionV3 : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             Vector3 collection = (Vector3)obj;

@@ -159,7 +159,7 @@
 //                    }
 
 //                    myObject.sourceType = myObject.type;
-//                    //"$create"
+//                    //"#create"
 //                    if (v.isConstructor)
 //                    {
 //                        myObject.type = typeof(ConstructorWrapper);
@@ -354,7 +354,7 @@
 //                                                PathToObject(vs + v.vStringStart, v.vStringLength, createObjectItems[0]));
 //                                            break;
 //                                        default:
-                                            
+
 //                                            if (fieldInfo.isEnum)
 //                                            {
 //                                                var strEnum = new string(vs, v.vStringStart, v.vStringLength);

@@ -13,7 +13,7 @@ namespace DogJson.Collection.ArrayCollection
     [CollectionWriteAttribute(typeof(LinkedList<>))] 
     public unsafe class WriterEnumerable<T> : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             var collection = (IEnumerable<T>)obj;
@@ -24,11 +24,10 @@ namespace DogJson.Collection.ArrayCollection
         }
     }
 
-
     [CollectionWriteAttribute(typeof(Stack<>))]
     public unsafe class WriterStack<T> : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             var collection = ((Stack<T>)obj).ToArray();
@@ -39,11 +38,27 @@ namespace DogJson.Collection.ArrayCollection
         }
     }
 
-
     [CollectionWriteAttribute(typeof(EnumWrapper))]
     public unsafe class WriterEnum : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public JsonWriteType GetWriteType(object obj) {
+
+            var inEnum = ((EnumWrapper)obj).inEnum;
+            var type = inEnum.GetType();
+            EnumTypeWrap enumTypeWrap = CollectionManager.GetEnumTypeWrap(type);
+            long source;
+            List<string> vs = enumTypeWrap.GetValue(inEnum, out source);
+
+            if (vs.Count == 0)
+            {
+                return JsonWriteType.Value;
+            }
+            else
+            {
+                return JsonWriteType.Array;
+            }
+        }
+
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             var inEnum = ((EnumWrapper)obj).inEnum;
@@ -53,21 +68,16 @@ namespace DogJson.Collection.ArrayCollection
             List<string> vs = enumTypeWrap.GetValue(inEnum, out source);
             if (vs.Count == 0)
             {
-                yield return new KeyValueStruct() { value = source, type = typeof(long) };
+                yield return new KeyValueStruct() { key = source.ToString(), type = typeof(string) };
             }
             foreach (var item in vs)
             {
                 yield return new KeyValueStruct() { value = item, type = typeof(string) };
             }
-
         }
 
 
     }
-
-
-
-
 
 
 

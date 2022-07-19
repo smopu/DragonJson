@@ -11,8 +11,14 @@ namespace DogJson
     public unsafe interface IWriterCollectionObject
     {
         IEnumerable<KeyValueStruct> GetValue(object obj);
-        JsonWriteType GetWriteType();
+        JsonWriteType GetWriteType(object obj);
     }
+
+    public unsafe interface IWriterCollectionObjectIsCopy
+    {
+        bool IsCopy(object obj);
+    }
+
 
     public unsafe interface IWriterCollectionString
     {
@@ -22,6 +28,7 @@ namespace DogJson
     public struct KeyValueStruct
     {
         public string key;
+        public bool isDontCopy;
         public object value;
         public Type type;
     }
@@ -254,7 +261,7 @@ namespace DogJson
             public JsonObject* bridge;
             //public void* parent;
             //public object parent;
-            //public Type objectType;
+            public Type objectType;
             //public Type parentType;
         }
 

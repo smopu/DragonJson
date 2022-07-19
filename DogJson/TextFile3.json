@@ -1,4 +1,60 @@
 ﻿{
+    "testDelegate": [
+        {
+            "type": "DogJsonTest,DogJsonTest.TClassA",
+            "name": "Fool",
+            "args": [
+                "mscorlib,System.Int32",
+                "mscorlib,System.String"
+            ]
+        },
+        {
+            "type": "DogJsonTest,DogJsonTest.TClassA",
+            "name": "Foo2",
+            "args": [
+                "mscorlib,System.Int32",
+                "mscorlib,System.String"
+            ]
+        }
+    ],
+    "testDelegate2": [
+        {
+            "type": "DogJsonTest,DogJsonTest.TClassA",
+            "name": "Fool",
+            "args": [
+                "mscorlib,System.Int32",
+                "mscorlib,System.String"
+            ]
+        },
+        {
+            "type": "DogJsonTest,DogJsonTest.TClassA",
+            "name": "Foo2",
+            "args": [
+                "mscorlib,System.Int32",
+                "mscorlib,System.String"
+            ]
+        }
+    ],
+    "testDelegate3": [
+        {
+            "type": "DogJsonTest,DogJsonTest.TclassA",
+            "name": "Fool",
+            "args": [
+                "mscorlib,System.Int32",
+                "mscorlib,System.String"
+            ],
+            "target": "$/Iclass0Z"
+        },
+        {
+            "type": "DogJsonTest,DogJsonTest.TclassA",
+            "name": "Foo2",
+            "args": [
+                "mscorlib,System.Int32",
+                "mscorlib,System.String"
+            ],
+            "target": "$/Iclass0Z"
+        }
+    ],
     "arrayLinkedList": [
         1,
         2,
@@ -262,14 +318,14 @@
         "num": 3.6
     },
     "dcc": {
-        "$create": [
+        "#create": [
             {
-                "$type": "mscorlib,System.String",
-                "$value": "3213.#$%^&*()"
+                "#type": "mscorlib,System.String",
+                "#value": "3213.#%^&*()"
             },
             {
-                "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "$value": [
+                "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+                "#value": [
                     14,
                     24,
                     34,
@@ -278,20 +334,20 @@
                 ]
             },
             {
-                "$type": "mscorlib,System.Double",
-                "$value": -3.14E-12
+                "#type": "mscorlib,System.Double",
+                "#value": -3.14E-12
             }
         ]
     },
     "dcc3": {
-        "$create": [
+        "#create": [
             {
-                "$type": "mscorlib,System.String",
-                "$value": "3213.#$%^&*()"
+                "#type": "mscorlib,System.String",
+                "#value": "3213.#%^&*()"
             },
             {
-                "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "$value": [
+                "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+                "#value": [
                     14,
                     24,
                     34,
@@ -300,21 +356,21 @@
                 ]
             },
             {
-                "$type": "mscorlib,System.Double",
-                "$value": -3.14E-12
+                "#type": "mscorlib,System.Double",
+                "#value": -3.14E-12
             }
         ]
     },
     "dcc2": {
-        "$type": "DogJsonTest,DogJsonTest.TclassDCC",
-        "$create": [
+        "#type": "DogJsonTest,DogJsonTest.TclassDCC",
+        "#create": [
             {
-                "$type": "mscorlib,System.String",
-                "$value": "3213.#$%^&*()"
+                "#type": "mscorlib,System.String",
+                "#value": "3213.#%^&*()"
             },
             {
-                "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "$value": [
+                "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+                "#value": [
                     14,
                     24,
                     34,
@@ -323,27 +379,27 @@
                 ]
             },
             {
-                "$type": "mscorlib,System.Double",
-                "$value": -3.14E-12
+                "#type": "mscorlib,System.Double",
+                "#value": -3.14E-12
             }
         ]
     },
     "ddd": {
-        "$type": "mscorlib,System.Double",
-        "$value": -3.14E-12
+        "#type": "mscorlib,System.Double",
+        "#value": -3.14E-12
     },
     "objects": [
         {
-            "$type": "mscorlib,System.Int32",
-            "$value": 12
+            "#type": "mscorlib,System.Int32",
+            "#value": 12
         },
         {
-            "$type": "mscorlib,System.Double",
-            "$value": -3.14E-12
+            "#type": "mscorlib,System.Double",
+            "#value": -3.14E-12
         },
         {
-            "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-            "$value": [
+            "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+            "#value": [
                 1,
                 2,
                 4
@@ -353,16 +409,16 @@
     "tClass001": {
         "objects": [
             {
-                "$type": "mscorlib,System.Int32",
-                "$value": 12
+                "#type": "mscorlib,System.Int32",
+                "#value": 12
             },
             {
-                "$type": "mscorlib,System.Double",
-                "$value": -3.14E-12
+                "#type": "mscorlib,System.Double",
+                "#value": -3.14E-12
             },
             {
-                "$type": "mscorlib,System.String",
-                "$value": "3213.#$%^&*()"
+                "#type": "mscorlib,System.String",
+                "#value": "3213.#%^&*()"
             }
         ],
         "tClass002": {
@@ -420,226 +476,210 @@
     "testClassDD4": {
         "testString": "testClassDD4"
     },
-    "testEnum": {
-        "$type": "DogJsonTest,DogJsonTest.TestEnum",
-        "$value": [
-            "arrayint2",
-            :,
-            {
-                "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "$value": [
-                    14,
-                    24,
-                    34,
-                    44,
-                    54
-                ]
-            },
-            "Iclass0Z",
-            :,
-            {
-                "$type": "DogJsonTest,DogJsonTest.TclassC",
-                "value": 1.444,
-                "b": 122,
-                "bbb": {
-                    "b": true,
-                    "num": -3.14E-12,
-                    "str": "hello world"
-                }
-            },
-            "p3",
-            :,
-            {
-                "x": 2,
-                "y": 1,
-                "z": 33
-            },
-            "arrayRekn",
-            :,
+    "testEnum": [
+        "Test002",
+        "Test003",
+        "Test008"
+    ],
+    "testEnums": [
+        "Test002",
+        "Test004",
+        "Test003"
+    ],
+    "arrayint2": {
+        "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+        "#value": [
+            14,
+            24,
+            34,
+            44,
+            54
+        ]
+    },
+    "Iclass0Z": {
+        "#type": "DogJsonTest,DogJsonTest.TclassC",
+        "value": 1.444,
+        "b": 122,
+        "bbb": {
+            "b": true,
+            "num": -3.14E-12,
+            "str": "hello world"
+        }
+    },
+    "p3": {
+        "x": 2,
+        "y": 1,
+        "z": 33
+    },
+    "arrayRekn": [
+        [
             [
-                [
-                    [
-                        {
-                            "b": false,
-                            "num": 1
-                        },
-                        {
-                            "b": false,
-                            "num": 2,
-                            "str": "ddd"
-                        }
-                    ],
-                    [
-                        {
-                            "b": false,
-                            "num": 3
-                        },
-                        {
-                            "b": false,
-                            "num": 4
-                        }
-                    ]
-                ],
-                [
-                    [
-                        {
-                            "b": false,
-                            "num": 5,
-                            "str": "5"
-                        },
-                        {
-                            "b": false,
-                            "num": 6,
-                            "str": "6"
-                        }
-                    ],
-                    [
-                        {
-                            "b": false,
-                            "num": 7,
-                            "str": "7"
-                        },
-                        {
-                            "b": false,
-                            "num": 8,
-                            "str": "8"
-                        }
-                    ]
-                ],
-                [
-                    [
-                        {
-                            "b": false,
-                            "num": 9,
-                            "str": "9"
-                        },
-                        {
-                            "b": false,
-                            "num": 10,
-                            "str": "10"
-                        }
-                    ],
-                    [
-                        {
-                            "b": false,
-                            "num": 11,
-                            "str": "11"
-                        },
-                        {
-                            "b": false,
-                            "num": 12,
-                            "str": "12"
-                        }
-                    ]
-                ]
+                {
+                    "b": false,
+                    "num": 1
+                },
+                {
+                    "b": false,
+                    "num": 2,
+                    "str": "ddd"
+                }
             ],
-            "arrayStack",
-            :,
+            [
+                {
+                    "b": false,
+                    "num": 3
+                },
+                {
+                    "b": false,
+                    "num": 4
+                }
+            ]
+        ],
+        [
+            [
+                {
+                    "b": false,
+                    "num": 5,
+                    "str": "5"
+                },
+                {
+                    "b": false,
+                    "num": 6,
+                    "str": "6"
+                }
+            ],
+            [
+                {
+                    "b": false,
+                    "num": 7,
+                    "str": "7"
+                },
+                {
+                    "b": false,
+                    "num": 8,
+                    "str": "8"
+                }
+            ]
+        ],
+        [
+            [
+                {
+                    "b": false,
+                    "num": 9,
+                    "str": "9"
+                },
+                {
+                    "b": false,
+                    "num": 10,
+                    "str": "10"
+                }
+            ],
+            [
+                {
+                    "b": false,
+                    "num": 11,
+                    "str": "11"
+                },
+                {
+                    "b": false,
+                    "num": 12,
+                    "str": "12"
+                }
+            ]
+        ]
+    ],
+    "arrayStack": [
+        3,
+        4,
+        5
+    ],
+    "fd": [
+        {
+            "b": true,
+            "num": -3.14E-12,
+            "str": "ddd"
+        },
+        {
+            "b": false,
+            "num": 34.5
+        },
+        {
+            "b": false,
+            "num": 999999
+        }
+    ],
+    "arraydouble": [
+        3.333,
+        -4.8888,
+        -5.34E+108
+    ],
+    "arraystring": [
+        "true",
+        "null",
+        "ed false"
+    ],
+    "arraybool": [
+        false,
+        true,
+        false
+    ],
+    "dictionary3": [
+        [
             [
                 3,
+                2,
+                1
+            ],
+            {
+                "b": false,
+                "num": 11111,
+                "str": "rradads"
+            }
+        ],
+        [
+            [
+                1,
                 4,
-                5
+                -9.8
             ],
-            "fd",
-            :,
-            [
-                {
-                    "b": true,
-                    "num": -3.14E-12,
-                    "str": "ddd"
-                },
-                {
-                    "b": false,
-                    "num": 34.5
-                },
-                {
-                    "b": false,
-                    "num": 999999
-                }
-            ],
-            "arraydouble",
-            :,
-            [
-                3.333,
-                -4.8888,
-                -5.34E+108
-            ],
-            "arraystring",
-            :,
-            [
-                "true",
-                "null",
-                "ed false"
-            ],
-            "arraybool",
-            :,
-            [
-                false,
-                true,
-                false
-            ],
-            "dictionary3",
-            :,
-            [
-                [
-                    [
-                        3,
-                        2,
-                        1
-                    ],
-                    {
-                        "b": false,
-                        "num": 11111,
-                        "str": "rradads"
-                    }
-                ],
-                [
-                    [
-                        1,
-                        4,
-                        -9.8
-                    ],
-                    {
-                        "b": false,
-                        "num": 888,
-                        "str": "热热我"
-                    }
-                ],
-                [
-                    [
-                        -3.2E-13,
-                        3E+13,
-                        0.99
-                    ],
-                    {
-                        "b": false,
-                        "num": 999999,
-                        "str": "特别强势人物了"
-                    }
-                ]
-            ],
-            "tstructA",
-            :,
             {
-                "value": 3.6,
-                "_b": {
-                    "kk": "FC",
-                    "_c": {
-                        "id": 21443
-                    }
-                }
-            },
-            "Num",
-            :,
-            33.56,
-            "BB",
-            :,
+                "b": false,
+                "num": 888,
+                "str": "热热我"
+            }
+        ],
+        [
+            [
+                -3.2E-13,
+                3E+13,
+                0.99
+            ],
             {
-                "b": true,
-                "num": -9999.232,
-                "str": "Wvs"
+                "b": false,
+                "num": 999999,
+                "str": "特别强势人物了"
             }
         ]
-    }
+    ],
+    "tstructA": {
+        "value": 3.6,
+        "_b": {
+            "kk": "FC",
+            "_c": {
+                "id": 21443
+            }
+        }
+    },
+    "Num": 33.56,
+    "BB": {
+        "b": true,
+        "num": -9999.232,
+        "str": "Wvs"
+    },
+    "testEnum2": [
+        "Test001",
+        "Test002",
+        "Test003"
+    ]
 }
 

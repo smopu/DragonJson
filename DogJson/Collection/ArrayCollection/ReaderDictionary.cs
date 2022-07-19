@@ -231,6 +231,7 @@ namespace DogJson
         }
     }
 
+
     [ReadCollection(typeof(Dictionary<,>), true)]
     public unsafe class DictionaryReader<K, V> : CreateTaget<ReadCollectionLink>
     {

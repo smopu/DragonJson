@@ -105,12 +105,12 @@
 } "b": true, "num": 33.56, "kk": -15, "str": "4ERWRds", {
 	"objects": [
 		{
-			"$type": "System.Int32",
-			"$value": 12
+			"#type": "System.Int32",
+			"#value": 12
 		},
 		{
-			"$type": "System.Double",
-			"$value": -3.14E-12
+			"#type": "System.Double",
+			"#value": -3.14E-12
 		}
 	],
 	"testEnums": [ "Test002", "Test004", "Test003" ],
@@ -119,16 +119,16 @@
 	"tClass001": {
 		"objects": [
 			{
-				"$type": "System.Int32",
-				"$value": 12
+				"#type": "System.Int32",
+				"#value": 12
 			},
 			{
-				"$type": "System.Double",
-				"$value": -3.14E-12
+				"#type": "System.Double",
+				"#value": -3.14E-12
 			},
 			{
-				"$type": "System.String",
-				"$value": "3213.$$%^&*()"
+				"#type": "System.String",
+				"#value": "3213.##%^&*()"
 			}
 		],
 		"tClass002s": [
@@ -184,10 +184,10 @@
 		"TestDuble": -3.14E-12
 	},
 
-	"testClassDD": "$/tClass001/tClass002/tClass003",
-	"testClassDD4": "$/tClass001/tClass002s/1/tClass003",
-	"testClassDD2": "$/tClass001/tClass002/tClass003s/2",
-	"testClassDD3": "$/tClass001/tClass002s/1/tClass003s/2",
+	"testClassDD": "#/tClass001/tClass002/tClass003",
+	"testClassDD4": "#/tClass001/tClass002s/1/tClass003",
+	"testClassDD2": "#/tClass001/tClass002/tClass003s/2",
+	"testClassDD3": "#/tClass001/tClass002s/1/tClass003s/2",
 
 	"arrayRekn": [
 		[
@@ -367,18 +367,18 @@
 		]
 	],
 	"dcc": {
-		"$create": [
+		"#create": [
 			{
-				"$type": "System.String",
-				"$value": "3213.$$%^&*()"
+				"#type": "System.String",
+				"#value": "3213.##%^&*()"
 			},
 			{
-				"$type": "System.Collections.Generic.List`1[System.Int32]",
-				"$value": [ 14, 24, 34, 44, 54 ]
+				"#type": "System.Collections.Generic.List`1[System.Int32]",
+				"#value": [ 14, 24, 34, 44, 54 ]
 			},
 			{
-				"$type": "System.Double",
-				"$value": -3.14E-12
+				"#type": "System.Double",
+				"#value": -3.14E-12
 			}
 		]
 	},
@@ -398,7 +398,7 @@
 		}
 	],
 	"Iclass0Z": {
-		"$type": "DogJson.Program+TclassC",
+		"#type": "DogJson.Program+TclassC",
 		"b": 122,
 		"value": 1.444,
 		"bbb": {
@@ -408,8 +408,8 @@
 		}
 	},
 	"arrayint2": {
-		"$type": "System.Collections.Generic.List`1[System.Int32]",
-		"$value": [ 14, 24, 34, 44, 54 ]
+		"#type": "System.Collections.Generic.List`1[System.Int32]",
+		"#value": [ 14, 24, 34, 44, 54 ]
 	},
 
 
@@ -461,10 +461,9 @@
 
 //-代理读取基本json类型需要同一
 
-//枚举写入
+//-枚举写入
+
 //字符串匹配优化
-
-
 //处理缓存为可变长度
 //root 额外处理
 //注释

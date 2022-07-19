@@ -251,10 +251,14 @@ namespace DogJsonTest
             }
             for (int i = 0; i < list1.Length; i++)
             {
-                if (!list1[i].Equals(list2[i]))
+                if (!list1[i].Method.Equals(list2[i].Method))
                 {
                     throw new Exception("Unequal Value");
                 }
+                //if (!list1[i].Equals(list2[i]))
+                //{
+                //    throw new Exception("Unequal Value");
+                //}
             }
         }
 

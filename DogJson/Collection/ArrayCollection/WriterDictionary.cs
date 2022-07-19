@@ -11,7 +11,7 @@ namespace DogJson.Collection
     [CollectionWrite(typeof(KeyValuePair<,>))]
     public unsafe class WriterKeyValuePair<K, V> : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             KeyValuePair<K, V> collection = (KeyValuePair<K, V>)obj;
@@ -35,7 +35,7 @@ namespace DogJson.Collection
     [CollectionWrite(typeof(Dictionary<,>))]
     public unsafe class WriterDictionary<K, V> : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Array; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Array; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             Dictionary<K, V> collection = (Dictionary<K, V>)obj;
@@ -57,7 +57,7 @@ namespace DogJson.Collection
     [CollectionWrite(typeof(DictionString<,>))]
     public unsafe class DictionaryStringWriter<V> : IWriterCollectionObject
     {
-        public JsonWriteType GetWriteType() { return JsonWriteType.Object; }
+        public JsonWriteType GetWriteType(object obj) { return JsonWriteType.Object; }
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
             Dictionary<string, V> collection = (Dictionary<string, V>)obj;

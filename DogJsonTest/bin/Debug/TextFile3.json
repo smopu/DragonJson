@@ -1,58 +1,703 @@
-﻿"A100": {
-		"arr": [
-			{
-				"arr11": {
+﻿{
+  "testDelegate": [
+    {
+      "type": "DogJsonTest,DogJsonTest.TClassA",
+      "name": "Fool",
+      "args": [
+        "mscorlib,System.Int32",
+        "mscorlib,System.String"
+      ]
+    },
+    {
+      "type": "DogJsonTest,DogJsonTest.TClassA",
+      "name": "Foo2",
+      "args": [
+        "mscorlib,System.Int32",
+        "mscorlib,System.String"
+      ]
+    }
+  ],
+  "testDelegate2": [
+    {
+      "type": "DogJsonTest,DogJsonTest.TClassA",
+      "name": "Fool",
+      "args": [
+        "mscorlib,System.Int32",
+        "mscorlib,System.String"
+      ]
+    },
+    {
+      "type": "DogJsonTest,DogJsonTest.TClassA",
+      "name": "Foo2",
+      "args": [
+        "mscorlib,System.Int32",
+        "mscorlib,System.String"
+      ]
+    }
+  ],
+  "testDelegate3": [
+    {
+      "type": "DogJsonTest,DogJsonTest.TclassA",
+      "name": "Fool",
+      "args": [
+        "mscorlib,System.Int32",
+        "mscorlib,System.String"
+      ],
+      "target": {
+        "$type": "DogJsonTest,DogJsonTest.TclassC",
+        "value": 1.444,
+        "b": 122,
+        "bbb": {
+          "b": true,
+          "num": -3.14E-12,
+          "str": "hello world"
+        }
+      }
+    },
+    {
+      "type": "DogJsonTest,DogJsonTest.TclassA",
+      "name": "Foo2",
+      "args": [
+        "mscorlib,System.Int32",
+        "mscorlib,System.String"
+      ],
+      "target": {
+        "$type": "DogJsonTest,DogJsonTest.TclassC",
+        "value": 1.444,
+        "b": 122,
+        "bbb": {
+          "b": true,
+          "num": -3.14E-12,
+          "str": "hello world"
+        }
+      }
+    }
+  ],
+  "arrayLinkedList": [
+    1,
+    2,
+    3,
+    4,
+    7
+  ],
+  "arrayArray1": [
+    [
+      [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      [
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
+    ],
+    [
+      [
+        101,
+        102,
+        103,
+        104,
+        105
+      ],
+      [
+        1011,
+        1012,
+        1013,
+        1014,
+        1015
+      ],
+      [
+        1021,
+        1022,
+        1023,
+        1024,
+        1025
+      ]
+    ]
+  ],
+  "arrayArray2": [
+    [
+      [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      [
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
+    ],
+    [
+      [
+        101,
+        102,
+        103,
+        104,
+        105
+      ],
+      [
+        1011,
+        1012,
+        1013,
+        1014,
+        1015
+      ],
+      [
+        1021,
+        1022,
+        1023,
+        1024,
+        1025
+      ]
+    ]
+  ],
+  "arrayArray3": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "arrayArray4": [
+    [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    [
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    [
+      21,
+      22,
+      23,
+      24,
+      25
+    ]
+  ],
+  "arrayArray5": [
+    [
+      [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      [
+        21,
+        22,
+        23,
+        24,
+        25
+      ]
+    ],
+    [
+      [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      [
+        1011,
+        1012,
+        1013,
+        1014,
+        1015
+      ],
+      [
+        1021,
+        1022,
+        1023,
+        1024,
+        1025
+      ]
+    ]
+  ],
+  "listB": [
+    {
+      "b": true,
+      "num": -8.56,
+      "str": "00001"
+    },
+    {
+      "b": false,
+      "num": 10000888.999,
+      "str": "aaaa2"
+    }
+  ],
+  "listE": [
+    {
+      "b": true,
+      "k": -3E-12,
+      "str": "ff出错fvv"
+    },
+    {
+      "b": false,
+      "k": 124,
+      "str": "3特瑞aV"
+    },
+    {
+      "b": true,
+      "k": -999.45,
+      "str": "_@W#W$%^&"
+    }
+  ],
+  "b": true,
+  "kk": -15,
+  "str": "4ERWRds",
+  "gcc": {
+    "k": 12,
+    "bbb": {
+      "b": true,
+      "num": -8.56,
+      "str": "cc"
+    }
+  },
+  "gD": {
+    "b": true,
+    "k": -3.14E-12,
+    "str": "3特瑞aV"
+  },
+  "gDs": [
+    {
+      "b": true,
+      "k": -6466,
+      "str": "FF"
+    },
+    {
+      "b": true,
+      "k": -3.14E-12,
+      "str": "RRRR"
+    },
+    {
+      "b": true,
+      "k": 55.999,
+      "str": "3特瑞aV"
+    }
+  ],
+  "v3": [
+    3,
+    2,
+    1
+  ],
+  "testOB": {
+    "_p3_0": {
+      "x": 1.2,
+      "y": -1.8,
+      "z": 33
+    },
+    "p3_2": {
+      "x": -12,
+      "y": 18,
+      "z": 3.3
+    },
+    "numI": 13,
+    "num": 3.6
+  },
+  "dcc": {
+    "$create": [
+      {
+        "$type": "mscorlib,System.String",
+        "$value": "3213.#$%^&*()"
+      },
+      {
+        "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+        "$value": [
+          14,
+          24,
+          34,
+          44,
+          54
+        ]
+      },
+      {
+        "$type": "mscorlib,System.Double",
+        "$value": -3.14E-12
+      }
+    ]
+  },
+  "dcc3": {
+    "$create": [
+      {
+        "$type": "mscorlib,System.String",
+        "$value": "3213.#$%^&*()"
+      },
+      {
+        "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+        "$value": [
+          14,
+          24,
+          34,
+          44,
+          54
+        ]
+      },
+      {
+        "$type": "mscorlib,System.Double",
+        "$value": -3.14E-12
+      }
+    ]
+  },
+  "dcc2": {
+    "$type": "DogJsonTest,DogJsonTest.TclassDCC",
+    "$create": [
+      {
+        "$type": "mscorlib,System.String",
+        "$value": "3213.#$%^&*()"
+      },
+      {
+        "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+        "$value": [
+          14,
+          24,
+          34,
+          44,
+          54
+        ]
+      },
+      {
+        "$type": "mscorlib,System.Double",
+        "$value": -3.14E-12
+      }
+    ]
+  },
+  "ddd": {
+    "$type": "mscorlib,System.Double",
+    "$value": -3.14E-12
+  },
+  "objects": [
+    {
+      "$type": "mscorlib,System.Int32",
+      "$value": 12
+    },
+    {
+      "$type": "mscorlib,System.Double",
+      "$value": -3.14E-12
+    },
+    {
+      "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+      "$value": [
+        1,
+        2,
+        4
+      ]
+    }
+  ],
+  "tClass001": {
+    "objects": [
+      {
+        "$type": "mscorlib,System.Int32",
+        "$value": 12
+      },
+      {
+        "$type": "mscorlib,System.Double",
+        "$value": -3.14E-12
+      },
+      {
+        "$type": "mscorlib,System.String",
+        "$value": "3213.#$%^&*()"
+      }
+    ],
+    "tClass002": {
+      "size": 12,
+      "testString": "A@2",
+      "tClass003s": [
+        {
+          "testString": "0000"
+        },
+        {
+          "testString": "0001"
+        },
+        "$/testClassDD2",
+        {
+          "testString": "0003"
+        }
+      ],
+      "tClass003": "$/testClassDD"
+    },
+    "TestDuble": -3.14E-12,
+    "tClass002s": [
+      {
+        "size": 1,
+        "testString": "A@0"
+      },
+      {
+        "size": 2,
+        "testString": "A@1",
+        "tClass003s": [
+          {
+            "testString": "0000"
+          },
+          {
+            "testString": "0001"
+          },
+          "$/testClassDD3"
+        ],
+        "tClass003": "$/testClassDD4"
+      },
+      {
+        "size": 3,
+        "testString": "asdede"
+      }
+    ]
+  },
+  "testClassDD": {
+    "testString": "testClassDD"
+  },
+  "testClassDD2": {
+    "testString": "testClassDD2"
+  },
+  "testClassDD3": {
+    "testString": "testClassDD3"
+  },
+  "testClassDD4": {
+    "testString": "testClassDD4"
+  },
+  "testEnum": [
+    "Test002",
+    "Test003",
+    "Test008"
+  ],
+  "testEnums": [
+    "Test002",
+    "Test004",
+    "Test003"
+  ],
+  "arrayint2": {
+    "$type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
+    "$value": [
+      14,
+      24,
+      34,
+      44,
+      54
+    ]
+  },
+  "Iclass0Z": {
+    "$type": "DogJsonTest,DogJsonTest.TclassC",
+    "value": 1.444,
+    "b": 122,
+    "bbb": {
+      "b": true,
+      "num": -3.14E-12,
+      "str": "hello world"
+    }
+  },
+  "p3": {
+    "x": 2,
+    "y": 1,
+    "z": 33
+  },
+  "arrayRekn": [
+    [
+      [
+        {
+          "b": false,
+          "num": 1
+        },
+        {
+          "b": false,
+          "num": 2,
+          "str": "ddd"
+        }
+      ],
+      [
+        {
+          "b": false,
+          "num": 3
+        },
+        {
+          "b": false,
+          "num": 4
+        }
+      ]
+    ],
+    [
+      [
+        {
+          "b": false,
+          "num": 5,
+          "str": "5"
+        },
+        {
+          "b": false,
+          "num": 6,
+          "str": "6"
+        }
+      ],
+      [
+        {
+          "b": false,
+          "num": 7,
+          "str": "7"
+        },
+        {
+          "b": false,
+          "num": 8,
+          "str": "8"
+        }
+      ]
+    ],
+    [
+      [
+        {
+          "b": false,
+          "num": 9,
+          "str": "9"
+        },
+        {
+          "b": false,
+          "num": 10,
+          "str": "10"
+        }
+      ],
+      [
+        {
+          "b": false,
+          "num": 11,
+          "str": "11"
+        },
+        {
+          "b": false,
+          "num": 12,
+          "str": "12"
+        }
+      ]
+    ]
+  ],
+  "arrayStack": [
+    3,
+    4,
+    5
+  ],
+  "fd": [
+    {
+      "b": true,
+      "num": -3.14E-12,
+      "str": "ddd"
+    },
+    {
+      "b": false,
+      "num": 34.5
+    },
+    {
+      "b": false,
+      "num": 999999
+    }
+  ],
+  "arraydouble": [
+    3.333,
+    -4.8888,
+    -5.34E+108
+  ],
+  "arraystring": [
+    "true",
+    "null",
+    "ed false"
+  ],
+  "arraybool": [
+    false,
+    true,
+    false
+  ],
+  "dictionary3": [
+    [
+      [
+        3,
+        2,
+        1
+      ],
+      {
+        "b": false,
+        "num": 11111,
+        "str": "rradads"
+      }
+    ],
+    [
+      [
+        1,
+        4,
+        -9.8
+      ],
+      {
+        "b": false,
+        "num": 888,
+        "str": "热热我"
+      }
+    ],
+    [
+      [
+        -3.2E-13,
+        3E+13,
+        0.99
+      ],
+      {
+        "b": false,
+        "num": 999999,
+        "str": "特别强势人物了"
+      }
+    ]
+  ],
+  "tstructA": {
+    "value": 3.6,
+    "_b": {
+      "kk": "FC",
+      "_c": {
+        "id": 21443
+      }
+    }
+  },
+  "Num": 33.56,
+  "BB": {
+    "b": true,
+    "num": -9999.232,
+    "str": "Wvs"
+  },
+  "testEnum2": [
+    "Test001",
+    "Test002",
+    "Test003"
+  ]
+}
 
-				},
-				"arr12": {
-
-				}
-			},
-			{
-				"arr21": {
-
-				},
-				"arr22": {
-
-				}
-			}
-
-		],
-		"A110": {
-			"A111": {
-
-			},
-			"A112": {
-
-			}
-		},
-		"A120": {
-			"A121": {
-
-			},
-			"A122": {
-
-			}
-		}
-	},
-	"A200": {
-		"A210": {
-			"A211": {
-
-			},
-			"A212": {
-
-			}
-		},
-		"A220": {
-			"A221": {
-
-			},
-			"A222": {
-
-			}
-		}
-	}
-
-
-{"VAP4BFR16":[{"sizeHD":0,"upTimes":0,"mp4Hd_url":null,"description":"","title":"快醒醒，快醒醒，起床吧","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e02f3dbec6b486ce43354889c958c63838b430b8be43c2d2472bc5131347a5fd7ed978efd2cc9b5e34ee3dc41d1a39bf3e932fa3986bc524065c40411d1a45b6d5e733f9592b86e56cec774a72299b12bcb441ff6092c7a67f93458b1ea7e800319157d141b158b31e.mp4","vid":"VDBHR4SAT","cover":"http://vimg1.ws.126.net/image/snapshot/2018/3/8/4/VDBHR4R84.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-27 00:00:00","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e07ea6bfdb57d0fc5f41209c5ea3976598d95aac6af995ba26bb00105a0fadeffa5306ecb1e202b399e462dcf480fb135d1304aff62a5a6f1eb308867d5851fe5b96747977e9e0ff16fe6ea8223bde41655d783fa1bcd0eb5106ee19a1491e5b0ff7943a34c744af50.m3u8","topicImg":"http://vimg3.ws.126.net/image/snapshot/2017/2/I/0/VCC05O7I0.jpg","votecount":0,"length":45,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":1957,"topicSid":"VCC05O7HT","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DBHR4SAT008535RB","topicName":"歪果仁生活圈","sectiontitle":"","topicDesc":"听说歪果仁爱作！"},{"sizeHD":0,"upTimes":0,"mp4Hd_url":null,"description":"","title":"一对萌小兔子，萌萌哒哦","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0b9efa453e04641b072954b15874244f3cd781e490230839e3342ec50a8cf224b3b8b73c5e549a3a9c918118e99634a749bb043d9215dbe063a2c13d356a51b5d82cdd830913a9767503e4d9b87829091f709b89cfa820496d748329f41ac28b7984d6ea01d34e2c0.mp4","vid":"VDB6IKI4H","cover":"http://vimg1.ws.126.net/image/snapshot/2018/3/0/U/VDB6IKH0U.jpg","sizeSHD":0,"playersize":1,"ptime":"2018-06-27 00:00:00","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0fc12b919105d99e3f111fb9b359ac4d2c3a2093633dbafa818c1324fa863eff907a38a5853dd6658f24623e09e1b04a406e0bbfb8e4b53076179c7aacf07bf7f5b7b19b3d25930a45c4edd94ecf9ae8d98d8a90b91d24248d1aa7a6fe65ca8cbdcab6987cbe0cdb3.m3u8","topicImg":"http://vimg1.ws.126.net/image/snapshot/2016/6/B/A/VBNIDOMBA.jpg","votecount":0,"length":41,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":1783,"topicSid":"VBNIDOMB7","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DB6IKI4H008535RB","topicName":"黑色幽默","sectiontitle":"","topicDesc":"轻轻松松博您一乐。"},{"sizeHD":0,"upTimes":0,"mp4Hd_url":null,"description":"","title":"论背景音乐的重要性！！","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0bb9cf0dcc167c42bba8f60e8d568261897c806840c91c48c63b6cd06e837da0711e25bbd0d2bc003cd648567b6ac0e858f3b7990dcbda0184321aebb42720b98580514baf5c75df624598fd70af4f7f2c5b6f4646c7fb7df75596f90a03ae0fb086315d23556e612.mp4","vid":"VDJVF17CD","cover":"http://vimg2.ws.126.net/image/snapshot/2018/6/S/2/VDJTA5LS2.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-21 14:10:43","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e00d305d826393d0a55f4b1da0f9e09797a373c63f0947b3cbcb3f33c78b51c9a62b6f0aa7d936ee4a7f3f4f1a2aac739faed260a9af21e0e64e08ee8bf5b83d769598ab8213bb264f37258fc8603858b39dbb6c261925cd00422982946ea8c9541a5bd4a110c6020e.m3u8","topicImg":"http://img1.cache.netease.com/m/newsapp/video/default.jpg","votecount":0,"length":14,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":609,"topicSid":"VAP4BFR16","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DJTA5MT9008535RB","topicName":"萌物","sectiontitle":"","topicDesc":"04萌物"},{"sizeHD":0,"upTimes":0,"mp4Hd_url":null,"description":"","title":"总是这么站着···········","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e053454aba72d2894a4cbdecb85c951d404673116295a0cdcc1afcdc48c6f665e483266fb9ebba7e0145c8ba0cf655ec7faa008eb044d1756340a224d39c7c5b389482a616746ccc91bf2419ced94004f983ad5fb9dc70adc6701965d44baa16bb184370e52f41ef72.mp4","vid":"VDJP1T2DL","cover":"http://vimg2.ws.126.net/image/snapshot/2018/6/8/0/VDJNAEF80.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-19 06:20:05","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e002762d6e62c918e0e8b649c9ba1848796358b93b314c1fa4ed4f6e674b82d03f18da3b3aa138ac6e3f794e65903a6fff3a4e6ea57ce2d4511756758dfe068416d2992fcc6b6d1719621131b9d9cfc8854f5be42cf8164b99fb06003451690c02fde7bfec5dcae114.m3u8","topicImg":"http://img1.cache.netease.com/m/newsapp/video/default.jpg","votecount":0,"length":15,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":652,"topicSid":"VAP4BFR16","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DJNAEGPJ008535RB","topicName":"萌物","sectiontitle":"","topicDesc":"04萌物"},{"sizeHD":0,"videoTopic":{"ename":"T1464771703694","tname":"开心一刻","alias":"拯救不开心！","topic_icons":"http://img2.cache.netease.com/m/newsapp/topic_icons/T1464771703694.png","tid":"T1464771703694"},"upTimes":0,"mp4Hd_url":null,"description":"","title":"各种长残的狗狗！","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0d674c8bccbe39902791e9d373c78f64658f9f5f9ba96d63b9c09d1890f2cbf03230829ea4c2666f80e6e97999ef798bd46c2a35bc41c90ae661c7ae97e65215ad7ec8bd8480989335a3e7baa34277c0254b4e2e99c532352e05c2a347c7742812bc8cbb238401da7.mp4","vid":"VDJ3BB3TD","cover":"http://vimg3.ws.126.net/image/snapshot/2018/6/6/R/VDJ3BB36R.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-11 12:10:54","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0997ebbb529623ed67642fd050f7a0b02230d2af26eb9a5c27ab88766de0e868c7ef44668fe269fc3680b5f4f2d535683eca3b4e4e3bf9a5b9f027775e732711c98891714e16f642693edad0ac87e1e87377078d6392d3caaddac14a39ca72e73e4ede9674aa3b4ce.m3u8","topicImg":"http://vimg3.ws.126.net/image/snapshot/2016/6/Q/L/VBNIDRHQL.jpg","votecount":0,"length":22,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":957,"topicSid":"VBNIDRHQI","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DJ3BB3TD008535RB","topicName":"开心一刻","sectiontitle":"","topicDesc":"拯救不开心！"},{"sizeHD":0,"videoTopic":{"ename":"T1460515708707","tname":"逗比蜀黍","alias":"搜集各种搞笑视频","topic_icons":"http://img2.cache.netease.com/m/newsapp/topic_icons/T1460515708707.png","tid":"T1460515708707"},"upTimes":0,"mp4Hd_url":null,"description":"","title":"外国儿医给小宝宝打针","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0640573e13e4103fcda6358d6fcc060cfec07ac77e4aee3a957e7c7ce167ca5eaf1429428ebf10d173858e2415f62fe53d1a8e9beeb3def3fd14a9d81cdb7bcd997df73841b4e8195ba1440e94db28e900550b3d6b2fd68a63d43e8e987452364ac9d13e19b3f45d1.mp4","vid":"VDISD05HJ","cover":"http://vimg3.ws.126.net/image/snapshot/2018/6/R/N/VDISD04RN.jpg","sizeSHD":0,"playersize":1,"ptime":"2018-06-08 19:25:12","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0ad93221ea561d34920ab545189efba544b81da34c3aeed725d332f65dc74c16eb00ce6d569a9a8c35c08ddb95cfa7a6e70af74d7d376f4066ac0d622fd47c26078917d81923764a580ff292014ab2ea0386c88794977a0a322217f961752fd7bcfb1b03f62b1b0a4.m3u8","topicImg":"http://vimg1.ws.126.net/image/snapshot/2016/4/3/D/VBJ41OE3D.jpg","votecount":0,"length":144,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":6264,"topicSid":"VBJ41OE3A","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DISD05HJ008535RB","topicName":"逗比蜀黍","sectiontitle":"","topicDesc":"搜集各种搞笑视频"},{"sizeHD":0,"videoTopic":{"ename":"T1460515711642","tname":"老顽童","alias":"一个恶搞、耍贱、卖萌的顽童","topic_icons":"http://img2.cache.netease.com/m/newsapp/topic_icons/T1460515711642.png","tid":"T1460515711642"},"upTimes":0,"mp4Hd_url":null,"description":"","title":"隔隔隔隔隔哈哈哈啊哈","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0bb9cf0dcc167c42bbe34d4394088904bdf8301594cb931e8228547b2d99182fb249f9cd7b554e4a663434e15da8fa95fa69ff60c8ab23478e95e1522c5a309df44bf422834070fe59a37c4158e66f13659cd8e340125efa6e8d109666e78e0fa7f542b6b30c14ee4.mp4","vid":"VDICG36AI","cover":"http://vimg2.ws.126.net/image/snapshot/2018/6/L/H/VDICG34LH.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-02 15:11:25","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0c2031e86879cf75acd761d4421512b1888d457f2341c0627579434a32808c8c03799a010237339fda9afd66b84459921c12590331a1ba394811397f7bf123790d3617a805040180313df16ce56068074bfb749cbbd7492f69acb7afc7e8e541ed37e62b1145546ea.m3u8","topicImg":"http://vimg3.ws.126.net/image/snapshot/2016/2/K/D/VBG7H3QKD.jpg","votecount":0,"length":8,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":348,"topicSid":"VBFGAQ3KM","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DICG36AI008535RB","topicName":"老顽童","sectiontitle":"","topicDesc":"一个恶搞、耍贱、卖萌的顽童"},{"sizeHD":0,"upTimes":0,"mp4Hd_url":null,"description":"","title":"女孩是父亲上辈子的情人","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e07a6a4ef003b718e1705e75e2afb5cc8c267c9ca7e6adb12737665cf1fd0e3cdd928dddf0360dc538d54bcf82908cf1e65096722efd6bf81855011b446b1f7a1ca7e80eb14ad3a4681eaf4b364cf0d01503266184c5169649dac6f0891e343db6bf45c68ec6e6c94c.mp4","vid":"VDICT633T","cover":"http://vimg2.ws.126.net/image/snapshot/2018/6/L/6/VDIAI9QL6.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-01 21:11:32","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0b7677bdfcf166ad479a04fcd222f812ce218c58b54b1cad30af9721eb688485a2b83537600caa0cc4f9fb0687be32fc2ec5ce9e99e83a86a0cfa7580c4db1dd8c5f455963e0a59499eb94e506d6ff46d3d00640769cabede92a4ad574856f0af7feae28c80586af7.m3u8","topicImg":"http://img1.cache.netease.com/m/newsapp/video/default.jpg","votecount":0,"length":55,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":2392,"topicSid":"VAP4BFR16","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DIAI9RLK008535RB","topicName":"萌物","sectiontitle":"","topicDesc":"04萌物"},{"sizeHD":0,"videoTopic":{"ename":"T1460515714852","tname":"你大爷还是你大爷","alias":"不要只想你大妈，来找大爷吧！","topic_icons":"http://img2.cache.netease.com/m/newsapp/topic_icons/T1460515714852.png","tid":"T1460515714852"},"upTimes":0,"mp4Hd_url":null,"description":"","title":"这就是每天早晨拍护肤水的你，像不像？","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e0d4dac702505cef0437dfa8e4c0fac0b05ea1a0bca6e0dd7a30fb49a736374a3921896315d09a4fb073ad7d408e3336379d63aaccbf2a1032d48f86dc62650322df80fd6ddf084321d52105418f8ebd8650fdd7577dbf3912070398c3a0cc1e82f94c7a3341dae9ea.mp4","vid":"VDIA7U2H5","cover":"http://vimg2.ws.126.net/image/snapshot/2018/6/G/6/VDIA7U1G6.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-06-01 18:10:20","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e04e20848c32c233375173daedae91452e671e68e676c6b2f4a8efbb19fc5f3577b6b07ead636bbcb299284582b5f937cd6d72c50855d9d3dfc91961c3b099edebb37d5cd6e0b7f75e53f25d1beeee354b0a0db39df4562140a1edb91791abc8c89f298736974231ca.m3u8","topicImg":"http://vimg3.ws.126.net/image/snapshot/2016/3/K/1/VBH9CI0K1.jpg","votecount":0,"length":12,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":522,"topicSid":"VBH9CI0JV","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DIA7U2H5008535RB","topicName":"你大爷还是你大爷","sectiontitle":"","topicDesc":"不要只想你大妈，来找大爷吧！"},{"sizeHD":0,"videoTopic":{"ename":"T1460515715886","tname":"超有存在感路人甲","alias":"超有存在感路人甲","topic_icons":"http://img2.cache.netease.com/m/newsapp/topic_icons/T1460515715886.png","tid":"T1460515715886"},"upTimes":0,"mp4Hd_url":null,"description":"","title":"一群熊孩子，哈哈哈","mp4_url":"http://flv3.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e052f98715404ca6b6f32076687d39ce5f44fc83ce0e34426880ad494ed95b9a71f1e95ffce59aea2662de2b7295bf6081e90e30060cbc630ad93918435d62bbfc6ee05cb2b23ecc36d79c4784ddcdc53591a2349665b20a92e619fc4480a079769652ff0f57f111ce.mp4","vid":"VDI838VTV","cover":"http://vimg1.ws.126.net/image/snapshot/2018/5/H/L/VDI838UHL.jpg","sizeSHD":0,"playersize":0,"ptime":"2018-05-31 22:10:26","m3u8_url":"http://flv.bn.netease.com/8a04fa2347dc5f4d46048a95f136d3e06c7cd38462b1a6e701eabb2ee927466fa01144651cdb5ca7d16861b9dcf19e1dd7702905f0d9d241b54b091ab70434ed4e02951a39cad46a0bb74da8da2cb06c01757bc40490385f32db6cb04538b516e46bbbd3c5ad308b0a2787b7967c9f2948a7901e28cd9ba2.m3u8","topicImg":"http://vimg2.ws.126.net/image/snapshot/2016/4/2/5/VBILRJ125.jpg","votecount":0,"length":124,"videosource":"新媒体","downTimes":0,"m3u8Hd_url":null,"sizeSD":5394,"topicSid":"VBILRJ123","commentStatus":1,"playCount":0,"replyCount":0,"replyBoard":"video_bbs","replyid":"DI838VTV008535RB","topicName":"超有存在感路人甲 ","sectiontitle":"","topicDesc":"想必你们不会忘了甲某人"}]}

@@ -129,7 +129,7 @@
 //                    }
 
 //                    myObject.sourceType = myObject.type;
-//                    //"$create"
+//                    //"#create"
 //                    if (v.isConstructor)
 //                    {
 //                        myObject.type = typeof(ConstructorWrapper);

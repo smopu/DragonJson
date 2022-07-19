@@ -45,6 +45,7 @@ namespace DogJson
     {
         None = 0,
         String = 1,
+        Value = 2,
         Object = 5,
         Array = 6,
     }
@@ -127,7 +128,7 @@ namespace DogJson
                     //if (!isRoot && parent.data == data)
                     //{
                     //    parent.type = JsonWriteType.String;
-                    //    parent.value = "\"$\"";
+                    //    parent.value = "\"#\"";
                     //    isPath = true;
                     //    continue;
                     //}
@@ -168,7 +169,7 @@ namespace DogJson
                             {
                                 object value = array.GetValue(i);
                                 previous = ArrayItem(i, writers, nows, parent,
-                                    previous, last, elementType, elementTypeCode, value);
+                                    previous, last, elementType, elementTypeCode, value, true);
                             }
                             previous.back = last;
                             previous.isLast = true;
@@ -190,7 +191,7 @@ namespace DogJson
                     }
                     if (writeObject != null)
                     {
-                        switch (writeObject.GetWriteType())
+                        switch (writeObject.GetWriteType(parent.data))
                         {
                             case JsonWriteType.None:
                                 break;
@@ -204,13 +205,23 @@ namespace DogJson
                                         now.value = "\"" + item.key + "\"";
                                     }
                                 }
-                                break;
+                                break; 
+                            case JsonWriteType.Value:
+                                {
+                                    JsonWriteValue now = previous;
+                                    now.jsonType = JsonWriteType.String;
+                                    foreach (var item in writeObject.GetValue(parent.data))
+                                    {
+                                        now.value = item.key;
+                                    }
+                                }
+                                break; 
                             case JsonWriteType.Object:
                                 {
                                     if (parent.isSetType)
                                     {
                                         JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, parent);
-                                        typeWrite.key = "$type";
+                                        typeWrite.key = "#type";
                                         typeWrite.value = "\"" + parent.type.Assembly.GetName().Name + "," + parent.type.ToString() + "\"";
                                         previous.back = typeWrite;
                                         typeWrite.jsonType = JsonWriteType.String;
@@ -221,7 +232,7 @@ namespace DogJson
                                     //对象 容器
                                     foreach (var item in writeObject.GetValue(parent.data))
                                     {
-                                        previous = ObjectItem(writers, nows, parent, previous, last, item.key, item.type, item.value);
+                                        previous = ObjectItem(writers, nows, parent, previous, last, item.key, item.type, item.value, !item.isDontCopy);
                                     }
                                     previous.back = last;
                                     previous.isLast = true;
@@ -238,7 +249,7 @@ namespace DogJson
                                         var elementTypeCode = Type.GetTypeCode(elementType);
 
                                         previous = ArrayItem(i, writers, nows, parent,
-                                            previous, last, elementType, elementTypeCode, item.value);
+                                            previous, last, elementType, elementTypeCode, item.value, !item.isDontCopy);
                                         i++;
                                     }
                                     //previous.type = JsonWriteType.Array;
@@ -260,7 +271,7 @@ namespace DogJson
                             if (parent.isSetType)
                             {
                                 JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, parent);
-                                typeWrite.key = "$type";
+                                typeWrite.key = "#type";
                                 typeWrite.value = "\"" + parent.type.Assembly.GetName().Name + "," + parent.type.ToString() + "\"";
                                 previous.back = typeWrite;
                                 typeWrite.jsonType = JsonWriteType.String;
@@ -326,7 +337,7 @@ namespace DogJson
                             if (parent.isSetType)
                             {
                                 JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, parent);
-                                typeWrite.key = "$type";
+                                typeWrite.key = "#type";
                                 typeWrite.value = "\"" + parent.type.Assembly.GetName().Name + "," + parent.type.ToString() + "\"";
                                 previous.back = typeWrite;
                                 typeWrite.jsonType = JsonWriteType.String;
@@ -647,7 +658,10 @@ namespace DogJson
             {
                 if (v.parent.jsonType == JsonWriteType.Object)
                 {
-                    path.Insert(0, "/" + v.key);
+                    if (v.key != "#create")
+                    {
+                        path.Insert(0, "/" + v.key);
+                    }
                 }
                 else
                 {
@@ -663,22 +677,26 @@ namespace DogJson
 
 
         private JsonWriteValue ObjectItem(List<JsonWriteValue> writers, List<JsonWriteValue> nows, JsonWriteValue parent,
-            JsonWriteValue previous, JsonWriteValue last, string key, Type fieldType, object value)
+            JsonWriteValue previous, JsonWriteValue last, string key, Type fieldType, object value, bool isCopy = true)
         {
+            JsonWriteValue now;
+            bool isSetObject = false;
             if (value == null)
             {
-                JsonWriteValue now = new JsonWriteValue(writers.Count, parent);
+                now = new JsonWriteValue(writers.Count, parent);
                 now.jsonType = JsonWriteType.None;
                 now.data = null;
             }
             else
             {
-                JsonWriteValue now;
                 TypeCode typeCode;
                 bool isArray = false;
 
                 var valueType = value.GetType();
-
+                if (valueType == typeof(DogJson.ArrayCollection.MulticastDelegateWrapper))
+                {
+                    int mhy = 0;
+                }
                 IWriterCollectionString writeString = CollectionManager.GetWriterCollectionString(fieldType);
                 if (writeString != null)
                 {
@@ -690,9 +708,8 @@ namespace DogJson
                     now.value = "\"" + writeString.GetStringValue(value) + "\"";
                     writers.Add(now);
                     previous = now;
-                    return previous;
+                    goto Return;
                 }
-
                 bool isPath = false;
                 if (!isRoot && value == writers[0].data)
                 {
@@ -703,11 +720,16 @@ namespace DogJson
                     now.jsonType = JsonWriteType.String;
                     now.value = "\"$\"";
                     writers.Add(now);
-                    previous = now;
-                    return previous;
+                    previous = now; 
+                    goto Return;
                 }
+                var writeObject = CollectionManager.GetWriterCollection(valueType);
+                
 
-                if (!valueType.IsValueType)
+                IWriterCollectionObjectIsCopy writerCollectionObjectIsCopy = writeObject as IWriterCollectionObjectIsCopy;
+                if (isCopy && !valueType.IsValueType && valueType != typeof(string)
+                    && (writerCollectionObjectIsCopy == null || writerCollectionObjectIsCopy.IsCopy(value))
+                    )
                 {
                     ObjectPath path;
                     if (allPath.TryGetValue(value, out path))
@@ -724,11 +746,11 @@ namespace DogJson
                         now.value = path.path;
                         writers.Add(now);
                         previous = now;
-                        return previous;
+                        goto Return;
                     }
                     else
                     {
-                        allPath[parent.data] = new ObjectPath() { value = parent };
+                        isSetObject = true;
                     }
                 }
                 typeCode = Type.GetTypeCode(fieldType);
@@ -743,10 +765,8 @@ namespace DogJson
                     previous = now;
                     now.jsonType = JsonWriteType.Array;
                     nows.Add(now);
-                    return previous;
-
-
-
+                    goto Return;
+                    /*
                     now = new JsonWriteValue(writers.Count, parent);
                     now.data = value;
                     now.key = key;
@@ -754,7 +774,6 @@ namespace DogJson
                     writers.Add(now);
                     previous = now;
                     now.jsonType = JsonWriteType.String;
-
 
                     Array Arrays = Enum.GetValues(fieldType);
                     switch (typeCode)
@@ -787,6 +806,7 @@ namespace DogJson
                             now.value = "\"" + now.data + "\"";
                             break;
                     }
+                     */
                 }
                 else
                 {
@@ -798,11 +818,9 @@ namespace DogJson
                         typeCode = Type.GetTypeCode(valueType);
                         isArray = valueType.IsArray;
 
-                        var writeObject = CollectionManager.GetWriterCollection(valueType);
-
                         if (typeCode == TypeCode.Object && !isArray &&
                             (writeObject == null ||
-                            writeObject.GetWriteType() == JsonWriteType.Object)
+                            writeObject.GetWriteType(value) == JsonWriteType.Object)
                             )
                         {
                             //JsonWriteValue newParent = new JsonWriteValue(writers.Count, parent);
@@ -814,7 +832,7 @@ namespace DogJson
                             //newParent.back = last;
 
                             //JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, newParent);
-                            //typeWrite.key = "$type";
+                            //typeWrite.key = "#type";
                             //typeWrite.value = "\"" + valueType.Assembly.GetName().Name + "," + valueType.ToString() + "\"";
                             //previous.back = typeWrite;
                             //typeWrite.jsonType = JsonWriteType.String;
@@ -833,7 +851,7 @@ namespace DogJson
 
                             now.jsonType = JsonWriteType.Object;
                             nows.Add(now);
-                            return previous;
+                            goto Return;
 
                         }
                         else
@@ -850,7 +868,7 @@ namespace DogJson
                             previous = now;
                             now.jsonType = JsonWriteType.Object;
                             nows.Add(now);
-                            return previous;
+                            goto Return;
 
                             //JsonWriteValue newParent = new JsonWriteValue(writers.Count, parent);
                             //newParent.key = key;
@@ -861,7 +879,7 @@ namespace DogJson
                             //newParent.back = last;
 
                             //JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, newParent);
-                            //typeWrite.key = "$type";
+                            //typeWrite.key = "#type";
                             //typeWrite.value = "\"" + valueType.Assembly.GetName().Name + "," + valueType.ToString() + "\"";
                             //previous.back = typeWrite;
                             //typeWrite.jsonType = JsonWriteType.String;
@@ -870,7 +888,7 @@ namespace DogJson
 
                             //now = new JsonWriteValue(writers.Count, newParent);
                             //now.data = value;
-                            //now.key = "$value";
+                            //now.key = "#value";
                             //previous.back = now;
                             //writers.Add(now);
                             //previous = now;
@@ -944,15 +962,21 @@ namespace DogJson
                     }
                 }
             }
+
+            Return:
+            if (isSetObject)
+            {
+                allPath[value] = new ObjectPath() { value = now };
+            }
             return previous;
         }
 
 
         private JsonWriteValue ArrayItem(int i, List<JsonWriteValue> writers, List<JsonWriteValue> nows, JsonWriteValue parent, JsonWriteValue previous,
-            JsonWriteValue last, Type fieldType, TypeCode elementTypeCode, object value)
+            JsonWriteValue last, Type fieldType, TypeCode elementTypeCode, object value, bool isCopy)
         {
             JsonWriteValue now = new JsonWriteValue(writers.Count, parent);
-
+            bool isSetObject = false;
             if (value == null)
             {
                 now.jsonType = JsonWriteType.None;
@@ -976,7 +1000,10 @@ namespace DogJson
             {
                 var valueType = value.GetType();
 
-
+                if (valueType == typeof(DogJson.ArrayCollection.MulticastDelegateWrapper))
+                {
+                    int mhy = 0;
+                }
                 IWriterCollectionString writeString = CollectionManager.GetWriterCollectionString(fieldType);
                 if (writeString != null)
                 {
@@ -988,13 +1015,11 @@ namespace DogJson
                     now.value = "\"" + writeString.GetStringValue(value) + "\"";
                     writers.Add(now);
                     previous = now;
-                    return previous;
+                    goto Return;
                 }
 
-                bool isPath = false;
                 if (!isRoot && value == writers[0].data)
                 {
-                    isPath = true;
                     now = new JsonWriteValue(writers.Count, parent);
                     now.data = value;
                     now.arrayIndex = i;
@@ -1003,12 +1028,16 @@ namespace DogJson
                     now.value = "\"$\"";
                     writers.Add(now);
                     previous = now;
-                    isPath = true;
-                    return previous;
+                    goto Return;
                 }
 
-                if (!valueType.IsValueType)
-                {
+                var writeObject = CollectionManager.GetWriterCollection(valueType);
+                IWriterCollectionObjectIsCopy writerCollectionObjectIsCopy = writeObject as IWriterCollectionObjectIsCopy;
+
+                if (isCopy && !valueType.IsValueType && valueType != typeof(string)
+                    && (writerCollectionObjectIsCopy == null || writerCollectionObjectIsCopy.IsCopy(value))
+                    ) 
+                { 
                     ObjectPath path;
                     if (allPath.TryGetValue(value, out path))
                     {
@@ -1024,11 +1053,11 @@ namespace DogJson
                         now.value = path.path;
                         writers.Add(now);
                         previous = now;
-                        return previous;
+                        goto Return;
                     }
                     else
                     {
-                        allPath[parent.data] = new ObjectPath() { value = parent };
+                        isSetObject = true;
                     }
                 }
 
@@ -1054,11 +1083,10 @@ namespace DogJson
                     {
                         var typeCode = Type.GetTypeCode(valueType);
                         var isArray = valueType.IsArray;
-                        var writeObject = CollectionManager.GetWriterCollection(valueType);
 
                         if (typeCode == TypeCode.Object && !isArray &&
                             (writeObject == null ||
-                            writeObject.GetWriteType() == JsonWriteType.Object)
+                            writeObject.GetWriteType(value) == JsonWriteType.Object)
                             )
                         {
                             now = new JsonWriteValue(writers.Count, parent);
@@ -1073,7 +1101,7 @@ namespace DogJson
 
                             now.jsonType = JsonWriteType.Object;
                             nows.Add(now);
-                            return previous;
+                            goto Return;
 
                         }
                         else
@@ -1090,7 +1118,7 @@ namespace DogJson
                             previous = now;
                             now.jsonType = JsonWriteType.Object;
                             nows.Add(now);
-                            return previous;
+                            goto Return;
                         }
                     }
                     else
@@ -1159,6 +1187,12 @@ namespace DogJson
                 }
             }
 
+
+        Return:
+            if (isSetObject)
+            {
+                allPath[value] = new ObjectPath() { value = parent };
+            }
             return previous;
         }
 

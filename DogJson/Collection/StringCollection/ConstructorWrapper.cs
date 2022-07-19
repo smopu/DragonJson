@@ -66,10 +66,6 @@ namespace DogJson
         delegate void AddObjectClass_(object obj, object[] value, ReadCollectionLink.Add_Args arg);
         void AddObjectClass(object obj, object[] value, ReadCollectionLink.Add_Args arg)
         {
-            //string keyName = new string(arg.bridge->keyStringStart, 0, arg.bridge->keyStringLength);//$create
-            //if (keyName == "$create")
-            //{
-            //}
             ConstructorWrapper<T> wrapper = (ConstructorWrapper<T>)arg.temp;
             wrapper.args = (object[])value;
         }

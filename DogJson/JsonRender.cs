@@ -303,7 +303,7 @@ namespace DogJson
                                         {
                                             if (*now == ':')
                                             {
-                                                if (*(startChar + keyStringStart) == '$')
+                                                if (*(startChar + keyStringStart) == '#')
                                                 {
                                                     long nameLong = *(long*)(startChar + keyStringStart + 1);
                                                     switch (keyStringLength)
@@ -336,7 +336,7 @@ namespace DogJson
                                                                         case '\n':
                                                                             break;
                                                                         default:
-                                                                            throw new Exception(Debug(startChar, length, i, "$type 后面必须是字符串 " + *now));
+                                                                            throw new Exception(Debug(startChar, length, i, "#type 后面必须是字符串 " + *now));
                                                                     }
                                                                 }
                                                             }
@@ -360,9 +360,9 @@ namespace DogJson
                                                             }
                                                             break;
                                                         default:
-                                                            throw new Exception(Debug(startChar, length, i, "$ 未知指令" + *now));
+                                                            throw new Exception(Debug(startChar, length, i, "# 未知指令" + *now));
                                                     }
-                                                            throw new Exception(Debug(startChar, length, i, "$ 未知指令" + *now));
+                                                            throw new Exception(Debug(startChar, length, i, "# 未知指令" + *now));
                                                 Run3:
                                                     // 下必 ,} 
                                                     for (++i, ++now; i < length; ++i, ++now)
@@ -1167,10 +1167,10 @@ namespace DogJson
                                                         case ']':
                                                         case ',':
                                                         default:
-                                                            throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是} 现在是:" + *now));
+                                                            throw new Exception(Debug(startChar, length, i, "#value[] 后面必须是} 现在是:" + *now));
                                                     }
                                                 }
-                                                throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是}"));
+                                                throw new Exception(Debug(startChar, length, i, "#value[] 后面必须是}"));
 
                                             }
                                             else
@@ -1239,10 +1239,10 @@ namespace DogJson
                                             case ']':
                                             case ',':
                                             default:
-                                                throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是} 现在是:" + *now));
+                                                throw new Exception(Debug(startChar, length, i, "#value[] 后面必须是} 现在是:" + *now));
                                         }
                                     }
-                                    throw new Exception(Debug(startChar, length, i, "$value[] 后面必须是}"));
+                                    throw new Exception(Debug(startChar, length, i, "#value[] 后面必须是}"));
 
                                 }
                                 else

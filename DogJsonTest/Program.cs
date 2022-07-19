@@ -98,9 +98,7 @@ namespace DogJsonTest
             //            }
             //        }
             //    }
-
             //}
-
 
             //Console.WriteLine(vv);
 
@@ -218,9 +216,9 @@ namespace DogJsonTest
                     (System.Double)(-3.14E-12),
                     new List<int>{1, 2, 4 }
                 },
-                //testEnums = new TestEnum[] { TestEnum.Test002, TestEnum.Test004, TestEnum.Test003 },
+                testEnums = new TestEnum[] { TestEnum.Test002, TestEnum.Test004, TestEnum.Test003 },
                 testEnum = TestEnum.Test008 | TestEnum.Test002 | TestEnum.Test003,
-
+                testEnum2 = TestEnum.Test001 | TestEnum.Test002 | TestEnum.Test003,
 
                 listB = new List<B> {
                     new B {
@@ -291,9 +289,9 @@ namespace DogJsonTest
                         num = 999999
                     }
                 },
-                dcc = new TclassDCC("3213.#$%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
-                dcc3 = new TclassDCC3("3213.#$%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
-                dcc2 = new TclassDCC("3213.#$%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
+                dcc = new TclassDCC("3213.#%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
+                dcc3 = new TclassDCC3("3213.#%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
+                dcc2 = new TclassDCC("3213.#%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12),
 
                 Iclass0Z = new DogJsonTest.TclassC
                 {
@@ -307,7 +305,7 @@ namespace DogJsonTest
                     }
                 },
                 v3 = new Vector3(3, 2, 1),
-                //testDelegate2 = TClassA.Fool,
+                testDelegate2 = TClassA.Fool,
 
                 arrayRekn = new B[,,]
                 {
@@ -380,7 +378,7 @@ namespace DogJsonTest
                     objects = new object[] {
                         (System.Int32)12,
                         -(System.Double)3.14E-12,
-                        (System.String)"3213.#$%^&*()",
+                        (System.String)"3213.#%^&*()",
                     },
                     tClass002s = new TClass002[] {
                         new TClass002 {
@@ -477,48 +475,26 @@ namespace DogJsonTest
                         }
                     }
                 }
-
             };
 
             inputData.testClassDD = inputData.tClass001.tClass002.tClass003;
             inputData.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
             inputData.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
             inputData.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+            inputData.testDelegate2 += TClassA.Foo2;
+
+            inputData.testDelegate3 = inputData.Iclass0Z.Fool;
+            inputData.testDelegate3 += inputData.Iclass0Z.Foo2;
+            inputData.testDelegate = inputData.testDelegate2;
+
 
             JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
 
             string dataStr = jsonWriter.Writer(inputData);
             Console.WriteLine(dataStr);
 
-
-            //            dataStr = @"
-            //{
-            //""dcc"": {
-            //                ""$type"": ""DogJsonTest,DogJsonTest.TclassDCC"",
-            //                ""$value"": {
-            //                        ""$create"": [
-            //                                {
-            //                                        ""$type"": ""mscorlib,System.String"",
-            //                                        ""$value"": ""3213.#$%^&*()""
-            //                                },
-            //                                {
-            //                                        ""$type"": ""mscorlib,System.Collections.Generic.List`1[System.Int32]"",
-            //                                        ""$value"": [
-            //                                                14, 24, 34, 44, 54
-            //                                        ]
-            //                                },
-            //                                {
-            //                                        ""$type"": ""mscorlib,System.Double"",
-            //                                        ""$value"": -3.14E-12
-            //                                },
-            //                        ]
-            //                }
-            //        }
-            //}
-            //";
             //dataStr = File.ReadAllText("TextFile3.json");
             JsonRender jsonRender = new JsonRender();
-
 
             var outData = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(dataStr);
 
