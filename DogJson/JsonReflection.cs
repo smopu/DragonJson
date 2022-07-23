@@ -162,10 +162,8 @@ namespace DogJson
             }
             return typeStructWrapper;
         }
-
-
-
     }
+
     public class TypeWrapper
     {
         public bool isObject;

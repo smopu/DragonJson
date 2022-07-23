@@ -1,4 +1,5 @@
 ﻿{
+    "#type": "DogJsonTest,DogJsonTest.TestJsonClassA",
     "testDelegate": [
         {
             "type": "DogJsonTest,DogJsonTest.TClassA",
@@ -482,9 +483,15 @@
         "Test008"
     ],
     "testEnums": [
-        "Test002",
-        "Test004",
-        "Test003"
+        [
+            "Test002"
+        ],
+        [
+            "Test004"
+        ],
+        [
+            "Test003"
+        ]
     ],
     "arrayint2": {
         "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",

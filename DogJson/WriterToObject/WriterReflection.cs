@@ -92,13 +92,64 @@ namespace DogJson
             jsonWriteValue.jsonType = JsonWriteType.Object;
             jsonWriteValue.isLast = true;
             jsonWriteValue.data = data;
-            //allPath[data] = new ObjectPath() { value = jsonWriteValue };
+            jsonWriteValue.type = data.GetType();
+
 
             List<JsonWriteValue> writers = new List<JsonWriteValue>();
-            writers.Add(jsonWriteValue);
             List<JsonWriteValue> nows = new List<JsonWriteValue>();
             List<JsonWriteValue> parents = new List<JsonWriteValue>();
+
+            bool isSetType = false;
+            if (jsonWriteValue.type.IsArray)
+            {
+                isSetType = true;
+                jsonWriteValue.type = typeof(Box<>).MakeGenericType(jsonWriteValue.type);
+                IBox box = (IBox)Activator.CreateInstance(jsonWriteValue.type);
+                box.SetObject(jsonWriteValue.data);
+                jsonWriteValue.data = box;
+            }
+            else
+            {
+                IWriterCollectionObject writeObject = CollectionManager.GetWriterCollection(jsonWriteValue.type);
+                if (writeObject != null)
+                {
+                    switch (writeObject.GetWriteType(jsonWriteValue.data))
+                    {
+                        case JsonWriteType.None:
+                            break;
+                        case JsonWriteType.String:
+                            jsonWriteValue.jsonType = JsonWriteType.String;
+                            foreach (var item in writeObject.GetValue(jsonWriteValue.data))
+                            {
+                                jsonWriteValue.value = "\"" + item.key + "\"";
+                            }
+                            goto END;
+                        case JsonWriteType.Value:
+                            jsonWriteValue.jsonType = JsonWriteType.String;
+                            foreach (var item in writeObject.GetValue(jsonWriteValue.data))
+                            {
+                                jsonWriteValue.value =  item.key;
+                            }
+                            goto END;
+                        case JsonWriteType.Object:
+                            break;
+                        case JsonWriteType.Array:
+                            isSetType = true;
+                            jsonWriteValue.type = typeof(Box<>).MakeGenericType(jsonWriteValue.type);
+                            IBox box = (IBox)Activator.CreateInstance(jsonWriteValue.type);
+                            box.SetObject(jsonWriteValue.data);
+                            jsonWriteValue.data = box;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            writers.Add(jsonWriteValue);
             parents.Add(jsonWriteValue);
+
+
             while (parents.Count > 0)
             {
                 //int parentIndex = 0;
@@ -114,47 +165,6 @@ namespace DogJson
                     JsonWriteValue last = parent.back;
 
                     bool isPath = false;
-
-                    //IWriterCollectionString writeString = CollectionManager.GetWriterCollectionString(type);
-                    //if (writeString != null)
-                    //{
-                    //    JsonWriteValue now = previous;
-                    //    now.type = JsonWriteType.String;
-                    //    now.value = "\"" + writeString.GetStringValue(parent.data) + "\"";
-                    //    continue;
-                    //}
-
-
-                    //if (!isRoot && parent.data == data)
-                    //{
-                    //    parent.type = JsonWriteType.String;
-                    //    parent.value = "\"#\"";
-                    //    isPath = true;
-                    //    continue;
-                    //}
-
-                    //if ( !parent.data.GetType().IsValueType)
-                    //{
-                    //    ObjectPath path;
-                    //    if (allPath.TryGetValue(parent.data, out path))
-                    //    {
-                    //        if (path.path == null)
-                    //        {
-                    //            path.path = "\"" + GetRootPath(path.value) + "\"";
-                    //            //allPath[parent.data] = path;
-                    //        }
-                    //        parent.type = JsonWriteType.String;
-                    //        parent.value = path.path;
-                    //        isPath = true;
-                    //        continue;
-                    //    }
-                    //    else
-                    //    {
-                    //        allPath[parent.data] = new ObjectPath() { value = parent };
-                    //    }
-                    //}
-
-
 
                     var array = parent.data as Array;
                     if (array != null)
@@ -408,6 +418,22 @@ namespace DogJson
                 parents = nows;
                 nows = new List<JsonWriteValue>();
             }
+
+            END:
+            if (!isSetType)
+            {
+                JsonWriteValue typeWriteRoot = new JsonWriteValue(writers.Count, jsonWriteValue);
+                typeWriteRoot.key = "#type";
+                typeWriteRoot.value = "\"" + jsonWriteValue.type.ToString() + "\"";
+
+                var d = jsonWriteValue.back;
+                jsonWriteValue.back = typeWriteRoot;
+                typeWriteRoot.back = d;
+
+                typeWriteRoot.jsonType = JsonWriteType.String;
+                writers.Add(typeWriteRoot);
+            }
+
             return writers;
         }
 
@@ -981,20 +1007,20 @@ namespace DogJson
             {
                 now.jsonType = JsonWriteType.None;
                 now.data = null;
-                if (fieldType.IsEnum)
-                {
-                    Array Arrays = Enum.GetValues(fieldType);
-                    if (Arrays.Length > 0)
-                    {
-                        now.value = "\"" + Arrays.GetValue(0).ToString() + "\"";
-                        now.jsonType = JsonWriteType.String;
-                        now.key = null;
-                        now.arrayIndex = i;
-                        writers.Add(now);
-                        previous.back = now;
-                        previous = now;
-                    }
-                }
+                //if (fieldType.IsEnum)
+                //{
+                //    Array Arrays = Enum.GetValues(fieldType);
+                //    if (Arrays.Length > 0)
+                //    {
+                //        now.value = "\"" + Arrays.GetValue(0).ToString() + "\"";
+                //        now.jsonType = JsonWriteType.String;
+                //        now.key = null;
+                //        now.arrayIndex = i;
+                //        writers.Add(now);
+                //        previous.back = now;
+                //        previous = now;
+                //    }
+                //}
             }
             else
             {
@@ -1063,15 +1089,28 @@ namespace DogJson
 
                 if (fieldType.IsEnum)
                 {
+                    //now.key = null;
+                    //now.arrayIndex = i;
+                    //writers.Add(now);
+                    //previous.back = now;
+                    //previous = now;
+
+                    //Enum _enum = (Enum)value;
+                    //now.value = "\"" + _enum.ToString() + "\"";
+                    //now.jsonType = JsonWriteType.String;
+
+
+                    now = new JsonWriteValue(writers.Count, parent);
+                    now.data = new EnumWrapper(value);
                     now.key = null;
                     now.arrayIndex = i;
-                    writers.Add(now);
                     previous.back = now;
+                    writers.Add(now);
                     previous = now;
+                    now.jsonType = JsonWriteType.Array;
+                    nows.Add(now);
+                    goto Return;
 
-                    Enum _enum = (Enum)value;
-                    now.value = "\"" + _enum.ToString() + "\"";
-                    now.jsonType = JsonWriteType.String;
                 }
                 else
                 {

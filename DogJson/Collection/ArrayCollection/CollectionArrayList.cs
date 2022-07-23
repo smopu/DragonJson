@@ -32,8 +32,9 @@ namespace DogJson
             }
 
             read.addValueClassDelegate = (Action<List<T>, ReadCollectionLink.AddValue_Args>)AddValue;
+            //read.addValueStructDelegate = (Action<List<T>, ReadCollectionLink.AddValue_Args>)AddValue;
 
-
+            
             read.createObject = CreateObject;
             read.getItemType = GetItemType;
             return read;
@@ -54,7 +55,12 @@ namespace DogJson
             object set_value = arg.callGetValue(typeCode, arg.str, arg.value);
             array.Add((T)set_value);
         }
-
+        void ValueStruct(List<T> array, ReadCollectionLink.AddValue_Args arg)
+        {
+            object set_value = arg.callGetValue(typeCode, arg.str, arg.value);
+            array.Add((T)set_value);
+        }
+        
         object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
         {
             temp = null;

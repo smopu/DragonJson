@@ -8,35 +8,49 @@ using System.Threading.Tasks;
 namespace DogJson
 {
 
-    //[StructLayout(LayoutKind.Explicit)]
+    [StructLayout(LayoutKind.Explicit)]
     public unsafe struct JsonObject
     {
+        [FieldOffset(0)]
         public char* keyStringStart;
-        public int keyStringLength;
 
+        [FieldOffset(8)]
+        public int keyStringLength;
+        [FieldOffset(8)]
+        public int arrayIndex;
+
+        [FieldOffset(12)]
+        public int objectNext;
+
+        [FieldOffset(16)]
         public int objectQueueIndex;
+        [FieldOffset(20)]
         public int parentObjectIndex;
 
-        public bool isObject;
 
+        [FieldOffset(24)]
+        public long _startCommand;
         /// <summary>
         /// #create
         /// </summary>
+        [FieldOffset(24)]
         public bool isConstructor;
-
         /// <summary>
         /// #value
         /// </summary>
+        [FieldOffset(25)]
         public bool isCommandValue;
-
-
-        public int objectNext;
-
+        [FieldOffset(28)]
         public int arrayCount;
 
-        public int arrayIndex;
+        [FieldOffset(32)]
+        public bool isObject;
 
+        [FieldOffset(36)]
+        public long _startType;
+        [FieldOffset(36)]
         public int typeStartIndex;
+        [FieldOffset(40)]
         public int typeLength;
     }
 
@@ -64,7 +78,8 @@ namespace DogJson
         public int valueStringLength;
 
         [FieldOffset(16)]
-        public JsonObject* objectQueue;
+        //public JsonObject* objectQueue; objectQueueIndex
+        public int objectQueueIndex;
 
         [FieldOffset(24)]
         public int arrayIndex;
@@ -72,11 +87,16 @@ namespace DogJson
         [FieldOffset(28)]
         public JsonValueType type;
 
+
+
+        [FieldOffset(32)]
+        public long _startType;
         [FieldOffset(32)]
         public int typeStartIndex;
-
         [FieldOffset(36)]
         public int typeLength;
+
+
 
     }
 

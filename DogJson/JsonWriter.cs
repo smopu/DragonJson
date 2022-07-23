@@ -8,7 +8,7 @@ namespace DogJson
 {
     public class JsonWriter
     {
-        public JsonWriter(IJsonWriterToObject jsonWriterToObject) 
+        public JsonWriter(IJsonWriterToObject jsonWriterToObject)
         {
             this.jsonWriterToObject = jsonWriterToObject;
             if (CollectionManager.IsStart == false)
@@ -25,22 +25,24 @@ namespace DogJson
             bool isNext = false;
             List<JsonWriteValue> writers = jsonWriterToObject.ReadObject(data);
 
-            JsonWriteValue root = new JsonWriteValue();
-            root.jsonType = JsonWriteType.Object;
-            root.isLast = true;
-
-            JsonWriteValue item = new JsonWriteValue();
-
             StringBuilder sb = new StringBuilder();
             Stack<JsonWriteValue> objStack = new Stack<JsonWriteValue>();
-            sb.AppendLine("{");
-
             JsonWriteValue parent = writers[0];
+            switch (parent.jsonType)
+            {
+                case JsonWriteType.Object:
+                    sb.AppendLine("{");
+                    break;
+                case JsonWriteType.Array:
+                    sb.AppendLine("[");
+                    break;
+            }
+
             objStack.Push(parent);
 
             for (int i = 1; i < writers.Count; i++)
             {
-                item = parent.back;
+                JsonWriteValue item = parent.back;
                 parent = item;
                 isNext = false;
                 if (!isNext)
@@ -169,20 +171,48 @@ namespace DogJson
                         }
                         else
                         {
-                            sb.AppendLine(","); 
+                            sb.AppendLine(",");
                             //sb.Append(","); 
                             //isNext = true;
                         }
                         break;
                     case JsonWriteType.Object:
-                        sb.AppendLine("{");
-                        isNext = false;
-                        objStack.Push(item);
+                        if (item.back == null || item.back.parent != item)
+                        {
+                            if (item.isLast)
+                            {
+                                sb.AppendLine("{ }");
+                            }
+                            else
+                            {
+                                sb.AppendLine("{ },");
+                            }
+                        }
+                        else
+                        {
+                            sb.AppendLine("{");
+                            isNext = false;
+                            objStack.Push(item);
+                        }
                         break;
                     case JsonWriteType.Array:
-                        isNext = false;
-                        sb.AppendLine("[");
-                        objStack.Push(item);
+                        if (item.back == null || item.back.parent != item)
+                        {
+                            if (item.isLast)
+                            {
+                                sb.AppendLine("[ ]");
+                            }
+                            else
+                            {
+                                sb.AppendLine("[ ],");
+                            }
+                        }
+                        else
+                        {
+                            isNext = false;
+                            sb.AppendLine("[");
+                            objStack.Push(item);
+                        }
                         break;
                     case JsonWriteType.None:
                         sb.Append("null");
@@ -192,7 +222,20 @@ namespace DogJson
                 }
             }
 
-            //sb.AppendLine("}");
+            while (objStack.Count > 0)
+            {
+                JsonWriteValue value = objStack.Pop();
+                sb.Append(' ', objStack.Count * backCount);
+                switch (value.jsonType)
+                {
+                    case JsonWriteType.Object:
+                        sb.AppendLine("}");
+                        break;
+                    case JsonWriteType.Array:
+                        sb.AppendLine("]");
+                        break;
+                }
+            }
             return sb.ToString();
         }
 

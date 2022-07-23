@@ -26,6 +26,17 @@ namespace DogJson
             public ReadCollectionLink read;
             public Type type; 
             public bool IsValueType; 
+            public TypeAllCollection box;
+            public Type boxType;
+            public TypeAllCollection GetBox()
+            {
+                if (box == null)
+                {
+                    this.boxType = typeof(Box<>).MakeGenericType(this.type);
+                    box = CollectionManager.GetTypeCollection(boxType);
+                }
+                return box;
+            }
         }
         
         static Dictionary<Type, TypeAllCollection> allTypeCollection = new Dictionary<Type, TypeAllCollection>();
@@ -58,19 +69,28 @@ namespace DogJson
                 return op;
             }
             // 
-            ReadCollectionLink read = GetReadCollectionLink(type);
-            if (read != null)
+            if (type.IsArray)
             {
                 op = new TypeAllCollection();
-                op.typeCollectionEnum = TypeCollectionEnum.Read;
-                op.read = read;
+                op.typeCollectionEnum = TypeCollectionEnum.Array;
             }
             else
             {
-                op = new TypeAllCollection();
-                op.typeCollectionEnum = TypeCollectionEnum.Wrapper;
-                op.wrapper = new TypeAddrReflectionWrapper(type);
+                ReadCollectionLink read = GetReadCollectionLink(type);
+                if (read != null)
+                {
+                    op = new TypeAllCollection();
+                    op.typeCollectionEnum = TypeCollectionEnum.Read;
+                    op.read = read;
+                }
+                else
+                {
+                    op = new TypeAllCollection();
+                    op.typeCollectionEnum = TypeCollectionEnum.Wrapper;
+                    op.wrapper = new TypeAddrReflectionWrapper(type);
+                }
             }
+
             op.type = type;
             op.IsValueType = type.IsValueType;
             lock (allTypeCollection)

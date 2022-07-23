@@ -11,17 +11,6 @@ namespace DogJson
 {
     public unsafe class AddrToObject2 : IJsonRenderToObject
     {
-        Dictionary<Type, TypeAddrReflectionWrapper> allTypeWrapper = new Dictionary<Type, TypeAddrReflectionWrapper>();
-        public TypeAddrReflectionWrapper GetTypeWrapper(Type type)
-        {
-            TypeAddrReflectionWrapper ob;
-            if (allTypeWrapper.TryGetValue(type, out ob))
-            {
-                return ob;
-            }
-            return allTypeWrapper[type] = new TypeAddrReflectionWrapper(type);
-        }
-
         public AddrToObject2()
         {
             proxy = new ReadCollectionProxy();
@@ -30,7 +19,47 @@ namespace DogJson
             {
                 createObjectItems[i] = new CreateObjectItem();
             }
+
+            setValuesLength = 1024;
+            setValuesIntPtr = Marshal.AllocHGlobal(setValuesLength * sizeof(int));
+            setValues = (int*)setValuesIntPtr.ToPointer();
+
+            setValuesOrderLength = 1024;
+            setValuesOrderIntPtr = Marshal.AllocHGlobal(setValuesOrderLength * sizeof(int));
+            setValuesOrder = (int*)setValuesOrderIntPtr.ToPointer();
         }
+
+        unsafe void ResizeSetValues()
+        {
+            setValuesLength *= 2;
+            setValuesIntPtr = Marshal.ReAllocHGlobal(setValuesIntPtr, new IntPtr(setValuesLength * sizeof(int)));
+            setValues = (int*)setValuesIntPtr.ToPointer();
+        }
+
+        unsafe void ResizeSetValuesOrder()
+        {
+            setValuesOrderLength = setValuesLength;
+            setValuesOrderIntPtr = Marshal.ReAllocHGlobal(setValuesOrderIntPtr, new IntPtr(setValuesLength * sizeof(int)));
+            setValuesOrder = (int*)setValuesOrderIntPtr.ToPointer();
+        }
+
+        ~AddrToObject2()
+        {
+            Marshal.FreeHGlobal(setValuesIntPtr);
+            Marshal.FreeHGlobal(setValuesOrderIntPtr);
+        }
+
+        IntPtr setValuesIntPtr;
+        int* setValues;
+        int setValuesLength = 1024;
+
+
+        IntPtr setValuesOrderIntPtr;
+        int* setValuesOrder;
+        int setValuesOrderLength = 1024;
+        //int[] setValues = new int[1024];
+        //int[] setValuesOrder = new int[1024];
+
 
 
         static BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -41,7 +70,6 @@ namespace DogJson
             public Type collectionType;
             public bool isValueType;
             public ReadCollectionLink collectionObject;
-            public ReadCollectionLink parentCollection;
             
             public PropertyDelegateItem2 propertyDelegateItem;
             public bool isProperty;
@@ -62,7 +90,6 @@ namespace DogJson
             public int ArrayRank;
             public int ArrayItemTypeSize;
             public int ArrayNowItemSize;
-
 
             public object Obj
             {
@@ -86,60 +113,87 @@ namespace DogJson
             }
         }
 
-        struct SetValue
-        {
-            public JsonObject* objValue;
-            public PropertyDelegateItem propertyDelegateItem;
-        }
-
         int setValuesIndex = 0;
         ArrayWrapper arrayWrapper = new ArrayWrapper();
 
         //SetValue[] setValues = new SetValue[1024];
-        int[] setValues = new int[1024];
-
-        int[] setValuesOrder = new int[1024];
         CreateObjectItem[] createObjectItems = new CreateObjectItem[1024];
 
 
         JsonRender jsonRender;
         public static int indexDbug = 0;
-        public unsafe object CreateObject(JsonRender jsonRender, Type type, char* vs, int length)
+        public unsafe object CreateObject(JsonRender jsonRender,  char* vs, int length)
         {
             this.jsonRender = jsonRender;
             setValuesIndex = 0;
             var rootItem = createObjectItems[0];
             int itemCount = jsonRender.objectQueueIndex;
             {
-                //if (!allTypeWrapper.TryGetValue(type, out rootItem.wrapper))
-                //{
-                //    rootItem.wrapper = allTypeWrapper[type] = new TypeAddrReflectionWrapper(type);
-                //}
-                rootItem.wrapper = CollectionManager.GetTypeCollection(type).wrapper;
-
-                //rootItem.wrapper = GetTypeWrapper(type);
-                rootItem.type = type;
-
-                rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
-                //rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
-
+                JsonObject* rootJsonObject = jsonRender.objectQueue;
+                string rootTypeName = new string(vs, rootJsonObject->typeStartIndex, rootJsonObject->typeLength);
+                var rootCollection = CollectionManager.GetTypeCollection(rootTypeName);
+                Type type = rootCollection.type;
                 rootItem.isValueType = type.IsValueType;
+
+                rootItem.type = type;
+                switch (rootCollection.typeCollectionEnum)
+                {
+                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                        rootItem.wrapper = rootCollection.wrapper;
+                        rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                        break;
+                    case CollectionManager.TypeCollectionEnum.Read:
+                        rootItem.collectionObject = rootCollection.read;
+                        ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                        arg.objectType = rootItem.type;
+                        arg.bridge = rootJsonObject;
+                        rootItem.obj = rootItem.collectionObject.createObject(out rootItem.temp, arg);
+                        break;
+                    case CollectionManager.TypeCollectionEnum.Array:
+                        break;
+                }
+                //if (rootJsonObject->isCommandValue)
+                //{
+                //    rootCollection = rootCollection.GetBox();
+                //    rootItem.type = rootCollection.boxType;
+                //    rootItem.collectionObject = rootCollection.read;
+                //    ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                //    arg.objectType = type;
+                //    arg.bridge = rootJsonObject;
+                //    rootItem.obj = rootItem.collectionObject.createObject(out rootItem.temp, arg);
+                //}
+                //else
+                //{
+                //    switch (rootCollection.typeCollectionEnum)
+                //    {
+                //        case CollectionManager.TypeCollectionEnum.Wrapper:
+                //            rootItem.wrapper = rootCollection.wrapper;
+                //            rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                //            break;
+                //        case CollectionManager.TypeCollectionEnum.Read:
+                //            rootItem.collectionObject = rootCollection.read;
+                //            ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                //            arg.objectType = rootItem.type;
+                //            arg.bridge = rootJsonObject;
+                //            rootItem.obj = rootItem.collectionObject.createObject(out rootItem.temp, arg);
+                //            break;
+                //        case CollectionManager.TypeCollectionEnum.Array:
+                //            break;
+                //    }
+                //}
+
+
+                //rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
 
                 //对象数组创建
                 for (int i = 1; i < jsonRender.objectQueueIndex; i++)
                 {
-                    int kkk = 21;
-                    if (i == 21)
-                    {
-                        kkk = 9;
-                    }
                     CreateObjectItem myObject = createObjectItems[i];
                     JsonObject* v = jsonRender.objectQueue + i;
                     JsonObject* parent = jsonRender.objectQueue + v->parentObjectIndex;
                     CreateObjectItem parentObject = createObjectItems[v->parentObjectIndex];
-                    ReadCollectionLink parentCollection = myObject.parentCollection = parentObject.collectionObject;
+                    ReadCollectionLink parentCollection = parentObject.collectionObject;
                     myObject.obj = null;
-
 
                     TypeAddrFieldAndProperty fieldInfo = null;
                     myObject.isProperty = false;
@@ -148,9 +202,7 @@ namespace DogJson
                     if (parent->isObject)
                     {
                         //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
-
                         //优先级 typeLength >  parentCollection.GetItemType > fieldInfo.fieldType;
-
                         if (v->typeLength > 0)
                         {
                             if (v->isCommandValue)
@@ -402,7 +454,7 @@ namespace DogJson
                             if (parentCollection != null)
                             {
                                 myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
-                                setValues[setValuesIndex++] = i;
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                             }
                             else
                             {
@@ -410,7 +462,7 @@ namespace DogJson
                                 if (myObject.isProperty)
                                 {
                                     myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
-                                    setValues[setValuesIndex++] = i;
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                 }
                                 else
                                 {
@@ -441,7 +493,7 @@ namespace DogJson
                             if (parentCollection != null)
                             {
                                 myObject.obj = collection.createObject(out myObject.temp, arg);
-                                setValues[setValuesIndex++] = i;
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                             }
                             else
                             {
@@ -449,7 +501,7 @@ namespace DogJson
                                 if (myObject.isProperty)
                                 {
                                     myObject.obj = collection.createObject(out myObject.temp, arg);
-                                    setValues[setValuesIndex++] = i;
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                 }
                                 else
                                 {
@@ -460,7 +512,7 @@ namespace DogJson
                                         collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                         if (collection.isLaze)
                                         {
-                                            setValues[setValuesIndex++] = i;
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                         }
                                     }
                                     else
@@ -468,7 +520,7 @@ namespace DogJson
                                         myObject.obj = collection.createObject(out myObject.temp, arg);
                                         if (collection.isLaze)
                                         {
-                                            setValues[setValuesIndex++] = i;
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                         }
                                         else
                                         {
@@ -577,14 +629,14 @@ namespace DogJson
                                 //父对象是容器就延迟赋值
                                 if (parentCollection != null)
                                 {
-                                    setValues[setValuesIndex++] = i;
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                 }
                                 else
                                 {
                                     //对象是属性延迟赋值
                                     if (myObject.isProperty)
                                     {
-                                        setValues[setValuesIndex++] = i;
+                                        setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                     }
                                     else
                                     {
@@ -611,7 +663,7 @@ namespace DogJson
                             if (parentCollection != null)
                             {
                                 myObject.obj = collection.createObject(out myObject.temp, arg);
-                                setValues[setValuesIndex++] = i;
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                             }
                             else
                             {
@@ -619,7 +671,7 @@ namespace DogJson
                                 if (myObject.isProperty)
                                 {
                                     myObject.obj = collection.createObject(out myObject.temp, arg);
-                                    setValues[setValuesIndex++] = i;
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                 }
                                 else
                                 {
@@ -631,7 +683,7 @@ namespace DogJson
 
                                         if (collection.isLaze)
                                         {
-                                            setValues[setValuesIndex++] = i;
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                         }
                                     }
                                     else
@@ -640,7 +692,7 @@ namespace DogJson
 
                                         if (collection.isLaze)
                                         {
-                                            setValues[setValuesIndex++] = i;
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
                                         }
                                         else
                                         {
@@ -661,8 +713,8 @@ namespace DogJson
                 for (int i = 0; i < jsonRender.poolIndex; i++)
                 {
                     var v = jsonRender.pool[i];
-                    CreateObjectItem myObject = createObjectItems[v.objectQueue->objectQueueIndex];
-                    JsonObject* parent = v.objectQueue;
+                    CreateObjectItem myObject = createObjectItems[v.objectQueueIndex];
+                    JsonObject* parent = jsonRender.objectQueue + v.objectQueueIndex;
                     if (parent->isObject)
                     {
                         ReadCollectionLink collection = myObject.collectionObject;
@@ -1124,8 +1176,9 @@ namespace DogJson
 
                 ///*
                if (setValuesIndex > 0)
-               {
-                   int indexLeft = 0;
+                {
+                    if (setValuesOrderLength != setValuesLength) { ResizeSetValuesOrder(); }
+                    int indexLeft = 0;
                    int indexRight = setValuesIndex - 1;
 
                    setValuesOrder[indexRight] = 0;
@@ -1361,7 +1414,7 @@ namespace DogJson
         object GetValue(TypeCode typeCode, char* str, JsonValue* value)
         {
             CreateObjectItem myObject;
-            JsonObject* parent = value->objectQueue;
+            JsonObject* parent = jsonRender.objectQueue + value->objectQueueIndex;
             switch (value->type)
             {
                 case JsonValueType.String:
@@ -1379,7 +1432,7 @@ namespace DogJson
                             {
                                 return createObjectItems[obj->objectQueueIndex].obj;
                             }
-                             myObject = createObjectItems[value->objectQueue->objectQueueIndex];
+                             myObject = createObjectItems[value->objectQueueIndex];
                             if (myObject.type == typeof(Type))
                             //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                             {
@@ -1387,7 +1440,7 @@ namespace DogJson
                             }
                             break;
                         default:
-                             myObject = createObjectItems[value->objectQueue->objectQueueIndex];
+                             myObject = createObjectItems[value->objectQueueIndex];
                             if (myObject.type.IsEnum)
                             {
                                 var strEnum = new string(str, value->valueStringStart, value->valueStringLength);

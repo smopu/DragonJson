@@ -22,7 +22,6 @@ namespace DogJson
         static double[] pow309negative = new double[309];
         private static bool initializedPow = false;
 
-
         private static object mutex = new object();
         private static bool initialized = false;
         private static JsonRender _ins = null;
@@ -56,7 +55,7 @@ namespace DogJson
 
         public unsafe JsonRender(
             IJsonRenderToObject jsonRenderToObject = null,
-            int jsonStackLength = 1024, int poolLength = 65536)
+            int jsonStackLength = 1024, int poolLength = 65535)
         {
             if (CollectionManager.IsStart == false)
             {
@@ -86,19 +85,29 @@ namespace DogJson
                 }
             }
 
-            this.jsonStackLength = jsonStackLength;
-            this.poolLength = poolLength;
+            this.stackLength = 2;//jsonStackLength
+            this.poolLength = 12;//poolLength
+            this.objectQueueLength = 12;
 
 
-            stackIntPtr = Marshal.AllocHGlobal(jsonStackLength * Marshal.SizeOf(typeof(JsonObject*)));
-            objectQueueIntPtr = Marshal.AllocHGlobal(poolLength * Marshal.SizeOf(typeof(JsonObject)));
-            poolIntPtr = Marshal.AllocHGlobal(poolLength * Marshal.SizeOf(typeof(JsonValue)));
-            stringQueueIntPtr = Marshal.AllocHGlobal(stringQueueLength * Marshal.SizeOf(typeof(char)));
+            //stackIntPtr = Marshal.AllocHGlobal(jsonStackLength * sizeof(typeof(JsonObject*)));
+            stackIntPtr = Marshal.AllocHGlobal(jsonStackLength * sizeof(int));
+            objectQueueIntPtr = Marshal.AllocHGlobal(objectQueueLength * sizeof(JsonObject));
+            poolIntPtr = Marshal.AllocHGlobal(poolLength * sizeof(JsonValue));
+            stringQueueIntPtr = Marshal.AllocHGlobal(stringQueueLength * sizeof(char));
 
             
             pool = (JsonValue*)poolIntPtr.ToPointer();
             objectQueue = (JsonObject*)objectQueueIntPtr.ToPointer();
-            stack = (JsonObject**)stackIntPtr.ToPointer();
+
+            //byte* startItemOffcet;
+            //jsonObjects = (JsonObject[])arrayWrapper.CreateArrayOne(typeof(JsonObject), objectQueueLength + 10, out byte* objPtr, out startItemOffcet, out GCHandle gCHandle, out int itemSize);
+            //objectQueue = (JsonObject*)startItemOffcet;
+
+
+            //stack = (JsonObject**)stackIntPtr.ToPointer();
+            //stack = new int[jsonStackLength];
+            stack = (int*)stackIntPtr.ToPointer();
             stringQueue = (char*)stringQueueIntPtr.ToPointer();
 
 
@@ -136,16 +145,91 @@ namespace DogJson
             }
         }
 
-        public JsonObject* objectQueue;
-        public JsonValue* pool;
-        JsonObject** stack;
         char* stringQueue;
         int stringQueueLength = 100;
-
-        IntPtr stackIntPtr;
-        IntPtr poolIntPtr;
-        IntPtr objectQueueIntPtr;
         IntPtr stringQueueIntPtr;
+
+
+        //JsonObject** stack;
+        //int[] stack;
+        int* stack;
+        IntPtr stackIntPtr;
+        int stackLength = 1024;
+        int stackIndex = 0;
+
+
+        public JsonValue* pool;
+        IntPtr poolIntPtr;
+        int poolLength = 65536;
+        public int poolIndex = 0;
+
+        ArrayWrapper arrayWrapper = new ArrayWrapper();
+
+        public JsonObject[] jsonObjects;
+        public JsonObject* objectQueue;
+        int objectQueueLength = 65536;
+        IntPtr objectQueueIntPtr;
+        public int objectQueueIndex = 0;
+
+        unsafe void ResizeObjectQueue()
+        {
+            /*
+            objectQueueLength *= 2;
+            byte* startItemOffcet;
+            //JsonObject[] var_jsonObjects = (JsonObject[])arrayWrapper.CreateArrayOne(typeof(JsonObject), objectQueueLength + 10, out byte* objPtr, out startItemOffcet, out GCHandle gCHandle, out int itemSize);
+            //JsonObject* var_jobjectQueue = (JsonObject*)startItemOffcet;
+            JsonObject* var_jobjectQueue = (JsonObject*)(Marshal.AllocHGlobal((objectQueueLength * 2 + 10) * sizeof(JsonObject)).ToPointer());
+
+            //int size = sizeof(typeof(JsonObject));
+            //int size2 = sizeof(JsonObject);
+
+            GeneralTool.Memcpy(var_jobjectQueue, objectQueue, (objectQueueIndex) * sizeof(JsonObject));
+            //Array.Copy(jsonObjects, var_jsonObjects, objectQueueIndex);
+            //jsonObjects = var_jsonObjects;
+            objectQueue = var_jobjectQueue;
+
+            stackNow = objectQueue + stack[stackIndex];
+            objectNow = objectQueue + (objectQueueIndex - 1);
+
+            return;
+            // */
+            //objectQueueLength = 65536;
+
+            objectQueueLength *= 2;
+            objectQueueIntPtr = Marshal.ReAllocHGlobal(objectQueueIntPtr, new IntPtr((objectQueueLength + 10) * sizeof(JsonObject)));
+            //IntPtr copy = Marshal.AllocHGlobal((objectQueueLength + 10) * sizeof(JsonObject));
+            //JsonObject* objectQueueCopy = (JsonObject*)copy.ToPointer();
+
+            //GeneralTool.Memcpy(objectQueueCopy, objectQueue, objectQueueIndex * sizeof(JsonObject));
+            objectQueue = (JsonObject*)objectQueueIntPtr.ToPointer();
+
+            // Marshal.FreeHGlobal(objectQueueIntPtr);
+            //objectQueueIntPtr = copy;
+
+            stackNow = objectQueue + stack[stackIndex];
+            objectNow = objectQueue + (objectQueueIndex - 1);
+        }
+
+
+        unsafe void ResizeStack()
+        {
+            stackLength *= 2;
+            //Array.Resize(ref stack, stackLength);
+            stackIntPtr = Marshal.ReAllocHGlobal(stackIntPtr, new IntPtr(stackLength * sizeof(int)));
+            //Marshal.FreeHGlobal(stackIntPtr);
+            stack = (int*)stackIntPtr.ToPointer();
+        }
+
+        unsafe void ResizePool()
+        {
+            poolLength *= 2;
+            poolIntPtr = Marshal.ReAllocHGlobal(poolIntPtr, new IntPtr(poolLength * sizeof(JsonValue)));
+            //Marshal.FreeHGlobal(poolIntPtr);
+            pool = (JsonValue*)poolIntPtr.ToPointer(); 
+            
+            json_value = pool + (poolIndex - 1);
+        }
+
 
         long truelong;
         long falslong;
@@ -190,13 +274,7 @@ namespace DogJson
         int vStringStart = 0;
         int vStringLength = 0;
 
-        int jsonStackLength = 1024;
-        int poolLength = 65536;
 
-        int stackIndex = 0;
-        public int poolIndex = 0;
-
-        public int objectQueueIndex = 0;
 
         unsafe string Debug(char* vs, int length, int index, string txt)
         {
@@ -216,6 +294,10 @@ namespace DogJson
             return txt;
         }
 
+        JsonObject* objectNow = null;
+        JsonObject* stackNow = null;
+        JsonValue* json_value = null;
+        JsonValue* poolNow = null;
         public unsafe void ReadJsonText(char* startChar, int length)
         {
             {
@@ -230,11 +312,8 @@ namespace DogJson
                 double v_double = 0;
                 double v_decimal = 1;
                 long v_long = 0;
-                JsonValue* json_value;
-                JsonValue* poolNow;
-                JsonObject* objectNow;
-                JsonObject* stackNow = null;
-
+                stackNow = null;
+                objectNow = null;
                 bool fu = false;
                 int i = 0;
                 //先读初始状态 这里 先只支持{开头的数据
@@ -250,7 +329,13 @@ namespace DogJson
                             objectNow->keyStringLength = 1;
                             objectNow->isObject = true;
 
-                            stackNow = stack[stackIndex] = objectNow;
+                            objectNow->_startCommand = 0;
+                            objectNow->_startType = 0;
+                            objectNow->objectNext = -1;
+                            
+
+                            stack[stackIndex] = objectQueueIndex;
+                            stackNow = objectQueue + stack[stackIndex];
                             ++objectQueueIndex; 
                             goto Run;
                         case ' ':
@@ -374,14 +459,14 @@ namespace DogJson
                                                             case '}':
                                                                 //string入队
                                                                 //出栈 
-                                                                --stackIndex; stackNow = stack[stackIndex]; 
+                                                                --stackIndex; stackNow = objectQueue + stack[stackIndex];
                                                                 if (stackNow->isObject)
                                                                 {
                                                                     goto State_Object;
                                                                 }
                                                                 else
                                                                 {
-                                                                    stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                                    (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                                                     ++stackNow->arrayCount;
                                                                     goto State_Array;
                                                                 }
@@ -407,22 +492,23 @@ namespace DogJson
                                 }
                                 throw new Exception("字符串未结束 ");
                             case '}':
-                                
+
                                 //objectNext 赋值
-                                stack[stackIndex]->objectNext = objectQueueIndex;
+                                stackNow->objectNext = objectQueueIndex;
                                 //出栈 
-                                --stackIndex; stackNow = stack[stackIndex];
+                                --stackIndex; 
                                 if (stackIndex == -1)
                                 {
                                     goto BACK;
                                 }
+                                stackNow = objectQueue + stack[stackIndex];
                                 if (stackNow->isObject)
                                 {
                                     goto State_Object;
                                 }
                                 else
                                 {
-                                    stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                    (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                     ++stackNow->arrayCount;
                                     goto State_Array;
                                 }
@@ -465,21 +551,22 @@ namespace DogJson
 
                             case '}':
                                 //objectNext 赋值
-                                stack[stackIndex]->objectNext = objectQueueIndex;
+                                stackNow->objectNext = objectQueueIndex;
                                 //出栈 
 
-                                --stackIndex; stackNow = stack[stackIndex];
+                                --stackIndex; 
                                 if (stackIndex == -1)
                                 {
                                     goto BACK;
                                 }
+                                stackNow = objectQueue + stack[stackIndex];
                                 if (stackNow->isObject)
                                 {
                                     goto State_Object;
                                 }
                                 else
                                 {
-                                    stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                    (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                     ++stackNow->arrayCount;
                                     goto State_Array;
                                 }
@@ -529,9 +616,12 @@ namespace DogJson
                                             poolNow->keyStringStart = keyStringStart;
                                             poolNow->valueStringStart = vStringStart;
                                             poolNow->valueStringLength = vStringLength;
-                                            poolNow->objectQueue = stackNow;
-
+                                            poolNow->objectQueueIndex = stackNow->objectQueueIndex;
                                             ++poolIndex;
+                                            if (poolIndex == poolLength)
+                                            {
+                                                ResizePool();
+                                            }
 
                                             goto State_Object;
                                         case '}':
@@ -542,26 +632,30 @@ namespace DogJson
                                             poolNow->keyStringStart = keyStringStart;
                                             poolNow->valueStringStart = vStringStart;
                                             poolNow->valueStringLength = vStringLength;
-                                            poolNow->objectQueue = stackNow;
+                                            poolNow->objectQueueIndex = stackNow->objectQueueIndex;
                                             ++poolIndex;
+                                            if (poolIndex == poolLength)
+                                            {
+                                                ResizePool();
+                                            }
 
                                             //objectNext 赋值
-                                            stack[stackIndex]->objectNext = objectQueueIndex;
+                                            stackNow->objectNext = objectQueueIndex;
 
                                             //出栈 
-                                            --stackIndex; stackNow = stack[stackIndex];
-
+                                            --stackIndex; 
                                             if (stackIndex == -1)
                                             {
                                                 goto BACK;
                                             }
+                                            stackNow = objectQueue + stack[stackIndex];
                                             if (stackNow->isObject)
                                             {
                                                 goto State_Object;
                                             }
                                             else
                                             {
-                                                stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                                 ++stackNow->arrayCount;
                                                 goto State_Array;
                                             }
@@ -585,10 +679,22 @@ namespace DogJson
                                 objectNow->keyStringStart = startChar + keyStringStart;
                                 objectNow->keyStringLength = keyStringLength;
                                 objectNow->isObject = true;
+                                objectNow->_startCommand = 0;
+                                objectNow->_startType = 0;
+                                objectNow->objectNext = -1;
 
-                                stack[++stackIndex] = objectNow; stackNow = stack[stackIndex];
+                                if (++stackIndex == stackLength)
+                                {
+                                    ResizeStack();
+                                }
+                                stack[stackIndex] = objectQueueIndex;
+                                //stack[++stackIndex] = objectNow;
+                                stackNow = objectQueue + stack[stackIndex];
                                 ++objectQueueIndex;
-
+                                if (objectQueueIndex == objectQueueLength)
+                                {
+                                    ResizeObjectQueue();
+                                }
                                 goto State_Object;
 
                             case '[':
@@ -607,11 +713,23 @@ namespace DogJson
                                     objectNow->keyStringStart = startChar + keyStringStart;
                                     objectNow->keyStringLength = keyStringLength;
                                     objectNow->isObject = false;
-                                    objectNow->arrayCount = 0;
+                                    objectNow->_startCommand = 0;
+                                    objectNow->_startType = 0;
+                                    objectNow->objectNext = -1;
 
-                                    stack[++stackIndex] = objectNow; stackNow = stack[stackIndex];
+                                    if (++stackIndex == stackLength)
+                                    {
+                                        ResizeStack();
+                                    }
+                                    stack[stackIndex] = objectQueueIndex;
+                                    //stack[++stackIndex] = objectNow;
+                                    stackNow = objectQueue + stack[stackIndex];
                                     ++objectQueueIndex;
 
+                                    if (objectQueueIndex == objectQueueLength)
+                                    {
+                                        ResizeObjectQueue();
+                                    }
                                     goto State_Array;
                                 }
 
@@ -621,10 +739,11 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == truelong)
                                     {
-                                        json_value = pool+(poolIndex++);
+                                        json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); } 
+                                        json_value->_startType = 0; 
                                         json_value->type = JsonValueType.Boolean;
-                                        json_value->valueBool = true;
-                                        now += 4;
+                                        json_value->valueBool = true; 
+                                         now += 4;
                                         i += 4;
                                         goto Value;
                                     }
@@ -636,7 +755,8 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == nulllong)
                                     {
-                                        json_value = pool+(poolIndex++);
+                                        json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                        json_value->_startType = 0;
                                         json_value->type = JsonValueType.None;
                                         now += 4;
                                         i += 4;
@@ -652,7 +772,8 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == alselong)
                                     {
-                                        json_value = pool+(poolIndex++);
+                                        json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                        json_value->_startType = 0;
                                         json_value->type = JsonValueType.Boolean;
                                         json_value->valueBool = false;
                                         now += 4;
@@ -686,7 +807,8 @@ namespace DogJson
                                         throw new Exception(Debug(startChar, length, i, "key:value后面必须要跟,或者} " + *now));
                                     }
                                 }
-                                json_value = pool+(poolIndex++);
+                                json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                json_value->_startType = 0;
                                 v_long = (*now - '0');
                                 for (++i, ++now; i < length; ++i, ++now)
                                 {
@@ -801,32 +923,32 @@ namespace DogJson
                                         case ',':
                                             json_value->keyStringLength = keyStringLength;
                                             json_value->keyStringStart = keyStringStart;
-                                            json_value->objectQueue = stackNow;
-                                            
+                                            json_value->objectQueueIndex = stackNow->objectQueueIndex;
+
 
                                             goto State_Object;
                                         case '}':
 
                                             json_value->keyStringLength = keyStringLength;
                                             json_value->keyStringStart = keyStringStart;
-                                            json_value->objectQueue = stackNow;
+                                            json_value->objectQueueIndex = stackNow->objectQueueIndex;
 
                                             //objectNext 赋值
-                                            stack[stackIndex]->objectNext = objectQueueIndex;
+                                            stackNow->objectNext = objectQueueIndex;
                                             //出栈 
-                                            --stackIndex; stackNow = stack[stackIndex];
-
+                                            --stackIndex;
                                             if (stackIndex == -1)
                                             {
                                                 goto BACK;
                                             }
+                                            stackNow = objectQueue + stack[stackIndex];
                                             if (stackNow->isObject)
                                             {
                                                 goto State_Object;
                                             }
                                             else
                                             {
-                                                stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                                 ++stackNow->arrayCount;
                                                 goto State_Array;
                                             }
@@ -861,7 +983,8 @@ namespace DogJson
                         switch (*now)
                         {
                             case '"':
-                                json_value = pool + (poolIndex++);
+                                json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                json_value->_startType = 0;
                                 vStringStart = i + 1;
                                 //再找" 
                                 for (++i, ++now; i < length; ++i, ++now)
@@ -877,8 +1000,9 @@ namespace DogJson
                                                 json_value->type = JsonValueType.String;
                                                 json_value->valueStringStart = vStringStart;
                                                 json_value->valueStringLength = vStringLength;
-                                                json_value->objectQueue = stackNow;
+                                                json_value->objectQueueIndex = stackNow->objectQueueIndex;
                                                 json_value->arrayIndex = stackNow->arrayCount;
+
 
                                                 ++stackNow->arrayCount;
                                                 goto State_Array;
@@ -888,14 +1012,14 @@ namespace DogJson
                                                 json_value->type = JsonValueType.String;
                                                 json_value->valueStringStart = vStringStart;
                                                 json_value->valueStringLength = vStringLength;
-                                                json_value->objectQueue = stackNow;
+                                                json_value->objectQueueIndex = stackNow->objectQueueIndex;
                                                 json_value->arrayIndex = stackNow->arrayCount;
 
                                                 //objectNext 赋值
-                                                stack[stackIndex]->objectNext = objectQueueIndex;
+                                                stackNow->objectNext = objectQueueIndex;
                                                 ++stackNow->arrayCount;
                                                 //出栈
-                                                --stackIndex; stackNow = stack[stackIndex];
+                                                --stackIndex; stackNow = objectQueue + stack[stackIndex];
                                                 goto Loop;
                                             }
                                         }
@@ -911,9 +1035,24 @@ namespace DogJson
                                 objectNow->objectQueueIndex = objectQueueIndex;
                                 objectNow->parentObjectIndex = stackNow->objectQueueIndex;
                                 objectNow->isObject = true;
+                                objectNow->arrayIndex = 0;
+                                objectNow->_startCommand = 0;
+                                objectNow->_startType = 0;
+                                objectNow->objectNext = -1;
 
-                                stack[++stackIndex] = objectNow; stackNow = stack[stackIndex];
+                                if (++stackIndex == stackLength)
+                                {
+                                    ResizeStack();
+                                }
+                                stack[stackIndex] = objectQueueIndex;
+                                //stack[++stackIndex] = objectNow; 
+                                stackNow = objectQueue + stack[stackIndex];
                                 ++objectQueueIndex;
+
+                                if (objectQueueIndex == objectQueueLength)
+                                {
+                                    ResizeObjectQueue();
+                                }
 
                                 goto State_Object;
                             //goto Loop;
@@ -921,16 +1060,31 @@ namespace DogJson
                             case '[':
                                 // [新建 array 入栈
                                 objectNow = objectQueue + objectQueueIndex;
+                                objectNow->_startCommand = 0;
+                                objectNow->_startType = 0;
+                                objectNow->objectNext = -1;
+
                                 objectNow->objectQueueIndex = objectQueueIndex;
                                 objectNow->parentObjectIndex = stackNow->objectQueueIndex;
                                 objectNow->isObject = false;
                                 objectNow->arrayCount = 0;
                                 objectNow->arrayIndex = stackNow->arrayCount;
+
                                 //json_value->arrayIndex = stackNow->arrayCount;
                                 ++stackNow->arrayCount;
 
-                                stack[++stackIndex] = objectNow; stackNow = stack[stackIndex];
+                                if (++stackIndex == stackLength)
+                                {
+                                    ResizeStack();
+                                }
+                                stack[stackIndex] = objectQueueIndex;
+                                //stack[++stackIndex] = objectNow; 
+                                stackNow = objectQueue + stack[stackIndex];
                                 ++objectQueueIndex;
+                                if (objectQueueIndex == objectQueueLength)
+                                {
+                                    ResizeObjectQueue();
+                                }
 
                                 goto State_Array;
                             case 't':
@@ -939,9 +1093,10 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == truelong)
                                     {
-                                        json_value = pool + (poolIndex++);
+                                        json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
                                         json_value->type = JsonValueType.Boolean;
                                         json_value->valueBool = true;
+                                        json_value->_startType = 0;
                                         now += 4;
                                         i += 4;
                                         goto Value2;
@@ -954,8 +1109,9 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == nulllong)
                                     {
-                                        json_value = pool + (poolIndex++);
+                                        json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
                                         json_value->type = JsonValueType.None;
+                                        json_value->_startType = 0;
                                         now += 4;
                                         i += 4;
                                         goto Value2;
@@ -970,9 +1126,10 @@ namespace DogJson
                                     long nameLong = *(long*)(now);
                                     if (nameLong == alselong)
                                     {
-                                        json_value = pool + (poolIndex++);
+                                        json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
                                         json_value->type = JsonValueType.Boolean;
                                         json_value->valueBool = false;
+                                        json_value->_startType = 0;
                                         now += 4;
                                         i += 4;
                                         goto Value2;
@@ -1004,7 +1161,8 @@ namespace DogJson
                                         throw new Exception("key:value后面必须要跟,或者}" + *now);
                                     }
                                 }
-                                json_value = pool + (poolIndex++);
+                                json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                json_value->_startType = 0;
                                 v_long = (*now - '0');
                                 for (++i, ++now; i < length; ++i, ++now)
                                 {
@@ -1105,7 +1263,7 @@ namespace DogJson
                             //throw new Exception("key:后面的value解析错误");
 
                             Value2:
-                                json_value->objectQueue = stackNow;
+                                json_value->objectQueueIndex = stackNow->objectQueueIndex;
 
                                 for (; i < length; ++i, ++now)
                                 {
@@ -1144,18 +1302,19 @@ namespace DogJson
                                                             //objectNext 赋值
                                                             stackNow->objectNext = objectQueueIndex;
                                                             //出栈 
-                                                            --stackIndex; stackNow = stack[stackIndex];
+                                                            --stackIndex;
                                                             if (stackIndex == -1)
                                                             {
                                                                 goto BACK;
                                                             }
+                                                            stackNow = objectQueue + stack[stackIndex];
                                                             if (stackNow->isObject)
                                                             {
                                                                 goto State_Object;
                                                             }
                                                             else
                                                             {
-                                                                stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                                (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                                                 ++stackNow->arrayCount;
                                                                 goto State_Array;
                                                             }
@@ -1180,9 +1339,9 @@ namespace DogJson
                                                 ++stackNow->arrayCount;
 
                                                 //objectNext 赋值
-                                                stack[stackIndex]->objectNext = objectQueueIndex;
+                                                stackNow->objectNext = objectQueueIndex;
 
-                                                --stackIndex; stackNow = stack[stackIndex];
+                                                --stackIndex; stackNow = objectQueue + stack[stackIndex];
                                                 goto Loop;
                                             }
                                         default:
@@ -1217,18 +1376,19 @@ namespace DogJson
                                                 //objectNext 赋值
                                                 stackNow->objectNext = objectQueueIndex;
                                                 //出栈 
-                                                --stackIndex; stackNow = stack[stackIndex];
+                                                --stackIndex;
                                                 if (stackIndex == -1)
                                                 {
                                                     goto BACK;
                                                 }
+                                                stackNow = objectQueue + stack[stackIndex];
                                                 if (stackNow->isObject)
                                                 {
                                                     goto State_Object;
                                                 }
                                                 else
                                                 {
-                                                    stack[stackIndex + 1]->arrayIndex = stackNow->arrayCount;
+                                                    (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
                                                     ++stackNow->arrayCount;
                                                     goto State_Array;
                                                 }
@@ -1249,9 +1409,9 @@ namespace DogJson
                                 {
                                     //(*jsonStackNow)->objectIndex = poolIndex;
                                     //objectNext 赋值
-                                    stack[stackIndex]->objectNext = objectQueueIndex;
+                                    stackNow->objectNext = objectQueueIndex;
                                     //出栈 
-                                    --stackIndex; stackNow = stack[stackIndex];
+                                    --stackIndex; stackNow = objectQueue + stack[stackIndex];
                                     goto Loop;
                                 }
                             case ':':
@@ -1274,7 +1434,17 @@ namespace DogJson
             fixed (char* startChar = str)
             {
                 ReadJsonText(startChar, length);
-                return (T)jsonRenderToObject.CreateObject(this, typeof(T), startChar, length);
+                return (T)jsonRenderToObject.CreateObject(this, startChar, length);
+            }
+        }
+
+        public unsafe object ReadJsonTextCreate(string str)
+        {
+            int length = str.Length;
+            fixed (char* startChar = str)
+            {
+                ReadJsonText(startChar, length);
+                return jsonRenderToObject.CreateObject(this, startChar, length);
             }
         }
 

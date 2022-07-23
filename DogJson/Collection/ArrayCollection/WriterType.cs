@@ -14,7 +14,7 @@ namespace DogJson.Collection.ArrayCollection.Generic
         public string GetStringValue(object obj)
         {
             Type type = (Type)obj;
-            return type.Assembly.GetName().Name + "," + type.ToString();
+            return type.ToString();
         }
     }
 }
