@@ -97,10 +97,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assert.cs" />
+    <Compile Include="BaseTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Read\Addr\JsonWriteReadTestClassA.cs" />
     <Compile Include="Read\Addr\PropertyWrapperTest.cs" />
-    <Compile Include="Read\Addr\StringTableTest.cs" />
     <Compile Include="Read\JsonReadStringCollectionTest.cs" />
     <Compile Include="Read\JsonReadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -127,7 +127,9 @@
       <Name>DogJson</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="备份.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -1,0 +1,238 @@
+﻿
+                        //### parent is Json Array
+                        //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
+                        if (v->typeLength > 0)
+                        {
+                            if (v->isCommandValue)
+                            {
+                                if (v->isObject)
+                                {
+                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                                    myObject.type = UnsafeOperation.GetType(typeName);
+                                    myObject.type = typeof(Box<>).MakeGenericType(myObject.type);
+                                    //throw new Exception("To DO");
+                                    var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                                    myObject.type = typeAllCollection.type;
+                                    switch (typeAllCollection.readEnum)
+                                    {
+                                        case CollectionManager.TypeCollectionEnum.Wrapper:
+                                            myObject.wrapper = typeAllCollection.wrapper;
+                                            break;
+                                        case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                            myObject.readCollection = typeAllCollection.readCollection;
+                                            break;
+                                        case CollectionManager.TypeCollectionEnum.Array:
+                                            myObject.arrayWrap = typeAllCollection.arrayWrap;
+                                            break;
+                                    }
+                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                }
+                                else
+                                {
+                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                                    var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                                    myObject.type = typeAllCollection.type;
+                                    switch (typeAllCollection.readEnum)
+                                    {
+                                        case CollectionManager.TypeCollectionEnum.Wrapper:
+                                            myObject.wrapper = typeAllCollection.wrapper;
+                                            break;
+                                        case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                            myObject.readCollection = typeAllCollection.readCollection;
+                                            break;
+                                        case CollectionManager.TypeCollectionEnum.Array:
+                                            myObject.arrayWrap = typeAllCollection.arrayWrap;
+                                            break;
+                                    }
+                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                }
+                                //myObject.type = typeof(Box<>).MakeGenericType(typeAllCollection.type);
+                                //throw new Exception("To DO");
+                            }
+                            else
+                            {
+                                string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                                var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+
+                                myObject.type = typeAllCollection.type;
+                                switch (typeAllCollection.readEnum)
+                                {
+                                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                                        myObject.wrapper = typeAllCollection.wrapper;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                        myObject.readCollection = typeAllCollection.readCollection;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.Array:
+                                        myObject.arrayWrap = typeAllCollection.arrayWrap;
+                                        break;
+                                }
+                                myObject.isValueType = typeAllCollection.IsValueType;
+                            }
+
+                            if (parentCollection == null)
+                            {
+                                myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                            }
+                        }
+                        else
+                        {
+                            CollectionManager.TypeAllCollection typeAllCollection;
+                            if (parentCollection != null)
+                            {
+                                typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
+                                myObject.type = typeAllCollection.type;
+                            }
+                            else
+                            {
+                                myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                myObject.type = parentObject.arrayItemType;
+                                typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
+                            }
+                            switch (typeAllCollection.readEnum)
+                            {
+                                case CollectionManager.TypeCollectionEnum.Wrapper:
+                                    myObject.wrapper = typeAllCollection.wrapper;
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                    myObject.readCollection = typeAllCollection.readCollection;
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.Array:
+                                    myObject.arrayWrap = typeAllCollection.arrayWrap;
+                                    break;
+                            }
+                            myObject.isValueType = typeAllCollection.IsValueType;
+                        }
+
+
+                         if (parent->isObject)
+                    {
+                        //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
+                        //优先级 typeLength >  parentCollection.GetItemType > fieldInfo.fieldType;
+
+
+                        if (v->typeLength > 0)
+                        {
+                            if (v->isCommandValue)
+                            {
+                                if (v->isObject)
+                                {
+                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                                    typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                                    typeAllCollection = typeAllCollection.GetBox();
+                                    myObject.type = typeAllCollection.type; 
+                                    myObject.collectionEnum = typeAllCollection.readEnum; 
+                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                }
+                                else
+                                {
+                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                                    typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                                    myObject.type = typeAllCollection.type;
+                                    myObject.collectionEnum = typeAllCollection.readEnum;
+                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                }
+                            }
+                            else
+                            {
+                                string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                                var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                                myObject.type = typeAllCollection.type;
+                                myObject.collectionEnum = typeAllCollection.readEnum; 
+                                switch (typeAllCollection.readEnum)
+                                {
+                                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                                        myObject.wrapper = typeAllCollection.wrapper;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                        myObject.readCollection = typeAllCollection.readCollection;
+                                        break;
+                                    case CollectionManager.TypeCollectionEnum.Array:
+                                        myObject.arrayWrap = typeAllCollection.arrayWrap;
+                                        break;
+                                }
+                                myObject.isValueType = typeAllCollection.IsValueType;
+                            }
+
+                            if (parentObject.collectionEnum == CollectionManager.TypeCollectionEnum.Wrapper)
+                            {
+                                fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                                //var key = new string(v->keyStringStart, 0, v->keyStringLength);
+                                //var fieldInfo = parentObject.wrapper.nameOfField[key];
+                                if (fieldInfo.isProperty)
+                                {
+                                    myObject.isProperty = true;
+                                    myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                                }
+                                else
+                                {
+                                    myObject.offset = fieldInfo.offset;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            #region 没有 typeLength
+
+
+                            switch (parentObject.collectionEnum)
+                            {
+                                case CollectionManager.TypeCollectionEnum.Wrapper:
+                                    {
+                                        fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                                        //var key = new string(v->keyStringStart, 0, v->keyStringLength);
+                                        //var fieldInfo = parentObject.wrapper.nameOfField[key];
+                                        if (fieldInfo.isProperty)
+                                        {
+                                            myObject.isProperty = true;
+                                            myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                                        }
+                                        else
+                                        {
+                                            myObject.offset = fieldInfo.offset;
+                                        }
+                                        myObject.type = fieldInfo.fieldOrPropertyType;
+                                        myObject.isValueType = fieldInfo.isValueType;
+
+                                        typeAllCollection = fieldInfo.GetTypeAllCollection();
+                                        myObject.collectionEnum = typeAllCollection.readEnum;
+
+                                    }
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                    {
+                                        typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
+                                        myObject.collectionEnum = typeAllCollection.readEnum;
+                                        myObject.isValueType = typeAllCollection.IsValueType;
+                                        myObject.type = typeAllCollection.type;
+                                    }
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.Array:
+                                    typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
+                                    myObject.collectionEnum = typeAllCollection.readEnum;
+                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                    myObject.type = typeAllCollection.type;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            switch (typeAllCollection.readEnum)
+                            {
+                                case CollectionManager.TypeCollectionEnum.Wrapper:
+                                    myObject.wrapper = typeAllCollection.wrapper;
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.ReadCollection:
+                                    myObject.readCollection = typeAllCollection.readCollection;
+                                    break;
+                                case CollectionManager.TypeCollectionEnum.Array:
+                                    myObject.arrayWrap = typeAllCollection.arrayWrap;
+                                    break;
+                            }
+                            #endregion
+
+                        }
+                    }
+                    else
+                    {
+                    }

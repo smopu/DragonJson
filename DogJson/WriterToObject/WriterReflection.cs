@@ -232,7 +232,7 @@ namespace DogJson
                                     {
                                         JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, parent);
                                         typeWrite.key = "#type";
-                                        typeWrite.value = "\"" + parent.type.Assembly.GetName().Name + "," + parent.type.ToString() + "\"";
+                                        typeWrite.value = "\"" + UnsafeOperation.TypeToString(parent.type) + "\"";
                                         previous.back = typeWrite;
                                         typeWrite.jsonType = JsonWriteType.String;
                                         writers.Add(typeWrite);
@@ -282,7 +282,7 @@ namespace DogJson
                             {
                                 JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, parent);
                                 typeWrite.key = "#type";
-                                typeWrite.value = "\"" + parent.type.Assembly.GetName().Name + "," + parent.type.ToString() + "\"";
+                                typeWrite.value = "\"" + UnsafeOperation.TypeToString(parent.type) + "\"";
                                 previous.back = typeWrite;
                                 typeWrite.jsonType = JsonWriteType.String;
                                 writers.Add(typeWrite);
@@ -348,7 +348,7 @@ namespace DogJson
                             {
                                 JsonWriteValue typeWrite = new JsonWriteValue(writers.Count, parent);
                                 typeWrite.key = "#type";
-                                typeWrite.value = "\"" + parent.type.Assembly.GetName().Name + "," + parent.type.ToString() + "\"";
+                                typeWrite.value = "\"" + UnsafeOperation.TypeToString(parent.type) + "\"";
                                 previous.back = typeWrite;
                                 typeWrite.jsonType = JsonWriteType.String;
                                 writers.Add(typeWrite);

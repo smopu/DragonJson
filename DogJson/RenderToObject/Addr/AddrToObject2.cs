@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DogJson.RenderToObject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -27,6 +28,11 @@ namespace DogJson
             setValuesOrderLength = 1024;
             setValuesOrderIntPtr = Marshal.AllocHGlobal(setValuesOrderLength * sizeof(int));
             setValuesOrder = (int*)setValuesOrderIntPtr.ToPointer();
+
+
+            this.maxRank = 10;
+            arrayRankIntPtr = Marshal.AllocHGlobal(100);
+            arrayLengths = (int*)arrayRankIntPtr.ToPointer();
         }
 
         unsafe void ResizeSetValues()
@@ -47,6 +53,7 @@ namespace DogJson
         {
             Marshal.FreeHGlobal(setValuesIntPtr);
             Marshal.FreeHGlobal(setValuesOrderIntPtr);
+            Marshal.FreeHGlobal(arrayRankIntPtr);
         }
 
         IntPtr setValuesIntPtr;
@@ -61,6 +68,28 @@ namespace DogJson
         //int[] setValuesOrder = new int[1024];
 
 
+        IntPtr arrayRankIntPtr;
+        int* arrayLengths;
+        //int rank = 1;
+        //public int arraySize = 1;
+        //void SetSize(int length)
+        //{
+        //    arrayLengths[rank] = length;
+        //    ++rank;
+        //    arraySize *= length;
+        //    if (maxRank < rank)
+        //    {
+        //        maxRank = rank;
+        //    }
+        //}
+        int maxRank = 10;
+
+        unsafe void ResizeSetArrayRank()
+        {
+            arrayRankIntPtr = Marshal.ReAllocHGlobal(arrayRankIntPtr, new IntPtr(maxRank * sizeof(int)));
+            arrayLengths = (int*)arrayRankIntPtr.ToPointer();
+        }
+
 
         static BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -69,12 +98,15 @@ namespace DogJson
             public Type type;
             public Type collectionType;
             public bool isValueType;
-            public ReadCollectionLink collectionObject;
-            
+
+            public CollectionManager.TypeCollectionBranch readBranch = CollectionManager.TypeCollectionBranch.Wrapper;
+            public ReadCollectionLink readCollection;
+            public TypeAddrReflectionWrapper wrapper;
+            public IArrayWrap arrayWrap;
+
             public PropertyDelegateItem2 propertyDelegateItem;
             public bool isProperty;
             
-            public TypeAddrReflectionWrapper wrapper;
             public int offset;
             public GCHandle gcHandle;
             public byte* bytePtr;
@@ -85,11 +117,11 @@ namespace DogJson
             public bool collectionNoRef;
             
 
-            public TypeCode ArrayItemTypeCode;
-            public Type ArrayItemType;
-            public int ArrayRank;
-            public int ArrayItemTypeSize;
-            public int ArrayNowItemSize;
+            public TypeCode arrayElementTypeCode;
+            public Type arrayElementType;
+            public int arrayRank;
+            public int arrayItemTypeSize;
+            public int arrayNowItemSize;
 
             public object Obj
             {
@@ -114,7 +146,7 @@ namespace DogJson
         }
 
         int setValuesIndex = 0;
-        ArrayWrapper arrayWrapper = new ArrayWrapper();
+        //ArrayWrapper arrayWrapper = new ArrayWrapper();
 
         //SetValue[] setValues = new SetValue[1024];
         CreateObjectItem[] createObjectItems = new CreateObjectItem[1024];
@@ -131,27 +163,113 @@ namespace DogJson
             {
                 JsonObject* rootJsonObject = jsonRender.objectQueue;
                 string rootTypeName = new string(vs, rootJsonObject->typeStartIndex, rootJsonObject->typeLength);
-                var rootCollection = CollectionManager.GetTypeCollection(rootTypeName);
+                CollectionManager.TypeAllCollection rootCollection;
+                if (rootJsonObject->isCommandValue)
+                {
+                    if (rootJsonObject->isObject)
+                    {
+                        rootCollection = CollectionManager.GetBoxTypeCollection(rootTypeName);
+                    }
+                    else
+                    {
+                        rootCollection = CollectionManager.GetTypeCollection(rootTypeName);
+                    }
+                }
+                else
+                {
+                    string typeName = new string(vs, rootJsonObject->typeStartIndex, rootJsonObject->typeLength);
+                    rootCollection = CollectionManager.GetTypeCollection(rootTypeName);
+                }
                 Type type = rootCollection.type;
                 rootItem.isValueType = type.IsValueType;
-
                 rootItem.type = type;
-                switch (rootCollection.typeCollectionEnum)
+
+                //"#create"
+                if (rootJsonObject->isConstructor)
                 {
-                    case CollectionManager.TypeCollectionEnum.Wrapper:
+                    rootCollection = rootCollection.GetConstructor(out rootItem.collectionType);
+                }
+                rootItem.readBranch = rootCollection.readBranch;
+
+                switch (rootCollection.readBranch)
+                {
+                    case CollectionManager.TypeCollectionBranch.Wrapper:
                         rootItem.wrapper = rootCollection.wrapper;
                         rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
                         break;
-                    case CollectionManager.TypeCollectionEnum.Read:
-                        rootItem.collectionObject = rootCollection.read;
+                    case CollectionManager.TypeCollectionBranch.ReadCollection:
+                        rootItem.readCollection = rootCollection.readCollection;
                         ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
                         arg.objectType = rootItem.type;
                         arg.bridge = rootJsonObject;
-                        rootItem.obj = rootItem.collectionObject.createObject(out rootItem.temp, arg);
+                        rootItem.obj = rootItem.readCollection.createObject(out rootItem.temp, arg);
                         break;
-                    case CollectionManager.TypeCollectionEnum.Array:
+                    case CollectionManager.TypeCollectionBranch.Array:
+                        rootItem.arrayWrap = rootCollection.arrayWrap;
+
+                        var rank = rootItem.arrayWrap.rank;
+                        if (rank == 1)//数组的秩= 1 直接遍历赋值
+                        {
+                            rootItem.arrayRank = 1;
+                            rootItem.arrayElementType = rootItem.arrayWrap.elementType;
+                            rootItem.arrayElementTypeCode = rootItem.arrayWrap.elementTypeCode;
+
+                            rootItem.obj = rootItem.arrayWrap.CreateArray(rootJsonObject->arrayCount, arrayLengths,
+                                out rootItem.objPtr, out rootItem.bytePtr, out rootItem.gcHandle, out rootItem.arrayNowItemSize);
+
+                            //myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                            rootItem.arrayItemTypeSize = rootItem.arrayNowItemSize;
+                        }
+                        else
+                        {
+                            rootItem.arrayRank = rank;
+                            rootItem.arrayElementType = rootItem.arrayWrap.elementType;
+                            rootItem.arrayElementTypeCode = rootItem.arrayWrap.elementTypeCode;
+
+                            if (rank > jsonRender.objectQueueIndex)
+                            {
+                                throw new Exception("无法满足秩");
+                            }
+
+                            if (maxRank < rank)
+                            {
+                                maxRank = rank;
+                                ResizeSetArrayRank();
+                            }
+
+                            int rankIndex = 0;
+                            arrayLengths[rankIndex] = rootJsonObject->arrayCount;
+                            ++rankIndex;
+                            int arraySize = rootJsonObject->arrayCount;
+
+                            for (int j = 1; j < rank; j++)
+                            {
+                                JsonObject* v1 = jsonRender.objectQueue + (j);
+                                if (v1->parentObjectIndex == j - 1 && !v1->isObject)
+                                {
+                                    arrayLengths[rankIndex] = v1->arrayCount;
+                                    ++rankIndex;
+                                    arraySize *= v1->arrayCount;
+                                    //arrayWrapper.SetSize(v1->arrayCount);
+                                }
+                                else
+                                {
+                                    throw new Exception("无法满足秩");
+                                }
+                            }
+
+                            rootItem.arrayNowItemSize = arraySize / rootJsonObject->arrayCount;
+
+                            rootItem.obj = rootItem.arrayWrap.CreateArray(arraySize, arrayLengths,
+                                out rootItem.objPtr, out rootItem.bytePtr, out rootItem.gcHandle, out rootItem.arrayItemTypeSize);
+
+                            rootItem.arrayNowItemSize *= rootItem.arrayItemTypeSize;
+
+                        }
                         break;
                 }
+
+
                 //if (rootJsonObject->isCommandValue)
                 //{
                 //    rootCollection = rootCollection.GetBox();
@@ -192,111 +310,40 @@ namespace DogJson
                     JsonObject* v = jsonRender.objectQueue + i;
                     JsonObject* parent = jsonRender.objectQueue + v->parentObjectIndex;
                     CreateObjectItem parentObject = createObjectItems[v->parentObjectIndex];
-                    ReadCollectionLink parentCollection = parentObject.collectionObject;
+                    ReadCollectionLink parentCollection = parentObject.readCollection;
                     myObject.obj = null;
 
                     TypeAddrFieldAndProperty fieldInfo = null;
                     myObject.isProperty = false;
                     myObject.collectionNoRef = false;
                     //string key;
-                    if (parent->isObject)
+                   
+                    CollectionManager.TypeAllCollection typeAllCollection = null;
+
+                    if (v->typeLength > 0)
                     {
-                        //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
-                        //优先级 typeLength >  parentCollection.GetItemType > fieldInfo.fieldType;
-                        if (v->typeLength > 0)
+                        if (v->isCommandValue)
                         {
-                            if (v->isCommandValue)
+                            string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                            if (v->isObject)
                             {
-                                if (v->isObject)
-                                {
-                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                                    myObject.type = UnsafeOperation.GetType(typeName);
-                                    myObject.type = typeof(Box<>).MakeGenericType(myObject.type);
-                                    //throw new Exception("To DO");
-                                    var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
-                                    myObject.type = typeAllCollection.type;
-                                    switch (typeAllCollection.typeCollectionEnum)
-                                    {
-                                        case CollectionManager.TypeCollectionEnum.Wrapper:
-                                            myObject.wrapper = typeAllCollection.wrapper;
-                                            break;
-                                        case CollectionManager.TypeCollectionEnum.Read:
-                                            myObject.collectionObject = typeAllCollection.read;
-                                            break;
-                                    }
-                                    myObject.isValueType = typeAllCollection.IsValueType;
-                                }
-                                else
-                                {
-                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                                    var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
-                                    myObject.type = typeAllCollection.type;
-                                    switch (typeAllCollection.typeCollectionEnum)
-                                    {
-                                        case CollectionManager.TypeCollectionEnum.Wrapper:
-                                            myObject.wrapper = typeAllCollection.wrapper;
-                                            break;
-                                        case CollectionManager.TypeCollectionEnum.Read:
-                                            myObject.collectionObject = typeAllCollection.read;
-                                            break;
-                                    }
-                                    myObject.isValueType = typeAllCollection.IsValueType;
-                                }
+                                typeAllCollection = CollectionManager.GetBoxTypeCollection(typeName);
                             }
                             else
                             {
-                                string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                                var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
-                                myObject.type = typeAllCollection.type;
-                                switch (typeAllCollection.typeCollectionEnum)
-                                {
-                                    case CollectionManager.TypeCollectionEnum.Wrapper:
-                                        myObject.wrapper = typeAllCollection.wrapper;
-                                        break;
-                                    case CollectionManager.TypeCollectionEnum.Read:
-                                        myObject.collectionObject = typeAllCollection.read;
-                                        break;
-                                }
-                                myObject.isValueType = typeAllCollection.IsValueType;
-                            }
-                            if (parentCollection == null)
-                            {
-                                fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
-                                var key = new string(v->keyStringStart, 0, v->keyStringLength);
-                                //var fieldInfo = parentObject.wrapper.nameOfField[key];
-                                if (fieldInfo.isProperty)
-                                {
-                                    myObject.isProperty = true;
-                                    myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
-                                }
-                                else
-                                {
-                                    myObject.offset = fieldInfo.offset;
-                                }
+                                typeAllCollection = CollectionManager.GetTypeCollection(typeName);
                             }
                         }
                         else
                         {
-                            if (parentCollection != null)
-                            {
-                                var typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
-                                switch (typeAllCollection.typeCollectionEnum)
-                                {
-                                    case CollectionManager.TypeCollectionEnum.Wrapper:
-                                        myObject.wrapper = typeAllCollection.wrapper;
-                                        break;
-                                    case CollectionManager.TypeCollectionEnum.Read:
-                                        myObject.collectionObject = typeAllCollection.read;
-                                        break;
-                                }
-                                myObject.isValueType = typeAllCollection.IsValueType;
-                                myObject.type = typeAllCollection.type;
-                            }
-                            else
-                            {
+                            string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                            typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                        }
+
+                        switch (parentObject.readBranch)
+                        {
+                            case CollectionManager.TypeCollectionBranch.Wrapper:
                                 fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
-                                var key = new string(v->keyStringStart, 0, v->keyStringLength);
-                                //var fieldInfo = parentObject.wrapper.nameOfField[key];
                                 if (fieldInfo.isProperty)
                                 {
                                     myObject.isProperty = true;
@@ -306,155 +353,133 @@ namespace DogJson
                                 {
                                     myObject.offset = fieldInfo.offset;
                                 }
-
-                                myObject.type = fieldInfo.fieldOrPropertyType;
-                                myObject.collectionObject = fieldInfo.read;
-                                if (myObject.collectionObject == null)
-                                {
-                                    if (fieldInfo.wrapper == null)
-                                    {
-                                        var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
-                                        switch (typeAllCollection.typeCollectionEnum)
-                                        {
-                                            case CollectionManager.TypeCollectionEnum.Wrapper:
-                                                fieldInfo.wrapper = myObject.wrapper = typeAllCollection.wrapper;
-                                                break;
-                                            case CollectionManager.TypeCollectionEnum.Read:
-                                                myObject.collectionObject = typeAllCollection.read;
-                                                break;
-                                        }
-                                        myObject.isValueType = typeAllCollection.IsValueType;
-                                    }
-                                    else
-                                    {
-                                        myObject.wrapper = fieldInfo.wrapper;
-                                        myObject.isValueType = fieldInfo.isValueType;
-                                    }
-                                }
-                                else
-                                {
-                                    myObject.isValueType = fieldInfo.isValueType;
-                                }
-                            }
+                                break;
+                            case CollectionManager.TypeCollectionBranch.ReadCollection:
+                                break;
+                            case CollectionManager.TypeCollectionBranch.Array:
+                                myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                break;
+                            default:
+                                break;
                         }
                     }
                     else
                     {
-                        //typeLength  parentCollection.GetItemType   fieldInfo.fieldType;
-                        if (v->typeLength > 0)
+                        #region 没有 typeLength
+                        switch (parentObject.readBranch)
                         {
-                            if (v->isCommandValue)
-                            {
-                                if (v->isObject)
+                            case CollectionManager.TypeCollectionBranch.Wrapper:
                                 {
-                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                                    myObject.type = UnsafeOperation.GetType(typeName);
-                                    myObject.type = typeof(Box<>).MakeGenericType(myObject.type);
-                                    //throw new Exception("To DO");
-                                    var typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
-                                    myObject.type = typeAllCollection.type;
-                                    switch (typeAllCollection.typeCollectionEnum)
+                                    fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                                    //var key = new string(v->keyStringStart, 0, v->keyStringLength);
+                                    //var fieldInfo = parentObject.wrapper.nameOfField[key];
+                                    if (fieldInfo.isProperty)
                                     {
-                                        case CollectionManager.TypeCollectionEnum.Wrapper:
-                                            myObject.wrapper = typeAllCollection.wrapper;
-                                            break;
-                                        case CollectionManager.TypeCollectionEnum.Read:
-                                            myObject.collectionObject = typeAllCollection.read;
-                                            break;
+                                        myObject.isProperty = true;
+                                        myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
                                     }
-                                    myObject.isValueType = typeAllCollection.IsValueType;
-                                }
-                                else
-                                {
-                                    string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                                    var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
-                                    myObject.type = typeAllCollection.type;
-                                    switch (typeAllCollection.typeCollectionEnum)
+                                    else
                                     {
-                                        case CollectionManager.TypeCollectionEnum.Wrapper:
-                                            myObject.wrapper = typeAllCollection.wrapper;
-                                            break;
-                                        case CollectionManager.TypeCollectionEnum.Read:
-                                            myObject.collectionObject = typeAllCollection.read;
-                                            break;
+                                        myObject.offset = fieldInfo.offset;
                                     }
-                                    myObject.isValueType = typeAllCollection.IsValueType;
+                                    typeAllCollection = fieldInfo.GetTypeAllCollection();
                                 }
-                                //myObject.type = typeof(Box<>).MakeGenericType(typeAllCollection.type);
-                                //throw new Exception("To DO");
-                            }
-                            else
-                            {
-                                string typeName = new string(vs, v->typeStartIndex, v->typeLength);
-                                var typeAllCollection = CollectionManager.GetTypeCollection(typeName);
-
-                                myObject.type = typeAllCollection.type;
-                                switch (typeAllCollection.typeCollectionEnum)
+                                break;
+                            case CollectionManager.TypeCollectionBranch.ReadCollection:
                                 {
-                                    case CollectionManager.TypeCollectionEnum.Wrapper:
-                                        myObject.wrapper = typeAllCollection.wrapper;
-                                        break;
-                                    case CollectionManager.TypeCollectionEnum.Read:
-                                        myObject.collectionObject = typeAllCollection.read;
-                                        break;
+                                    typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
                                 }
-                                myObject.isValueType = typeAllCollection.IsValueType;
-                            }
+                                break;
+                            case CollectionManager.TypeCollectionBranch.Array:
+                                {
+                                    if (parentObject.arrayWrap.rank == 1)//数组的秩= 1 直接遍历赋值
+                                    {
+                                        typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
+                                        myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                    }
+                                    else
+                                    {
+                                        if (parentObject.arrayRank > 1)
+                                        {
+                                            myObject.arrayRank = parentObject.arrayRank - 1;
 
-                            if (parentCollection == null)
-                            {
-                                myObject.offset = parentObject.ArrayNowItemSize * v->arrayIndex;
-                            }
+                                            myObject.arrayItemTypeSize = parentObject.arrayItemTypeSize;
+                                            myObject.arrayNowItemSize = parentObject.arrayNowItemSize / v->arrayCount;
+                                            myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                            myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+
+
+                                            myObject.obj = parentObject.obj;
+
+                                            myObject.arrayWrap = parentObject.arrayWrap;
+                                            myObject.readBranch = CollectionManager.TypeCollectionBranch.Array;
+                                            myObject.type = parentObject.type;
+                                            myObject.isValueType = false;
+                                            
+                                            if (myObject.arrayRank == 1)
+                                            {
+                                                myObject.arrayElementType = myObject.arrayWrap.elementType;
+                                                myObject.arrayElementTypeCode = myObject.arrayWrap.elementTypeCode;
+                                            }
+                                            else
+                                            {
+                                                myObject.arrayElementType = parentObject.arrayElementType;
+                                            }
+                                            continue;
+                                        }
+                                        else
+                                        {
+                                            typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
+                                            myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                        }
+                                    }
+
+
+                                }
+                                break;
+                            default:
+                                break;
                         }
-                        else
-                        {
-                            CollectionManager.TypeAllCollection typeAllCollection;
-                            if (parentCollection != null)
-                            {
-                                typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
-                                myObject.type = typeAllCollection.type;
-                            }
-                            else
-                            {
-                                myObject.offset = parentObject.ArrayNowItemSize * v->arrayIndex;
-                                myObject.type = parentObject.ArrayItemType;
-                                typeAllCollection = CollectionManager.GetTypeCollection(myObject.type);
-                            }
-                            switch (typeAllCollection.typeCollectionEnum)
-                            {
-                                case CollectionManager.TypeCollectionEnum.Wrapper:
-                                    myObject.wrapper = typeAllCollection.wrapper;
-                                    break;
-                                case CollectionManager.TypeCollectionEnum.Read:
-                                    myObject.collectionObject = typeAllCollection.read;
-                                    break;
-                            }
-                            myObject.isValueType = typeAllCollection.IsValueType;
-                        }
+                        #endregion
+
                     }
 
+                    myObject.type = typeAllCollection.type;
+                    myObject.isValueType = typeAllCollection.IsValueType;
 
                     //"#create"
                     if (v->isConstructor)
                     {
-                        myObject.collectionType = typeof(ConstructorWrapper<>).MakeGenericType(myObject.type);
-                        var typeAllCollection = CollectionManager.GetTypeCollection(myObject.collectionType);
-                        myObject.collectionObject = typeAllCollection.read;
+                        typeAllCollection = typeAllCollection.GetConstructor(out myObject.collectionType);
+                        //myObject.readCollection = typeAllCollection.readCollection;
                     }
+                    myObject.readBranch = typeAllCollection.readBranch;
 
-
-
-                    if (v->isObject)
+                    //switch (typeAllCollection.readBranch)
+                    //{
+                    //    case CollectionManager.TypeCollectionBranch.Wrapper:
+                    //        myObject.wrapper = typeAllCollection.wrapper;
+                    //        break;
+                    //    case CollectionManager.TypeCollectionBranch.ReadCollection:
+                    //        myObject.readCollection = typeAllCollection.readCollection;
+                    //        break;
+                    //    case CollectionManager.TypeCollectionBranch.Array:
+                    //        myObject.arrayWrap = typeAllCollection.arrayWrap;
+                    //        break;
+                    //}
+                    switch (typeAllCollection.readBranch)
                     {
-                        ReadCollectionLink collection = myObject.collectionObject;
-
-                        if (collection == null)
-                        {
+                        case CollectionManager.TypeCollectionBranch.Wrapper:
+                            if (!v->isObject)
+                            {
+                                throw new Exception("数组容器未注册");
+                            }
+                            myObject.wrapper = typeAllCollection.wrapper;
                             //父对象是容器就延迟赋值
                             if (parentCollection != null)
                             {
                                 myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
-                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                             }
                             else
                             {
@@ -462,7 +487,7 @@ namespace DogJson
                                 if (myObject.isProperty)
                                 {
                                     myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
-                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                                 }
                                 else
                                 {
@@ -478,22 +503,19 @@ namespace DogJson
                                     }
                                 }
                             }
-                        }
-                        else
-                        {
-                            //collection != null
-
+                            break;
+                        case CollectionManager.TypeCollectionBranch.ReadCollection:
+                            ReadCollectionLink collection = myObject.readCollection = typeAllCollection.readCollection;
                             ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
                             arg.objectType = myObject.type;
                             arg.bridge = v;
                             //arg.parent = parentObject.objPtr;
 
-
                             //父对象是容器就延迟赋值
                             if (parentCollection != null)
                             {
                                 myObject.obj = collection.createObject(out myObject.temp, arg);
-                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                             }
                             else
                             {
@@ -501,7 +523,7 @@ namespace DogJson
                                 if (myObject.isProperty)
                                 {
                                     myObject.obj = collection.createObject(out myObject.temp, arg);
-                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                                 }
                                 else
                                 {
@@ -512,7 +534,7 @@ namespace DogJson
                                         collection.createStruct(myObject.objPtr, out myObject.temp, arg);
                                         if (collection.isLaze)
                                         {
-                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                                         }
                                     }
                                     else
@@ -520,7 +542,7 @@ namespace DogJson
                                         myObject.obj = collection.createObject(out myObject.temp, arg);
                                         if (collection.isLaze)
                                         {
-                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                                         }
                                         else
                                         {
@@ -529,183 +551,94 @@ namespace DogJson
                                     }
                                 }
                             }
-                        }
-                    }
-                    //array
-                    else
-                    {
-                        ReadCollectionLink collection = CollectionManager.GetReadCollectionLink(myObject.type);
-                        if (collection == null)
-                        {
-                            if (myObject.type.IsEnum)
+                            break;
+                        case CollectionManager.TypeCollectionBranch.Array:
+                            myObject.arrayWrap = typeAllCollection.arrayWrap;
+
+                            var rank = myObject.arrayWrap.rank;
+                            if (rank == 1)//数组的秩= 1 直接遍历赋值
                             {
-                                myObject.collectionType = typeof(EnumWrapper<>).MakeGenericType(myObject.type);
-                                var typeAllCollection = CollectionManager.GetTypeCollection(myObject.collectionType);
-                                collection = myObject.collectionObject = typeAllCollection.read;
-                            }
-                        }
+                                myObject.arrayRank = 1;
+                                myObject.arrayElementType = myObject.arrayWrap.elementType;
+                                myObject.arrayElementTypeCode = myObject.arrayWrap.elementTypeCode;
 
-                        if (collection == null)
-                        {
-                            myObject.collectionObject = null;
+                                myObject.obj = myObject.arrayWrap.CreateArray(v->arrayCount, arrayLengths,
+                                    out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle, out myObject.arrayNowItemSize);
 
-                            if (myObject.type.IsArray)
-                            {
-                                var rank = myObject.type.GetArrayRank();
-                                if (rank == 1)//数组的秩= 1 直接遍历赋值
-                                {
-                                    var elementType = myObject.type.GetElementType();
-                                    myObject.ArrayRank = 1;
-                                    myObject.ArrayItemType = elementType;
-                                    myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-                                    myObject.obj = arrayWrapper.CreateArrayOne(elementType, v->arrayCount, out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayNowItemSize);
-                                    myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
-                                    myObject.ArrayItemTypeSize = myObject.ArrayNowItemSize;
-                                }
-                                else
-                                {
-                                    if (parentObject.type.IsArray && parentObject.ArrayRank > 1)
-                                    {
-                                        myObject.ArrayRank = parentObject.ArrayRank - 1;
-                                        myObject.bytePtr = parentObject.bytePtr + myObject.offset;
-
-                                        myObject.ArrayItemTypeSize = parentObject.ArrayItemTypeSize;
-                                        myObject.ArrayNowItemSize = parentObject.ArrayNowItemSize /
-                                            v->arrayCount;
-
-                                        myObject.obj = parentObject.obj;
-
-
-                                        if (myObject.ArrayRank == 1)
-                                        {
-                                            var elementType = myObject.type.GetElementType();
-                                            myObject.ArrayItemType = elementType;
-                                            myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-                                        }
-                                        else
-                                        {
-                                            myObject.ArrayItemType = myObject.type;
-                                        }
-                                        continue;
-                                    }
-                                    else
-                                    {
-                                        myObject.ArrayRank = rank;
-                                        myObject.ArrayItemType = myObject.type;
-                                        var elementType = myObject.type.GetElementType();
-                                        //myObject.ArrayItemType = elementType;
-                                        myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-
-
-                                        if (rank + i > jsonRender.objectQueueIndex)
-                                        {
-                                            throw new Exception("无法满足秩");
-                                        }
-
-                                        arrayWrapper.SetSize(v->arrayCount);
-
-                                        for (int j = 1; j < rank; j++)
-                                        {
-                                            JsonObject* v1 = jsonRender.objectQueue + (j + i);
-                                            if (v1->parentObjectIndex == j + i - 1 && !v1->isObject)
-                                            {
-                                                arrayWrapper.SetSize(v1->arrayCount);
-                                            }
-                                            else
-                                            {
-                                                throw new Exception("无法满足秩");
-                                            }
-                                        }
-
-                                        myObject.ArrayNowItemSize = arrayWrapper.arraySize / v->arrayCount;
-
-                                        myObject.obj = arrayWrapper.CreateArray(elementType, out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle, out myObject.ArrayItemTypeSize);
-
-                                        myObject.ArrayNowItemSize *= myObject.ArrayItemTypeSize;
-
-                                    }
-                                }
-
-                                //父对象是容器就延迟赋值
-                                if (parentCollection != null)
-                                {
-                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
-                                }
-                                else
-                                {
-                                    //对象是属性延迟赋值
-                                    if (myObject.isProperty)
-                                    {
-                                        setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
-                                    }
-                                    else
-                                    {
-                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
-                                    }
-                                }
+                                //myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                                myObject.arrayItemTypeSize = myObject.arrayNowItemSize;
                             }
                             else
                             {
-                                throw new Exception("数组容器未注册");
-                            }
-                        }
-                        else
-                        {
-                            //collection != null
-                            myObject.collectionObject = collection;
+                                myObject.arrayRank = rank;
+                                myObject.arrayElementType = myObject.arrayWrap.elementType;
+                                myObject.arrayElementTypeCode = myObject.arrayWrap.elementTypeCode;
 
-                            ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
-                            arg.objectType = myObject.type;
-                            arg.bridge = v;
-                            //arg.parent = parentObject.objPtr;
+                                if (rank + i > jsonRender.objectQueueIndex)
+                                {
+                                    throw new Exception("无法满足秩");
+                                }
+
+                                if (maxRank < rank)
+                                {
+                                    maxRank = rank;
+                                    ResizeSetArrayRank();
+                                }
+
+                                int rankIndex = 0;
+                                arrayLengths[rankIndex] = v->arrayCount;
+                                ++rankIndex;
+                                int arraySize = v->arrayCount;
+
+                                for (int j = 1; j < rank; j++)
+                                {
+                                    JsonObject* v1 = jsonRender.objectQueue + (j + i);
+                                    if (v1->parentObjectIndex == j + i - 1 && !v1->isObject)
+                                    {
+                                        arrayLengths[rankIndex] = v1->arrayCount;
+                                        ++rankIndex;
+                                        arraySize *= v1->arrayCount;
+                                        //arrayWrapper.SetSize(v1->arrayCount);
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("无法满足秩");
+                                    }
+                                }
+
+                                myObject.arrayNowItemSize = arraySize / v->arrayCount;
+
+                                myObject.obj = myObject.arrayWrap.CreateArray(arraySize, arrayLengths,
+                                    out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle, out myObject.arrayItemTypeSize);
+
+                                myObject.arrayNowItemSize *= myObject.arrayItemTypeSize;
+
+                            }
 
                             //父对象是容器就延迟赋值
                             if (parentCollection != null)
                             {
-                                myObject.obj = collection.createObject(out myObject.temp, arg);
-                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                             }
                             else
                             {
                                 //对象是属性延迟赋值
                                 if (myObject.isProperty)
                                 {
-                                    myObject.obj = collection.createObject(out myObject.temp, arg);
-                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
                                 }
                                 else
                                 {
-                                    //对象是值类型字段就取指针
-                                    if (myObject.isValueType)
-                                    {
-                                        myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
-                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
-
-                                        if (collection.isLaze)
-                                        {
-                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        myObject.obj = collection.createObject(out myObject.temp, arg);
-
-                                        if (collection.isLaze)
-                                        {
-                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength){ ResizeSetValues(); }
-                                        }
-                                        else
-                                        {
-                                            GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
-                                        }
-                                    }
+                                    GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
                                 }
                             }
-
-
-                        }
+                            break;
                     }
+
                 }
+
+
+
 
                 //goto Dubg;
 
@@ -717,7 +650,7 @@ namespace DogJson
                     JsonObject* parent = jsonRender.objectQueue + v.objectQueueIndex;
                     if (parent->isObject)
                     {
-                        ReadCollectionLink collection = myObject.collectionObject;
+                        ReadCollectionLink collection = myObject.readCollection;
                         if (collection != null)
                         {
                             ReadCollectionLink.AddValue_Args addValue_Args = new ReadCollectionLink.AddValue_Args();
@@ -1019,7 +952,7 @@ namespace DogJson
                     }
                     else
                     {
-                        ReadCollectionLink collection = myObject.collectionObject;
+                        ReadCollectionLink collection = myObject.readCollection;
                         if (collection != null)
                         {
                             ReadCollectionLink.AddValue_Args addValue_Args = new ReadCollectionLink.AddValue_Args();
@@ -1051,10 +984,10 @@ namespace DogJson
                             }
                             else
                             {
-                                itemType = myObject.ArrayItemType;
-                                itemTypeCode = myObject.ArrayItemTypeCode;
+                                itemType = myObject.arrayElementType;
+                                itemTypeCode = myObject.arrayElementTypeCode;
                             }
-                            byte* pByte = myObject.bytePtr + myObject.ArrayItemTypeSize * v.arrayIndex;
+                            byte* pByte = myObject.bytePtr + myObject.arrayItemTypeSize * v.arrayIndex;
 
                             switch (v.type)
                             {
@@ -1088,7 +1021,7 @@ namespace DogJson
                                             if (itemType.IsEnum)
                                             {
                                                 var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
-                                                Array Arrays = Enum.GetValues(myObject.ArrayItemType);
+                                                Array Arrays = Enum.GetValues(myObject.arrayElementType);
                                                 for (int k = 0; k < Arrays.Length; k++)
                                                 {
                                                     if (Arrays.GetValue(k).ToString().Equals(strEnum))
@@ -1221,8 +1154,8 @@ namespace DogJson
                        CreateObjectItem myObject = createObjectItems[objValue->objectQueueIndex];
                        JsonObject* parent = jsonRender.objectQueue + objValue->parentObjectIndex;
                        CreateObjectItem parentObject = createObjectItems[objValue->parentObjectIndex];
-                        ReadCollectionLink collection = myObject.collectionObject;
-                        ReadCollectionLink parentCollection = parentObject.collectionObject;
+                        ReadCollectionLink collection = myObject.readCollection;
+                        ReadCollectionLink parentCollection = parentObject.readCollection;
                         if (myObject.temp != null || collection != null && collection.isLaze)
                         {
                             if (myObject.obj == null)

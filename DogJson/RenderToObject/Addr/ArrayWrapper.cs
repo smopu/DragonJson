@@ -24,7 +24,8 @@ namespace DogJson
         }
 
         private static bool isObjectArrayAddOffcet = false;
-        public static bool IsObjectArrayAddOffcet { 
+        public static bool IsObjectArrayAddOffcet
+        {
             get
             {
                 if (!isStart)
@@ -32,7 +33,7 @@ namespace DogJson
                     Start();
                 }
                 return isObjectArrayAddOffcet;
-            } 
+            }
         }
 
 
@@ -171,7 +172,7 @@ namespace DogJson
             }
         }
 
-        public object CreateArray(Type type, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle, 
+        public object CreateArray(Type type, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle,
              out int itemTypeSize)
         {
             ArrayWrapperItem arrayWrapperItem;

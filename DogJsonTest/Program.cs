@@ -9,154 +9,34 @@ using DogJson;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Collections.Concurrent;
+using DogJson.RenderToObject;
+
+//namespace DogJson
+//{
+//    public partial class 大家发财了哇
+//    {
+//        public int Test1;
+//    }
+//}
 
 namespace DogJsonTest
 {
-    public class Program
+    public unsafe class Program
     {
         public class AAA<T, B>
         {
-            public class BBB { }
-        }
-        struct TypeTerms
-        {
-            public enum TermsEnum
-            {
-                type,
-                generic,
-                startGeneric,
-                endGeneric,
-                array,
-            }
-            public TermsEnum termsEnum;
-            public string name;
-            public override string ToString()
-            {
-                return name;
-            }
-            public int genericArgSize;
-            public int arrayRank;
+            public class BBB<C, D> { }
         }
 
-        class TypeSentence
+        public class CCC
         {
-            public Type type;
-            public int genericArgSize;
-            public int chakeGenericArgSize;
-            public List<int> arrayLengths;
-        }
-
-        public static unsafe Type GetType(string str)
-        {
-            List<TypeTerms> typeTerms = new List<TypeTerms>();
-            bool isRread = true;
-            fixed (char* s = str)
-            {
-                int start = 0;
-                int length = str.Length;
-                for (int i = 0; i < length; i++)
-                {
-                Loop:
-                    char now = s[i];
-                    switch (now)
-                    {
-                        case '`':
-                            //泛型
-                            int size = 0;
-                            ++i;
-                            for (; i < length; i++)
-                            {
-                                now = s[i];
-                                if ('0' > now || now > '9')
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    size *= 10;
-                                    size += now - '0';
-                                }
-                            }
-                            TypeTerms typeTerms1 = new TypeTerms();
-                            typeTerms1.name = new string(s, start, i - start);
-                            typeTerms1.termsEnum = TypeTerms.TermsEnum.generic;
-                            typeTerms1.genericArgSize = size;
-                            typeTerms.Add(typeTerms1);
-                            start = i + 1;
-                            goto Loop;
-                            break;
-                        case '[':
-                            ++i;
-                            if (i == length){throw new Exception("数组词法错误，" + new string(s, 0, i));}
-                            now = s[i];
-                            if (now == ']')
-                            {
-                                TypeTerms typeTerms2 = new TypeTerms();
-                                typeTerms2.name = new string(s, start, i - start);
-                                typeTerms2.termsEnum = TypeTerms.TermsEnum.array;
-                                typeTerms2.arrayRank = 1;
-                                typeTerms.Add(typeTerms2);
-                                start = i + 1;
-                                goto Loop;
-                            }
-                            else if (now == ',')
-                            {
-                                int arrayRank = 1;
-                                do
-                                {
-                                    ++arrayRank;
-                                    ++i;
-                                    if (i == length){throw new Exception("数组词法错误，" + new string(s, 0, i));}
-                                    now = s[i];
-                                } while (now == ',');
-
-                                if (now != ']')
-                                {
-                                    throw new Exception("数组词法错误，" + new string(s, 0, i));
-                                }
-                                TypeTerms typeTerms2 = new TypeTerms();
-                                typeTerms2.name = new string(s, start, i - start);
-                                typeTerms2.termsEnum = TypeTerms.TermsEnum.array;
-                                typeTerms2.arrayRank = arrayRank;
-                                typeTerms.Add(typeTerms2);
-                                start = i + 1;
-                                goto Loop;
-                            }
-                            else
-                            {
-                                goto Loop;
-                            }
-                            break;
-                        case ',':
-                        case ']':
-                            break;
-                        default:
-                            //if (!isRread)
-                            //{
-                            //    isRread = true;
-                            //    start = i;
-                            //}
-                            break;
-                    }
-                }
-            }
-            return null;
+            public class DDD<T, B> { }
         }
 
 
-
-        static ConcurrentDictionary<string, Type> allType = new ConcurrentDictionary<string, Type>();
-
-
-
-        public static Type AppDomainGetType(string str)
+        static Type AppDomainGetType(string str)
         {
-            Type type;
-            if (allType.TryGetValue(str, out type))
-            {
-                return type;
-            }
-
+            Type type = null;
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var item in assemblies)
             {
@@ -166,148 +46,54 @@ namespace DogJsonTest
                     break;
                 }
             }
- 
-            allType[str] = type;
             return type;
         }
 
-
-
-
         public static unsafe void Main(string[] args)
         {
-            //string typeName2 = typeof(List<string[,]> ).ToString();
-            string typeName2 = typeof(Dictionary<Tuple<string,int>, List<string[]>>[,][]).ToString();
-            Type dc = GetType(typeName2);
+            DogJson.大家发财了哇 是= new 大家发财了哇();
+
+            IArrayWrap arrayWrap = ArrayWrapManager.GetIArrayWrap(typeof(B[,,]));
+            int* array_lengths = stackalloc int[10];
+            int size = 1;
+            array_lengths[0] = 2;
+            array_lengths[1] = 3;
+            array_lengths[2] = 4;
+            size = 2 * 3 * 4;
+
+            byte* objPtr;
+            byte* startItemOffcet;
+            GCHandle gCHandle;
+            int itemTypeSize;
+            object ovArray = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+
+
+            var typeCC = AppDomainGetType("DogJsonTest.Program+AAA`2+BBB`2");
+            int cossss = typeCC.GetGenericArguments().Length;
+            var typeCC2 = typeCC.MakeGenericType(typeof(int), typeof(string), typeof(double), typeof(float));
+            Assert.Equal(typeCC2.ToString(), typeof(AAA<int, string>.BBB<double, float>).ToString());
+
+
+            var typeName = typeof(AAA<int, string>.BBB<double, float>).ToString();
+            var typeName2 = typeof(CCC.DDD<int, string>).ToString();
+            var typeName3 = typeof(CCC.DDD<int, string>[]).ToString();
+            var dc = UnsafeOperation.GetType(typeName);
+
+            Assert.Equal(typeName, dc.ToString());
+
+
+            //string typeName2 = typeof(DogJsonTest.E[]).ToString();
+            //string typeName2 = typeof(Dictionary<Tuple<string,int>, List<string[][,,,]>>[,][]).ToString();
 
             //Type dc = UnsafeOperation.GetType(typeName2);
+            //Type dc2 = UnsafeOperation.GetType(typeName2);
+            //Type dc3 = UnsafeOperation.GetType(typeName2);
+
             //string typeName2 = typeof(Dictionary<AAA<int, List<string>>, Tuple<int, Dictionary<int, List<string>>, AAA<string, Tuple<int, double>>>>).ToString();
+            //string typeName2 = typeof(Dictionary<AAA<int[][,,,], List<string>[][,]>[,][], Tuple<int, Dictionary<int, List<string>[]>, AAA<string, Tuple<int, double>[]>>[]>).ToString();
             //Type dc = GetType(typeName2);
-            var TypeName3 = dc.ToString();
-            bool ddd = dc.ToString().Equals(typeName2);
-
-            IntPtr cv = Marshal.AllocHGlobal(3 * sizeof(char));
-
-
-            //IntPtr cvv = Marshal.AllocHGlobal(3 * sizeof(long));
-            //long* pplong = (long*)cvv.ToPointer();
-            //--pplong;
-            //List<long> test = new List<long>();
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    test.Add(*pplong);
-            //    ++pplong;
-            //}
-
-            char* pppp = (char*)cv.ToPointer();
-
-            *pppp = 'a';
-            ++pppp;
-            *pppp = 't';
-
-
-            //IntPtr cv2 = Marshal.ReAllocHGlobal(cv, new IntPtr(10));
-            pppp = (char*)cv.ToPointer();
-            char t1 = *pppp;
-            *pppp = 'd';
-            ++pppp; 
-            char t2 = *pppp;
-
-            //Marshal.FreeHGlobal(cv);
-
-
-
-            var pppp2 = (char*)cv.ToPointer();
-            char t11 = *pppp2;
-            ++pppp2;
-            char t21 = *pppp2;
-
-            ++pppp2;
-
-            //object vv = Enum.Parse(typeof(DCC2), "n3");
-            //DCC2 cc = DCC2.n3 | DCC2.n2;
-            //object inEnum = cc;
-            //var ty = inEnum.GetType();
-            //var typeCode = Type.GetTypeCode(ty);
-            //long data = 0;
-            //switch (typeCode)
-            //{
-            //    case TypeCode.SByte:
-            //        data = (long)(SByte)inEnum;
-            //        break;
-            //    case TypeCode.Byte:
-            //        data = (long)(Byte)inEnum;
-            //        break;
-            //    case TypeCode.Int16:
-            //        data = (long)(Int16)inEnum;
-            //        break;
-            //    case TypeCode.UInt16:
-            //        data = (long)(UInt16)inEnum;
-            //        break;
-            //    case TypeCode.Int32:
-            //        data = (long)(Int32)inEnum;
-            //        break;
-            //    case TypeCode.UInt32:
-            //        data = (long)(UInt32)inEnum;
-            //        break;
-            //    case TypeCode.Int64:
-            //        data = (long)(Int64)inEnum;
-            //        break;
-            //    case TypeCode.UInt64:
-            //        data = (long)(UInt64)inEnum;
-            //        break;
-            //}
-
-            //List<string> enumToArray = new List<string>();
-            //if (data == 0)
-            //{
-            //    enumToArray.Add(inEnum.ToString());
-            //}
-            //else
-            //{
-            //    Array array = Enum.GetValues(ty);
-            //    for (int i = 0, length = array.Length; i < length; i++)
-            //    {
-            //        object value = array.GetValue(i);
-            //        long id = 0;
-            //        switch (typeCode)
-            //        {
-            //            case TypeCode.SByte:
-            //                id = (long)(SByte)value;
-            //                break;
-            //            case TypeCode.Byte:
-            //                id = (long)(Byte)value;
-            //                break;
-            //            case TypeCode.Int16:
-            //                id = (long)(Int16)value;
-            //                break;
-            //            case TypeCode.UInt16:
-            //                id = (long)(UInt16)value;
-            //                break;
-            //            case TypeCode.Int32:
-            //                id = (long)(Int32)value;
-            //                break;
-            //            case TypeCode.UInt32:
-            //                id = (long)(UInt32)value;
-            //                break;
-            //            case TypeCode.Int64:
-            //                id = (long)(Int64)value;
-            //                break;
-            //            case TypeCode.UInt64:
-            //                id = (long)(UInt64)value;
-            //                break;
-            //        }
-            //        if ((data & id) == id)
-            //        {
-            //            data &= ~id;
-            //            enumToArray.Add(value.ToString());
-            //            if (data == 0)
-            //            {
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
+            //var TypeName3 = dc.ToString();
+            //bool ddd = TypeName3.Equals(typeName2);
 
             //Console.WriteLine(vv);
 
@@ -696,22 +482,221 @@ namespace DogJsonTest
             inputData.testDelegate3 += inputData.Iclass0Z.Foo2;
             inputData.testDelegate = inputData.testDelegate2;
 
-            for (int i = 0; i < 12; i++)
+
+            TestJsonClassD testJsonClassD = new TestJsonClassD()
+            {
+                //gDs = new E[] {
+                //    new E(){
+                //        k = -6466,
+                //        str = "FF",
+                //        b = true
+                //    },
+                //    new E(){
+                //        k = -3.14E-12,
+                //        str = "RRRR",
+                //        b = true
+                //    },
+                //    new E(){
+                //        k = 55.999,
+                //        str = "3特瑞aV",
+                //        b = true
+                //    }
+                //},
+                //arrayArray3 = new int[] { 1, 2, 3, 4, 5 },
+                arrayArray1 = new long[,,] {
+                    {
+                        { 1, 2, 3, 4, 5 },
+                        { 11, 12, 13, 14, 15 },
+                        { 21, 22, 23, 24, 25 }
+                    },
+                    {
+                        { 101, 102, 103, 104, 105 },
+                        { 1011, 1012, 1013, 1014, 1015 },
+                        { 1021, 1022, 1023, 1024, 1025 }
+                    }
+                },
+                //arrayRekn = new B[,,]
+                //{
+                //    {
+                //        {
+                //            new B {
+                //                num = 1
+                //            },
+                //            new B {
+                //                num = 2,
+                //                str = "ddd"
+                //            }
+                //        },
+                //        {
+                //            new B {
+                //                num = 3
+                //            },
+                //            new B {
+                //                num = 4
+                //            }
+                //        }
+                //    },
+                //    {
+                //        {
+                //            new B {
+                //                num = 5,
+                //                str = "5"
+                //            },
+                //            new B {
+                //                num = 6,
+                //                str = "6"
+                //            }
+                //        },
+                //        {
+                //            new B {
+                //                num = 7,
+                //                str = "7"
+                //            },
+                //            new B {
+                //                num = 8,
+                //                str = "8"
+                //            }
+                //        }
+                //    },
+                //    {
+                //        {
+                //            new B {
+                //                num = 9,
+                //                str = "9"
+                //            },
+                //            new B {
+                //                num = 10,
+                //                str = "10"
+                //            }
+                //        },
+                //        {
+                //            new B {
+                //                num = 11,
+                //                str = "11"
+                //            },
+                //            new B {
+                //                num = 12,
+                //                str = "12"
+                //            }
+                //        }
+                //    }
+                //},
+            };
+
+
+            //testJsonClassD.arrayArray1 = new int[,,] {
+            //        {
+            //            { 1, 2, 3, 4, 5 },
+            //            { 11, 12, 13, 14, 15 },
+            //            { 21, 22, 23, 24, 25 }
+            //        },
+            //        {
+            //            { 101, 102, 103, 104, 105 },
+            //            { 1011, 1012, 1013, 1014, 1015 },
+            //            { 1021, 1022, 1023, 1024, 1025 }
+            //        }
+            //    };
+
+            ///////////
+            //for (int i = 0; i < 12; i++)
+            //{
+            //    JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
+
+            //    int[,,] listB = new int[,,] {
+            //        {
+            //            { 1, 2, 3, 4, 5 },
+            //            { 11, 12, 13, 14, 15 },
+            //            { 21, 22, 23, 24, 25 }
+            //        },
+            //        {
+            //            { 101, 102, 103, 104, 105 },
+            //            { 1011, 1012, 1013, 1014, 1015 },
+            //            { 1021, 1022, 1023, 1024, 1025 }
+            //        }
+            //    };
+
+
+            //    string dataStr = jsonWriter.Writer(inputData);
+            //    Console.WriteLine(dataStr);
+
+            //    dataStr = File.ReadAllText("TextFile3.json");
+            //    JsonRender jsonRender = new JsonRender();
+
+            //    var outData = jsonRender.ReadJsonTextCreate(dataStr);
+
+            //    bool isOk = Assert.AreEqualObject(outData, inputData);
+            //    bool isOk = Assert.AreEqualObject(outData, inputData);
+            //    Console.WriteLine(isOk);
+            //}
+
+            long[] vs = new long[10];
+            int[,,] vs2 = new int[2,2,2];
+            for (int x = 0, i = 0; x < 2; x++)
+            {
+                for (int y = 0; y < 2; y++)
+                {
+                    for (int z = 0; z < 2; z++)
+                    {
+                        vs2[x, y, z] = ++i;
+                    }
+                }
+            }
+
+            int* bb = (int*)GeneralTool.ObjectToVoid(vs2);
+            List<int> value = new List<int>();
+            for (int i = 0; i < 2*2*2 + 20; i++)
+            {
+                value.Add(*bb);
+                ++bb;
+            }
+
+
+
+
             {
                 JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
-                List<int> listB = new List<int>() { 1, 23, 4 };
-                string dataStr = jsonWriter.Writer(inputData.gDs);
-                Console.WriteLine(dataStr);
+                string dataStr = jsonWriter.Writer(testJsonClassD);
 
-                //dataStr = File.ReadAllText("TextFile3.json");
                 JsonRender jsonRender = new JsonRender();
+                Stopwatch oTime = new Stopwatch();
+                int testConst = 10000;
 
-                var outData = jsonRender.ReadJsonTextCreate(dataStr);
+                oTime.Reset(); oTime.Start();
+                for (int __1 = 0; __1 < testConst; __1++)
+                {
+                    jsonRender.ReadJsonText(dataStr);
+                }
+                oTime.Stop();
+                double time001 = oTime.Elapsed.TotalMilliseconds;
+                Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
 
-                bool isOk = Assert.AreEqualObject(outData, inputData);
-                Console.WriteLine(isOk);
+                //string strd = File.ReadAllText("TextFile1.json");
+
+                Stopwatch oTime2 = new Stopwatch();
+                oTime2.Reset(); oTime2.Start();
+                for (int __1 = 0; __1 < testConst; __1++)
+                {
+                    var ot = jsonRender.ReadJsonTextCreate(dataStr);
+                    //AddrToObject2.indexDbug++;
+                }
+
+                //GC.Collect();
+                oTime2.Stop();
+                Console.WriteLine("C：{0} 毫秒", (oTime2.Elapsed - oTime.Elapsed).TotalMilliseconds);
+                Console.WriteLine("2：{0} 毫秒", (oTime2.Elapsed).TotalMilliseconds);
+                double time002 = (oTime2.Elapsed - oTime.Elapsed).TotalMilliseconds;
+                Console.WriteLine(time002 / time001);
             }
             Console.WriteLine();
+            Console.ReadKey();
+        }
+
+        public class TestJsonClassD
+        {
+            public B[,,] arrayRekn;
+            public long[,,] arrayArray1;
+            public int[] arrayArray3;
+            public E[] gDs;
         }
 
         enum DCC

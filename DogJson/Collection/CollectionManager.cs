@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DogJson.RenderToObject;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,23 +12,32 @@ namespace DogJson
 
     public static class CollectionManager
     {
-        public enum TypeCollectionEnum
+        public enum TypeCollectionBranch
         {
             Wrapper,
-            Read,
+            ReadCollection,
             Array,
         }
         //static Dictionary<Type, IWriterObject> writeArrayMap = new Dictionary<Type, IWriterObject>();
         //static readonly Dictionary<Type, Type> writeArrayTypeMap = new Dictionary<Type, Type>();
         public class TypeAllCollection 
         {
-            public TypeCollectionEnum typeCollectionEnum;
+            public TypeCollectionBranch readBranch;
             public TypeAddrReflectionWrapper wrapper;
-            public ReadCollectionLink read;
-            public Type type; 
+            public ReadCollectionLink readCollection;
+            public IArrayWrap arrayWrap;
+
+
+            public Type type;
             public bool IsValueType; 
-            public TypeAllCollection box;
+            public TypeCode typeCode;
+            
+            TypeAllCollection box;
             public Type boxType;
+            
+            TypeAllCollection constructorCollection;
+            public Type collectionType;
+            
             public TypeAllCollection GetBox()
             {
                 if (box == null)
@@ -37,8 +47,21 @@ namespace DogJson
                 }
                 return box;
             }
+
+            public TypeAllCollection GetConstructor(out Type collectionType)
+            {
+                if (constructorCollection == null)
+                {
+                    collectionType = typeof(ConstructorWrapper<>).MakeGenericType(type);
+                    constructorCollection = CollectionManager.GetTypeCollection(collectionType);
+                }
+                collectionType = this.collectionType;
+                return constructorCollection;
+            }
+
         }
-        
+
+
         static Dictionary<Type, TypeAllCollection> allTypeCollection = new Dictionary<Type, TypeAllCollection>();
         static Dictionary<string, TypeAllCollection> allTypeStringCollection = new Dictionary<string, TypeAllCollection>();
 
@@ -68,11 +91,21 @@ namespace DogJson
             {
                 return op;
             }
-            // 
-            if (type.IsArray)
+           
+
+            if (type.IsEnum)
+            {
+                var collectionType = typeof(EnumWrapper<>).MakeGenericType(type);
+                ReadCollectionLink read = GetReadCollectionLink(collectionType);
+                op = new TypeAllCollection();
+                op.readBranch = TypeCollectionBranch.ReadCollection;
+                op.readCollection = read;
+            }
+            else if (type.IsArray)
             {
                 op = new TypeAllCollection();
-                op.typeCollectionEnum = TypeCollectionEnum.Array;
+                op.readBranch = TypeCollectionBranch.Array;
+                op.arrayWrap = ArrayWrapManager.GetIArrayWrap(type);
             }
             else
             {
@@ -80,25 +113,49 @@ namespace DogJson
                 if (read != null)
                 {
                     op = new TypeAllCollection();
-                    op.typeCollectionEnum = TypeCollectionEnum.Read;
-                    op.read = read;
+                    op.readBranch = TypeCollectionBranch.ReadCollection;
+                    op.readCollection = read;
                 }
                 else
                 {
                     op = new TypeAllCollection();
-                    op.typeCollectionEnum = TypeCollectionEnum.Wrapper;
+                    op.readBranch = TypeCollectionBranch.Wrapper;
                     op.wrapper = new TypeAddrReflectionWrapper(type);
                 }
             }
 
             op.type = type;
             op.IsValueType = type.IsValueType;
+            op.typeCode = Type.GetTypeCode(type);
             lock (allTypeCollection)
             {
                allTypeCollection[type] = op;
             }
             return op;
         }
+
+        //static Dictionary<Type, TypeAllCollection> allBoxTypeCollection = new Dictionary<Type, TypeAllCollection>();
+        static Dictionary<string, TypeAllCollection> allBoxTypeStringCollection = new Dictionary<string, TypeAllCollection>();
+
+        public static TypeAllCollection GetBoxTypeCollection(string typeName)
+        {
+            TypeAllCollection op;
+            if (allBoxTypeStringCollection.TryGetValue(typeName, out op))
+            {
+                return op;
+            }
+
+            var type = UnsafeOperation.GetType(typeName);
+            op = GetTypeCollection(typeof(Box<>).MakeGenericType(type));
+
+            lock (allBoxTypeStringCollection)
+            {
+                allBoxTypeStringCollection[typeName] = op;
+            }
+            return op;
+        }
+
+
 
         public static TypeAllCollection GetTypeCollection(string typeName) 
         {

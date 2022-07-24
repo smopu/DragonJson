@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DogJson.RenderToObject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -353,15 +354,21 @@ namespace DogJson
 
     public unsafe class TypeAddrFieldAndProperty
     {
-        public TypeAddrReflectionWrapper wrapper;
-        public ReadCollectionLink read;
-        //
-        public void StartReadCollectionLink() 
+        //public TypeAddrReflectionWrapper wrapper;
+        //public ReadCollectionLink read;
+        //public IArrayWrap arrayWrap;
+        //public CollectionManager.TypeCollectionEnum readEnum;
+
+        CollectionManager.TypeAllCollection typeAllCollection;
+        public CollectionManager.TypeAllCollection GetTypeAllCollection()
         {
-            if (fieldOrPropertyType != typeof(object))
+            //if (fieldOrPropertyType != typeof(object))
+            if (typeAllCollection == null)
             {
-                read = CollectionManager.GetReadCollectionLink(fieldOrPropertyType);
+                typeAllCollection = CollectionManager.GetTypeCollection(fieldOrPropertyType);
+                //read = CollectionManager.GetReadCollectionLink(fieldOrPropertyType);
             }
+            return typeAllCollection;
         }
 
         /// <summary>
@@ -395,7 +402,7 @@ namespace DogJson
             //{
             //    fieldOrPropertyType = typeof(EnumWrapper<>).MakeGenericType(fieldOrPropertyType);
             //}
-            StartReadCollectionLink();
+            //StartReadCollectionLink();
         }
 
 
@@ -441,7 +448,7 @@ namespace DogJson
             //{
             //    fieldOrPropertyType = typeof(EnumWrapper<>).MakeGenericType(fieldOrPropertyType);
             //}
-            StartReadCollectionLink();
+            //StartReadCollectionLink();
         }
 
 

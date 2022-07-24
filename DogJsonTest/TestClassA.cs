@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace DogJsonTest
 {
+
     public class TestJsonClassA
     {
         public Action<int, string> testDelegate;
@@ -18,6 +19,7 @@ namespace DogJsonTest
         }
         public void Foo2(int a, string b)
         {
+            
         }
         ///*
         private double num;

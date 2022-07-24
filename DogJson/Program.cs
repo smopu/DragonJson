@@ -14,7 +14,10 @@ using System.Threading.Tasks;
 
 namespace DogJson
 {
-
+    public partial class 大家发财了哇
+    {
+        public int test3;
+    }
     public class TClassA
     {
         public static void Fool(int a, string b) 

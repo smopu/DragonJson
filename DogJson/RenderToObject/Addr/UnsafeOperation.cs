@@ -5,6 +5,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Collections.Concurrent;
+using DogJson.RenderToObject;
 
 namespace DogJson
 {
@@ -172,138 +173,24 @@ namespace DogJson
         //public static Dictionary<Type, ICollectionObjectBase> dictionaryGetBox = new Dictionary<Type, ICollectionObjectBase>();
         public static ConcurrentDictionary<string, Type> dictionaryGetType = new ConcurrentDictionary<string, Type>();
 
+        static StringToType stringToType = new StringToType(dictionaryGetType);
+
         public static unsafe Type GetType(string str)
         {
-            Stack<Tuple<Type, int>> stack = new Stack<Tuple<Type, int>>();
-            bool isRread = true;
-            fixed (char* s = str)
-            {
-                int start = 0;
-                int length = str.Length;
-                for (int i = 0; i < length; i++)
-                {
-                    Loop:
-                    char now = s[i];
-                    switch (now)
-                    {
-                        case '`':
-                            //泛型
-                            int size = 0;
-                            ++i;
-                            for (; i < length; i++)
-                            {
-                                now = s[i];
-                                if ('0' > now || now > '9')
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    size *= 10;
-                                    size += now - '0';
-                                }
-                            }
-                            Type typeW = AppDomainGetType(new string(s, start, i - start));
-                            stack.Push(Tuple.Create(typeW, size));
-                            isRread = false;
-                            break;
-                        case '[':
-                            if (isRread)
-                            {
-                                //数组
-                                ++i;
-                                for (; i < length; i++)
-                                {
-                                    now = s[i];
-                                    if (now == ']')
-                                    {
-                                        ++i;
-                                        now = s[i];
-                                        if (now == '[')
-                                        {
-                                            //复合数组 继续读取
-                                        }
-                                        else
-                                        {
-                                            Type type1 = AppDomainGetType(new string(s, start, i - start));
-                                            stack.Push(Tuple.Create(type1, 0));
-                                            isRread = false;
-                                            goto Loop;
-                                        }
-                                    }
-                                    ++i;
-                                    now = s[i];
-                                }
-                            }
-                            break;
-                        case ',':
-                        case ']':
-                            if (isRread)
-                            {
-                                Type type2 = AppDomainGetType(new string(s, start, i - start));
-                                stack.Push(Tuple.Create(type2, 0));
-                                isRread = false;
-                            }
-                            break;
-                        default:
-                            if (!isRread)
-                            {
-                                isRread = true;
-                                start = i;
-                            }
-                            break;
-                    }
-                }
-            }
-
-            Stack<Tuple<Type, int>> stack2 = new Stack<Tuple<Type, int>>();
-            while (true)
-            {
-                Tuple<Type, int> data = stack.Pop();
-                //if (type.IsGenericType)
-                //{
-                //    int size = type.GetGenericArguments().Length;
-                //    Type[] arg = new Type[size];
-                //    for (int j = 0; j < size; j++)
-                //    {
-                //        arg[j] = stack2.Pop();
-                //    }
-                //    type = type.MakeGenericType(arg);
-                //    if (stack.Count == 0)
-                //    {
-                //        return type;
-                //    }
-                //    stack2.Push(type);
-                //}
-                //else
-                //{
-                //    stack2.Push(type);
-                //}
-            }
-        }
-
-        static Type AppDomainGetType(string str)
-        {
             Type type;
-            if (dictionaryGetType.TryGetValue(str, out type))
+            if (!dictionaryGetType.TryGetValue(str, out type))
             {
-                return type;
+                type= stringToType.GetType(str);
+                dictionaryGetType[str] = type;
             }
-
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var item in assemblies)
-            {
-                type = item.GetType(str);
-                if (type != null)
-                {
-                    break;
-                }
-            }
-
-            dictionaryGetType[str] = type;
             return type;
         }
 
+        public static unsafe string TypeToString(Type type)
+        {
+            //return type.Assembly.GetName().Name + "," + type.ToString();
+            return type.ToString();
+        }
 
         /// <summary>
         /// 将对象的地址设置到目标地址，有类型判定和引用计数，推荐在堆上操作

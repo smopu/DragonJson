@@ -142,7 +142,9 @@
     <Compile Include="JsonReflection.cs" />
     <Compile Include="JsonRender.cs" />
     <Compile Include="JsonWriter.cs" />
+    <Compile Include="RenderToObject\Addr\ArrayWrapManager.cs" />
     <Compile Include="RenderToObject\Addr\EnumWrapper.cs" />
+    <Compile Include="RenderToObject\StringToType.cs" />
     <Compile Include="WriterToObject\WriterReflection.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
