@@ -74,8 +74,8 @@ namespace DogJsonTest
 
             Console.WriteLine(dataStr);
 
-            JsonRender jsonRender = new JsonRender();
-            var outData = jsonRender.ReadJsonTextCreateObject<ACE1>(dataStr);
+            JsonReader jsonRender = new JsonReader();
+            var outData = jsonRender.ReadJsonTextCreate<ACE1>(dataStr);
 
             Assert.AreEqualObject(outData, inputData);
             //Console.ReadKey();

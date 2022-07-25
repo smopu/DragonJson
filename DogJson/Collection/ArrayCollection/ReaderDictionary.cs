@@ -102,11 +102,14 @@ namespace DogJson
             ReadCollectionLink read = new ReadCollectionLink();
             read.isLaze = false;
 
+            read.createObject = CreateObject;
+
             Action<Dictionary<string, V>, object, ReadCollectionLink.Add_Args> ac = Add;
             read.addObjectClassDelegate = ac;
-            read.createObject = CreateObject;
+
             Action<Dictionary<string, V>, ReadCollectionLink.AddValue_Args> ac2 = AddValue;
-            read.addValueStructDelegate = ac2;
+            read.addValueClassDelegate = ac2;
+
             read.getItemType = GetItemType;
             return read;
         }
@@ -118,7 +121,7 @@ namespace DogJson
 
         void AddValue(Dictionary<string, V> obj, ReadCollectionLink.AddValue_Args arg)
         {
-            obj[new string(arg.str, arg.value->keyStringStart, arg.value->keyStringLength)] = (V)arg.callGetValue(typeCodeV, arg.str, arg.value);
+            obj[new string(arg.str, arg.value->keyStringStart, arg.value->keyStringLength)] = (V)arg.callGetValue(typeCodeV, arg.str, arg.value, typeof(V));
         }
 
         object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
@@ -162,12 +165,17 @@ namespace DogJson
 
             Action<DictionaryKV<K, V>, object, ReadCollectionLink.Add_Args> ac = Add;
             read.addObjectClassDelegate = ac;
-            read.createObject = CreateObject; 
+
             Action<DictionaryKV<K, V>, ReadCollectionLink.AddValue_Args> ac2 = AddValue;
-            read.addValueStructDelegate = ac2;
+            read.addValueClassDelegate = ac2;
+
+
+            read.createObject = CreateObject;
+
             read.getItemType = GetItemType;
             return read;
         }
+
 
         static void Add(DictionaryKV<K, V> kv, object value, ReadCollectionLink.Add_Args arg)
         {
@@ -194,15 +202,13 @@ namespace DogJson
                 typeCode = typeCodeV;
             }
 
-            object set_value = arg.callGetValue(typeCode, arg.str, arg.value);
-
             if (index == 0)
             {
-                kv.k = (K)set_value;
+                kv.k = (K)arg.callGetValue(typeCode, arg.str, arg.value, typeof(K));
             }
             else
             {
-                kv.v = (V)set_value;
+                kv.v = (V)arg.callGetValue(typeCode, arg.str, arg.value, typeof(V));
             }
         }
 
@@ -244,10 +250,16 @@ namespace DogJson
 
             Action<Dictionary<K, V>, DictionaryKV<K, V>, ReadCollectionLink.Add_Args> ac = Add;
             read.addObjectClassDelegate = ac;
+
             read.createObject = CreateObject;
+
             read.getItemType = GetItemType;
+
+
             return read;
         }
+
+
 
         void Add(Dictionary<K, V> dict, DictionaryKV<K, V> kv, ReadCollectionLink.Add_Args arg)
         {
@@ -264,7 +276,9 @@ namespace DogJson
         {
             return collection;
         }
+
     }
+
 
 
 #endif

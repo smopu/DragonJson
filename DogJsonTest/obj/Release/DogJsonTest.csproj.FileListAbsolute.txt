@@ -23,3 +23,7 @@ E:\0\DogJson\dog-json\DogJsonTest\obj\Release\DogJsonTest.csproj.CoreCompileInpu
 E:\0\DogJson\dog-json\DogJsonTest\obj\Release\DogJsonTest.csproj.CopyComplete
 E:\0\DogJson\dog-json\DogJsonTest\obj\Release\DogJsonTest.dll
 E:\0\DogJson\dog-json\DogJsonTest\obj\Release\DogJsonTest.pdb
+G:\Download\dogjosn\DogJson-main\DogJsonTest\obj\Release\DogJsonTest.csprojAssemblyReference.cache
+G:\Download\dogjosn\DogJson-main\DogJsonTest\obj\Release\DogJsonTest.csproj.CoreCompileInputs.cache
+G:\Download\dogjosn\DogJson-main\DogJsonTest\obj\Release\DogJsonTest.exe
+G:\Download\dogjosn\DogJson-main\DogJsonTest\obj\Release\DogJsonTest.pdb

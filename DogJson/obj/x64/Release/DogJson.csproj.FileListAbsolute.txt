@@ -60,3 +60,17 @@ D:\dog-json-master\DogJson\DogJson\obj\x64\Release\DogJson.csproj.CoreCompileInp
 D:\dog-json-master\DogJson\DogJson\obj\x64\Release\DogJson.csproj.CopyComplete
 D:\dog-json-master\DogJson\DogJson\obj\x64\Release\DogJson.exe
 D:\dog-json-master\DogJson\DogJson\obj\x64\Release\DogJson.pdb
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\TextFile2.json
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\TextFile3.json
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\TextFile1.json
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\DogJson.exe.config
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\DogJson.exe
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\DogJson.pdb
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\DynamicCustomReflection.dll
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\System.Buffers.dll
+G:\Download\dogjosn\DogJson-main\DogJson\bin\x64\Release\System.Buffers.xml
+G:\Download\dogjosn\DogJson-main\DogJson\obj\x64\Release\DogJson.csprojAssemblyReference.cache
+G:\Download\dogjosn\DogJson-main\DogJson\obj\x64\Release\DogJson.csproj.CoreCompileInputs.cache
+G:\Download\dogjosn\DogJson-main\DogJson\obj\x64\Release\DogJson.csproj.CopyComplete
+G:\Download\dogjosn\DogJson-main\DogJson\obj\x64\Release\DogJson.exe
+G:\Download\dogjosn\DogJson-main\DogJson\obj\x64\Release\DogJson.pdb

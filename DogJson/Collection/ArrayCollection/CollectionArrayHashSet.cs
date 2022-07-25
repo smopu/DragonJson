@@ -49,7 +49,7 @@ namespace DogJson
 
         void AddValue(HashSet<T> array, ReadCollectionLink.AddValue_Args arg)
         {
-            object set_value = arg.callGetValue(typeCode, arg.str, arg.value);
+            object set_value = arg.callGetValue(typeCode, arg.str, arg.value, typeof(T));
             array.Add((T)set_value);
         }
 

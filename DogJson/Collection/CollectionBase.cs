@@ -240,7 +240,7 @@ namespace DogJson
     [StructLayout(LayoutKind.Explicit)]
     public unsafe class ReadCollectionLink
     {
-        public delegate object CallBackGetValue(TypeCode typeCode, char* str, JsonValue* value);
+        public delegate object CallBackGetValue(TypeCode typeCode, char* str, JsonValue* value, Type itemType);
 
         public struct AddValue_Args
         {
@@ -307,7 +307,7 @@ namespace DogJson
         const int Siez_10 = 8 * 10;
 
         /// <summary>
-        /// 添加基本json类型时 容器是class
+        /// 添加基本json类型时 容器是Struct
         /// </summary>
         [FieldOffset(Siez_0)]
         public Delegate addValueStructDelegate;

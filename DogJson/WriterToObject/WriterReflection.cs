@@ -672,6 +672,7 @@ namespace DogJson
         class ObjectPath {
             public JsonWriteValue value;
             public string path;
+            public object obj;
         }
 
         Dictionary<object, ObjectPath> allPath = new Dictionary<object, ObjectPath>();
@@ -760,24 +761,26 @@ namespace DogJson
                     ObjectPath path;
                     if (allPath.TryGetValue(value, out path))
                     {
-                        if (path.path == null)
+                        if (value == path.obj &&
+                              GeneralTool.ObjectToVoid(value) == GeneralTool.ObjectToVoid(path.obj)
+                            )
                         {
-                            path.path = "\"" + GetRootPath(path.value) + "\"";
+                            if (path.path == null)
+                            {
+                                path.path = "\"" + GetRootPath(path.value) + "\"";
+                            }
+                            now = new JsonWriteValue(writers.Count, parent);
+                            now.data = value;
+                            now.key = key;
+                            previous.back = now;
+                            now.jsonType = JsonWriteType.String;
+                            now.value = path.path;
+                            writers.Add(now);
+                            previous = now;
+                            goto Return;
                         }
-                        now = new JsonWriteValue(writers.Count, parent);
-                        now.data = value;
-                        now.key = key;
-                        previous.back = now;
-                        now.jsonType = JsonWriteType.String;
-                        now.value = path.path;
-                        writers.Add(now);
-                        previous = now;
-                        goto Return;
                     }
-                    else
-                    {
-                        isSetObject = true;
-                    }
+                    isSetObject = true;
                 }
                 typeCode = Type.GetTypeCode(fieldType);
 
@@ -992,7 +995,7 @@ namespace DogJson
             Return:
             if (isSetObject)
             {
-                allPath[value] = new ObjectPath() { value = now };
+                allPath[value] = new ObjectPath() { value = parent, obj = value };
             }
             return previous;
         }
@@ -1067,24 +1070,26 @@ namespace DogJson
                     ObjectPath path;
                     if (allPath.TryGetValue(value, out path))
                     {
-                        if (path.path == null)
+                        if (value == path.obj &&
+                              GeneralTool.ObjectToVoid(value) == GeneralTool.ObjectToVoid(path.obj)
+                            )
                         {
-                            path.path = "\"" + GetRootPath(path.value) + "\"";
+                            if (path.path == null)
+                            {
+                                path.path = "\"" + GetRootPath(path.value) + "\"";
+                            }
+                            now = new JsonWriteValue(writers.Count, parent);
+                            now.data = value;
+                            now.arrayIndex = i;
+                            previous.back = now;
+                            now.jsonType = JsonWriteType.String;
+                            now.value = path.path;
+                            writers.Add(now);
+                            previous = now;
+                            goto Return;
                         }
-                        now = new JsonWriteValue(writers.Count, parent);
-                        now.data = value;
-                        now.arrayIndex = i;
-                        previous.back = now;
-                        now.jsonType = JsonWriteType.String;
-                        now.value = path.path;
-                        writers.Add(now);
-                        previous = now;
-                        goto Return;
                     }
-                    else
-                    {
-                        isSetObject = true;
-                    }
+                    isSetObject = true;
                 }
 
                 if (fieldType.IsEnum)
@@ -1230,7 +1235,7 @@ namespace DogJson
         Return:
             if (isSetObject)
             {
-                allPath[value] = new ObjectPath() { value = parent };
+                allPath[value] = new ObjectPath() { value = parent, obj = value };
             }
             return previous;
         }

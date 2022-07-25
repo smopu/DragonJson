@@ -65,7 +65,7 @@ namespace DogJsonTest
             byte* startItemOffcet;
             GCHandle gCHandle;
             int itemTypeSize;
-            object ovArray = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+            object ovArray = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
 
             var typeCC = AppDomainGetType("DogJsonTest.Program+AAA`2+BBB`2");
@@ -655,9 +655,9 @@ namespace DogJsonTest
 
             {
                 JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
-                string dataStr = jsonWriter.Writer(testJsonClassD);
+                string dataStr = jsonWriter.Writer(inputData);
 
-                JsonRender jsonRender = new JsonRender();
+                JsonReader jsonRender = new JsonReader();
                 Stopwatch oTime = new Stopwatch();
                 int testConst = 10000;
 
@@ -676,7 +676,7 @@ namespace DogJsonTest
                 oTime2.Reset(); oTime2.Start();
                 for (int __1 = 0; __1 < testConst; __1++)
                 {
-                    var ot = jsonRender.ReadJsonTextCreate(dataStr);
+                    var ot = jsonRender.ReadJsonTextCreateObject(dataStr);
                     //AddrToObject2.indexDbug++;
                 }
 
@@ -733,12 +733,12 @@ namespace DogJsonTest
         public static unsafe void Main2(string[] args)
         {
             CollectionManager.Start();//ReflectionToObject
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
-            string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(JsonReadTestClassA.ReadClassTestJsonClassA) + ".json";
+            string testPath = Path.GetDirectoryName(typeof(JsonReader).Assembly.Location) + @"\JsonFile\" + nameof(JsonReadTestClassA.ReadClassTestJsonClassA) + ".json";
             string str = File.ReadAllText(testPath, Encoding.Unicode);
 
-            TestJsonClassA o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            TestJsonClassA o = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
 
             //Assert.AreEqualObject(o, test1);
             Stopwatch oTime = new Stopwatch();
@@ -752,7 +752,7 @@ namespace DogJsonTest
             oTime.Stop();
             double time001 = oTime.Elapsed.TotalMilliseconds;
             Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
-            o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            o = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
 
             //string strd = File.ReadAllText("TextFile1.json");
 
@@ -760,7 +760,7 @@ namespace DogJsonTest
             oTime2.Reset(); oTime2.Start();
             for (int __1 = 0; __1 < testConst; __1++)
             {
-                var ot = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+                var ot = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
                 //AddrToObject2.indexDbug++;
             }
 

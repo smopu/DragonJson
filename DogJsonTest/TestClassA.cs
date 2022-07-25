@@ -237,7 +237,6 @@ namespace DogJsonTest
         }
     }
 
-
     [ReadCollection(typeof(TestOB), true)]
     public unsafe class CollectionTestOB : CreateTaget<ReadCollectionLink>
     {
@@ -265,8 +264,6 @@ namespace DogJsonTest
             read.getItemType = GetItemType;
             return read;
         }
-
-
         void AddObjectClass(Box<TestOB> obj, object value, ReadCollectionLink.Add_Args arg)
         {
             string keystring = new string(arg.bridge->keyStringStart, 0, arg.bridge->keyStringLength);
@@ -281,7 +278,6 @@ namespace DogJsonTest
                     break;
             }
         }
-
 
         delegate void AddObjecStruct_(ref TestOB obj, object value, ReadCollectionLink.Add_Args arg);
         void AddObjecStruct(ref TestOB obj, object value, ReadCollectionLink.Add_Args arg)
@@ -298,9 +294,6 @@ namespace DogJsonTest
                     break;
             }
         }
-
-
-
 
         void AddValueClass(Box<TestOB> obj, ReadCollectionLink.AddValue_Args arg)
         {
@@ -329,8 +322,6 @@ namespace DogJsonTest
                     break;
             }
         }
-
-
 
         delegate void AddValueStruct_(ref TestOB obj, ReadCollectionLink.AddValue_Args arg);
         void AddValueStruct(ref TestOB obj, ReadCollectionLink.AddValue_Args arg)

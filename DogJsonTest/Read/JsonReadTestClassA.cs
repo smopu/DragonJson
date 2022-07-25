@@ -363,12 +363,12 @@ namespace DogJsonTest.Read
             test1.testDelegate2 += TClassA.Foo2;
             
             CollectionManager.Start();//ReflectionToObject
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
-            string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadClassTestJsonClassA) + ".json";
+            string testPath = Path.GetDirectoryName(typeof(JsonReader).Assembly.Location) + @"\JsonFile\" + nameof(ReadClassTestJsonClassA) + ".json";
             string data = File.ReadAllText(testPath, Encoding.Unicode);
 
-            TestJsonClassA o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(data);
+            TestJsonClassA o = jsonRender.ReadJsonTextCreate<TestJsonClassA>(data);
 
             Assert.AreEqualObject(o, test1);
         }

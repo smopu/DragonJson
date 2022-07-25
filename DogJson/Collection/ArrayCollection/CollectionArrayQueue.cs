@@ -48,7 +48,7 @@ namespace DogJson
 
         void AddValue(Queue<T> array, ReadCollectionLink.AddValue_Args arg)
         {
-            object set_value = arg.callGetValue(typeCode, arg.str, arg.value);
+            object set_value = arg.callGetValue(typeCode, arg.str, arg.value, typeof(T));
             array.Enqueue((T)set_value);
         }
 

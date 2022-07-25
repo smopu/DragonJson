@@ -178,7 +178,7 @@ namespace DogJsonTest
                 byte* startItemOffcet;
                 GCHandle gCHandle;
                 int itemTypeSize;
-                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
                 Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
 
@@ -194,8 +194,8 @@ namespace DogJsonTest
                             fixed (TestStruct* p = &outData[x, y, z])
                             {
                                 GeneralTool.Memcpy(
-                                     startItemOffcet + (x * 3 * 4 + y * 4 + z) * itemTypeSize, p
-                                     , itemTypeSize);
+                                     startItemOffcet + (x * 3 * 4 + y * 4 + z) * arrayWrap.elementTypeSize, p
+                                     , arrayWrap.elementTypeSize);
                             }
                         }
                     }
@@ -215,8 +215,7 @@ namespace DogJsonTest
                 byte* objPtr;
                 byte* startItemOffcet;
                 GCHandle gCHandle;
-                int itemTypeSize;
-                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
                 Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
 
@@ -231,7 +230,7 @@ namespace DogJsonTest
                             outData[x, y, z].num = x * y - z;
                             outData[x, y, z].num2 = x * y + z;
 
-                            GeneralTool.SetObject(startItemOffcet + (x * 3 * 4 + y * 4 + z) * itemTypeSize,
+                            GeneralTool.SetObject(startItemOffcet + (x * 3 * 4 + y * 4 + z) * arrayWrap.elementTypeSize,
                                testClass);
                         }
                     }
@@ -251,8 +250,7 @@ namespace DogJsonTest
                 byte* objPtr;
                 byte* startItemOffcet;
                 GCHandle gCHandle;
-                int itemTypeSize;
-                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
                 Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
 
@@ -268,8 +266,8 @@ namespace DogJsonTest
                             fixed (int* p = &outData[x, y, z])
                             {
                                 GeneralTool.Memcpy(
-                                     startItemOffcet + (x * 3 * 4 + y * 4 + z) * itemTypeSize, p
-                                     , itemTypeSize);
+                                     startItemOffcet + (x * 3 * 4 + y * 4 + z) * arrayWrap.elementTypeSize, p
+                                     , arrayWrap.elementTypeSize);
                             }
                         }
                     }
@@ -287,7 +285,7 @@ namespace DogJsonTest
                 byte* startItemOffcet;
                 GCHandle gCHandle;
                 int itemTypeSize;
-                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
                 Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
 
@@ -299,8 +297,8 @@ namespace DogJsonTest
                     fixed (TestStruct* p = &outData[i])
                     {
                         GeneralTool.Memcpy(
-                             startItemOffcet + i * itemTypeSize, p
-                             , itemTypeSize);
+                             startItemOffcet + i * arrayWrap.elementTypeSize, p
+                             , arrayWrap.elementTypeSize);
                     }
                 }
                 gCHandle.Free();
@@ -315,8 +313,7 @@ namespace DogJsonTest
                 byte* objPtr;
                 byte* startItemOffcet;
                 GCHandle gCHandle;
-                int itemTypeSize;
-                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
                 Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
 
@@ -327,7 +324,7 @@ namespace DogJsonTest
                     outData[i].num = i;
                     outData[i].num2 = i * 2;
 
-                    GeneralTool.SetObject(startItemOffcet + (i) * itemTypeSize,
+                    GeneralTool.SetObject(startItemOffcet + (i) * arrayWrap.elementTypeSize,
                        testClass);
                 }
                 gCHandle.Free();
@@ -342,8 +339,7 @@ namespace DogJsonTest
                 byte* objPtr;
                 byte* startItemOffcet;
                 GCHandle gCHandle;
-                int itemTypeSize;
-                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle, out itemTypeSize);
+                object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
                 Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
 
@@ -355,8 +351,8 @@ namespace DogJsonTest
                     fixed (int* p = &outData[i])
                     {
                         GeneralTool.Memcpy(
-                             startItemOffcet + (i) * itemTypeSize, p
-                             , itemTypeSize);
+                             startItemOffcet + (i) * arrayWrap.elementTypeSize, p
+                             , arrayWrap.elementTypeSize);
                     }
                 }
                 gCHandle.Free();

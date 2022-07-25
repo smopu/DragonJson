@@ -1,4 +1,5 @@
 ﻿{
+    "#type": "DogJsonTest,DogJsonTest.TestJsonClassA",
     "testDelegate": [
         {
             "type": "DogJsonTest,DogJsonTest.TClassA",

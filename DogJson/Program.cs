@@ -529,7 +529,7 @@ namespace DogJson
         }
 
 
-        static unsafe bool Find(char* path, int pathLength, JsonRender jsonRender, ref JsonObject* obj)
+        static unsafe bool Find(char* path, int pathLength, JsonReader jsonRender, ref JsonObject* obj)
         {
             JsonObject* parent = obj;
             //JsonObject* now = jsonRender.objectQueue + obj->objectQueueIndex + 1;
@@ -646,7 +646,7 @@ namespace DogJson
 
         static unsafe void Main7(string[] args)
         {
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
             StreamReader streamReader = new StreamReader(@"TextFile1.json", Encoding.UTF32);
             string str = streamReader.ReadToEnd();
             jsonRender.ReadJsonText(str);
@@ -1111,8 +1111,8 @@ namespace DogJson
 
             Console.WriteLine(dataStr);
 
-            JsonRender jsonRender = new JsonRender();
-            var outData = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(dataStr);
+            JsonReader jsonRender = new JsonReader();
+            var outData = jsonRender.ReadJsonTextCreate<TestJsonClassA>(dataStr);
 
             //bool isOk = Assert.AreEqualObject(outData, inputData);
             //Console.WriteLine(isOk);
@@ -1127,10 +1127,10 @@ namespace DogJson
             string str = streamReader.ReadToEnd();
             CollectionManager.Start();//ReflectionToObject  AddrToObject2
 
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
             jsonRender.ReadJsonText(str);
-            var wedso = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            var wedso = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
 
             StreamReader streamReader2 = new StreamReader(@"TextFile2.json", Encoding.UTF32);
             string strD = streamReader2.ReadToEnd();
@@ -1144,14 +1144,14 @@ namespace DogJson
             oTime.Stop();
             double time001 = oTime.Elapsed.TotalMilliseconds;
             Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
-            var o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            var o = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
 
 
             Stopwatch oTime2 = new Stopwatch();
             oTime2.Reset(); oTime2.Start();
             for (int __1 = 0; __1 < 300000; __1++)
             {
-                var ot = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+                var ot = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
             }
 
             //GC.Collect();
@@ -1559,10 +1559,10 @@ namespace DogJson
             string str = streamReader.ReadToEnd();
             CollectionManager.Start();//ReflectionToObject  AddrToObject2
 
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
             jsonRender.ReadJsonText(str);
-            var oCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            var oCCCCCCCCC = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
 
             JsonWriter jsonWriter = new JsonWriter(new WriterReflection());
             ACE1 aCE = new ACE1();
@@ -1952,7 +1952,7 @@ namespace DogJson
             //sb.AppendLine("}");
             var dats = jsonWriter.Writer(aCE);
             Console.WriteLine();
-            var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreateObject<ACE1>(dats);
+            var oCCCCCCCCCCC = jsonRender.ReadJsonTextCreate<ACE1>(dats);
             Console.ReadKey();
         }
 
@@ -2142,10 +2142,10 @@ namespace DogJson
             string str = streamReader.ReadToEnd();
             CollectionManager.Start();//ReflectionToObject  AddrToObject2
 
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
             jsonRender.ReadJsonText(str);
-            var o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>( str);
+            var o = jsonRender.ReadJsonTextCreate<TestJsonClassA>( str);
 
 
             StreamReader streamReader2 = new StreamReader(@"TextFile2.json", Encoding.UTF32);
@@ -2160,7 +2160,7 @@ namespace DogJson
             oTime.Stop();
             double time001 = oTime.Elapsed.TotalMilliseconds;
             Console.WriteLine("1：{0} 毫秒", oTime.Elapsed.TotalMilliseconds);
-            o = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+            o = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
 
             //string strd = File.ReadAllText("TextFile1.json");
 
@@ -2169,7 +2169,7 @@ namespace DogJson
             oTime2.Reset(); oTime2.Start();
             for (int __1 = 0; __1 < 30000; __1++)
             {
-                var ot = jsonRender.ReadJsonTextCreateObject<TestJsonClassA>(str);
+                var ot = jsonRender.ReadJsonTextCreate<TestJsonClassA>(str);
                 //AddrToObject2.indexDbug++;
             }
 

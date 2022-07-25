@@ -53,7 +53,7 @@ namespace DogJson
 
         void AddValue(Stack<T> obj, ReadCollectionLink.AddValue_Args arg)
         {
-            object set_value = arg.callGetValue(typeCode, arg.str, arg.value);
+            object set_value = arg.callGetValue(typeCode, arg.str, arg.value, typeof(T));
             obj.Push((T)set_value);
             //T[] array = (T[])arg.temp;
             //array[arg.value->arrayIndex] = (T)set_value;

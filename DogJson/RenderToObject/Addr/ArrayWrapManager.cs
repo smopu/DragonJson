@@ -15,22 +15,12 @@ namespace DogJson.RenderToObject
             int rank = type.GetArrayRank();
             if (rank == 1)
             {
-                ArrayWrapRankOne arrayWrapRank = new ArrayWrapRankOne();
-                arrayWrapRank.elementType = itemType;
-                arrayWrapRank.elementTypeSize = UnsafeOperation.SizeOfStack(itemType);
-                arrayWrapRank.elementTypeCode = Type.GetTypeCode(itemType); 
-                arrayWrapRank.rank = 1; 
-                arrayWrapRank.head = *(IntPtr*)GeneralTool.ObjectToVoid(Array.CreateInstance(itemType, 0));
+                ArrayWrapRankOne arrayWrapRank = new ArrayWrapRankOne(1, itemType);
                 return arrayWrapRank;
             }
             else
             {
-                ArrayWrapRank arrayWrapRank = new ArrayWrapRank();
-                arrayWrapRank.elementType = itemType;
-                arrayWrapRank.elementTypeSize = UnsafeOperation.SizeOfStack(itemType);
-                arrayWrapRank.elementTypeCode = Type.GetTypeCode(itemType); 
-                arrayWrapRank.rank = rank;
-                arrayWrapRank.head = *(IntPtr*)GeneralTool.ObjectToVoid(Array.CreateInstance(itemType, new int[rank]));
+                ArrayWrapRank arrayWrapRank = new ArrayWrapRank(rank, itemType);
                 return arrayWrapRank;
             }
         }
@@ -38,12 +28,29 @@ namespace DogJson.RenderToObject
 
     public unsafe abstract class IArrayWrap
     {
-        public TypeCode elementTypeCode;
-        public IntPtr head;
-        public int rank;
-        public int elementTypeSize;
-        public Type elementType;
+        public readonly TypeCode elementTypeCode;
+        public readonly IntPtr head;
+        public readonly int rank;
+        public readonly int elementTypeSize;
+        public readonly Type elementType;
         CollectionManager.TypeAllCollection typeAllCollection;
+
+        public IArrayWrap(int rank, Type elementType)
+        {
+            this.rank = rank;
+            this.elementType = elementType;
+            this.elementTypeSize = UnsafeOperation.SizeOfStack(elementType);
+            this.elementTypeCode = Type.GetTypeCode(elementType);
+            if (rank == 1)
+            {
+                this.head = *(IntPtr*)GeneralTool.ObjectToVoid(Array.CreateInstance(elementType, 0));
+            }
+            else
+            {
+                this.head = *(IntPtr*)GeneralTool.ObjectToVoid(Array.CreateInstance(elementType, new int[rank]));
+            }
+        }
+
         public CollectionManager.TypeAllCollection GetTypeAllCollection()
         {
             if (typeAllCollection == null)
@@ -53,21 +60,20 @@ namespace DogJson.RenderToObject
             return typeAllCollection;
         }
 
-        public abstract object CreateArray(int arraySize, int* arrayLengths, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle,
-             out int itemTypeSize);
+
+        public abstract object CreateArray(int arraySize, int* arrayLengths, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle);
     }
 
     public unsafe class ArrayWrapRank : IArrayWrap
     {
-        public override object CreateArray(int arraySize, int* arrayLengths, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle,
-             out int itemTypeSize)
+        public ArrayWrapRank(int rank, Type elementType) : base(rank, elementType) { }
+        
+        public override object CreateArray(int arraySize, int* arrayLengths, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle)
         {
-            itemTypeSize = this.elementTypeSize;
+            int offcet = rank * 8;
+            int arrayMsize = offcet + arraySize * this.elementTypeSize;
 
-            int offcet = (rank * 2 - 1) * 4;
-            int arrayMsize = offcet + arraySize * itemTypeSize;
-
-            object array = new byte[arrayMsize + UnsafeOperation.PTR_COUNT];
+            object array = new byte[arrayMsize];
             gCHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
 
             IntPtr* p = (IntPtr*)GeneralTool.ObjectToVoid(array);
@@ -88,11 +94,10 @@ namespace DogJson.RenderToObject
 
     public unsafe class ArrayWrapRankOne : IArrayWrap
     {
-        public override object CreateArray(int length, int* arrayLengths, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle,
-             out int itemTypeSize)
+        public ArrayWrapRankOne(int rank, Type elementType) : base(rank, elementType) { }
+        public override object CreateArray(int length, int* arrayLengths, out byte* objPtr, out byte* startItemOffcet, out GCHandle gCHandle)
         {
-            itemTypeSize = this.elementTypeSize;
-            int arrayMsize = length * itemTypeSize;
+            int arrayMsize = length * this.elementTypeSize;
             object array = new byte[arrayMsize];
             gCHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
             IntPtr* p = (IntPtr*)GeneralTool.ObjectToVoid(array);

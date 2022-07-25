@@ -107,6 +107,7 @@
     <Compile Include="Read\JsonReadArrayCollectionTest.cs" />
     <Compile Include="Read\JsonReadTestClassA.cs" />
     <Compile Include="TestClassA.cs" />
+    <Compile Include="WriteReadTest.cs" />
     <Compile Include="Writer\JsonWriteTest.cs" />
   </ItemGroup>
   <ItemGroup>

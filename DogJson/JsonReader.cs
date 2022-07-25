@@ -16,7 +16,7 @@ namespace DogJson
         Object = 5,
         Array = 6,
     }
-    public unsafe class JsonRender
+    public unsafe class JsonReader
     {
         static double[] pow309 = new double[309];
         static double[] pow309negative = new double[309];
@@ -24,9 +24,9 @@ namespace DogJson
 
         private static object mutex = new object();
         private static bool initialized = false;
-        private static JsonRender _ins = null;
+        private static JsonReader _ins = null;
         IJsonRenderToObject jsonRenderToObject;
-        public static JsonRender Instance
+        public static JsonReader Instance
         {
             get
             {
@@ -36,7 +36,7 @@ namespace DogJson
                     {
                         if (_ins == null)
                         {
-                            _ins = new JsonRender();
+                            _ins = new JsonReader();
                             initialized = true;
                         }
                     }
@@ -45,7 +45,7 @@ namespace DogJson
             }
         }
 
-        ~JsonRender() 
+        ~JsonReader() 
         {
             Marshal.FreeHGlobal(stackIntPtr);
             Marshal.FreeHGlobal(objectQueueIntPtr);
@@ -53,7 +53,7 @@ namespace DogJson
             Marshal.FreeHGlobal(stringQueueIntPtr);
         }
 
-        public unsafe JsonRender(
+        public unsafe JsonReader(
             IJsonRenderToObject jsonRenderToObject = null,
             int jsonStackLength = 1024, int poolLength = 65535)
         {
@@ -1428,7 +1428,7 @@ namespace DogJson
             return;
         }
 
-        public unsafe T ReadJsonTextCreateObject<T>(string str)
+        public unsafe T ReadJsonTextCreate<T>(string str)
         {
             int length = str.Length;
             fixed (char* startChar = str)
@@ -1438,7 +1438,7 @@ namespace DogJson
             }
         }
 
-        public unsafe object ReadJsonTextCreate(string str)
+        public unsafe object ReadJsonTextCreateObject(string str)
         {
             int length = str.Length;
             fixed (char* startChar = str)

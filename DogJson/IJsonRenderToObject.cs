@@ -9,7 +9,7 @@ namespace DogJson
 {
     public unsafe interface IJsonRenderToObject
     {
-        object CreateObject(JsonRender jsonRender, char* startChar, int length);
+        object CreateObject(JsonReader jsonRender, char* startChar, int length);
     }
 
     public unsafe interface IJsonWriterToObject

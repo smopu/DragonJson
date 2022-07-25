@@ -48,7 +48,7 @@ namespace DogJson
                 return box;
             }
 
-            public TypeAllCollection GetConstructor(out Type collectionType)
+            public TypeAllCollection GetConstructor()
             {
                 if (constructorCollection == null)
                 {

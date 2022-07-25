@@ -15,6 +15,7 @@ namespace DogJsonTest
         [Test]
         public void ReadString()
         {
+
         }
 
         class TestReadNumber
@@ -38,18 +39,16 @@ namespace DogJsonTest
             public long VarLong2 { get => varLong2; set => varLong2 = value; }
         }
 
-
-
         [Test]
         public void ReadNumber()
         {
             CollectionManager.Start();//ReflectionToObject
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
-            string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadNumber) + ".json";
+            string testPath = Path.GetDirectoryName(typeof(JsonReader).Assembly.Location) + @"\JsonFile\" + nameof(ReadNumber) + ".json";
             string data = File.ReadAllText(testPath);
 
-            TestReadNumber o = jsonRender.ReadJsonTextCreateObject<TestReadNumber>(data);
+            TestReadNumber o = jsonRender.ReadJsonTextCreate<TestReadNumber>(data);
 
             TestReadNumber test = new TestReadNumber()
             {
@@ -77,12 +76,12 @@ namespace DogJsonTest
         public void ReadPropertyNumber()
         {
             CollectionManager.Start();//ReflectionToObject
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
-            string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadPropertyNumber) + ".json";
+            string testPath = Path.GetDirectoryName(typeof(JsonReader).Assembly.Location) + @"\JsonFile\" + nameof(ReadPropertyNumber) + ".json";
             string data = File.ReadAllText(testPath);
 
-            TestReadNumber o = jsonRender.ReadJsonTextCreateObject<TestReadNumber>(data);
+            TestReadNumber o = jsonRender.ReadJsonTextCreate<TestReadNumber>(data);
 
             TestReadNumber test = new TestReadNumber()
             {
@@ -106,9 +105,6 @@ namespace DogJsonTest
             Assert.AreEqual(test.VarDouble2, o.VarDouble2, 0.001);
         }
 
-
-
-
         [Test]
         public void ReadClass()
         {
@@ -124,73 +120,23 @@ namespace DogJsonTest
                 varLong2 = -18
             };
             CollectionManager.Start();//ReflectionToObject
-            JsonRender jsonRender = new JsonRender();
+            JsonReader jsonRender = new JsonReader();
 
-            string testPath = Path.GetDirectoryName(typeof(JsonRender).Assembly.Location) + @"\JsonFile\" + nameof(ReadPropertyNumber) + ".json";
+            string testPath = Path.GetDirectoryName(typeof(JsonReader).Assembly.Location) + @"\JsonFile\" + nameof(ReadPropertyNumber) + ".json";
             string data = File.ReadAllText(testPath);
 
-            TestReadNumber o = jsonRender.ReadJsonTextCreateObject<TestReadNumber>(data);
+            TestReadNumber o = jsonRender.ReadJsonTextCreate<TestReadNumber>(data);
 
             Assert.AreEqualObject(test1, o);
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        public unsafe class TestPropertyDelegateItem
-        {
-            [FieldOffset(0)]
-            public object obj;
-            [FieldOffset(0)]
-            public ActionVoidPtr _set;
-            [FieldOffset(0)]
-            public ActionVoidPtr2Arg _set2;
-        }
 
-
-        public unsafe delegate void RefAction<T1>(ref T1 arg1);
-        public unsafe delegate void ActionVoidPtr(void* arg1); 
-        
-        public unsafe delegate void RefAction<T1, T2>(ref T1 arg1, ref T2 arg2);
-        public unsafe delegate void ActionVoidPtr2Arg(void* arg1, void* arg2);
-        
         [Test]
-        public  unsafe void ReadStruct()
+        public unsafe void ReadStruct()
         {
-            TestPropertyDelegateItem item = new TestPropertyDelegateItem();
-
-            RefAction<TestStruct001, int> refAction = ReadStruct;
-            item.obj = refAction;
-
-
-            TestStruct001 o = new TestStruct001();
-            TestStruct001* op = &o;
-            o.c = 1;
-
-
-            int a = 120;
-            int* ap = &a; 
-
-
-            item._set2(op, ap);
-
-            int b = o.c;
-        }
-
-        public struct TestStruct001 
-        {
-            public int c;
 
         }
 
-        public void ReadStruct(ref TestStruct001 o, ref int a)
-        {
-            o.c = a;
-        }
-
-
-        public void ReadStruct(ref int a)
-        {
-            a = 12;
-        }
 
 
         [Test]
@@ -252,15 +198,6 @@ namespace DogJsonTest
 
         }
 
-
-
-        class TestStructClass
-        {
-            struct TA 
-            { 
-                
-            }
-        }
 
         /// <summary>
         /// 值类型 里套 引用类型

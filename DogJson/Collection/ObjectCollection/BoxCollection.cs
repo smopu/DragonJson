@@ -79,7 +79,7 @@ namespace DogJson
 
         void AddValue(Box<T> obj, ReadCollectionLink.AddValue_Args arg)
         {
-            obj.value = (T)arg.callGetValue(typeCode, arg.str, arg.value);
+            obj.value = (T)arg.callGetValue(typeCode, arg.str, arg.value, typeof(T));
         }
 
         object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
