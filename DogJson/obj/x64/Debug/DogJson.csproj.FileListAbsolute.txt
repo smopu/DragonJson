@@ -95,8 +95,6 @@ D:\dog-json-master\DogJson\DogJson\DogJson\bin\x64\Debug\DogJson.exe.config
 D:\dog-json-master\DogJson\DogJson\DogJson\bin\x64\Debug\DogJson.exe
 D:\dog-json-master\DogJson\DogJson\DogJson\bin\x64\Debug\DogJson.pdb
 D:\dog-json-master\DogJson\DogJson\DogJson\bin\x64\Debug\DynamicCustomReflection.dll
-D:\dog-json-master\DogJson\DogJson\DogJson\bin\x64\Debug\System.Buffers.dll
-D:\dog-json-master\DogJson\DogJson\DogJson\bin\x64\Debug\System.Buffers.xml
 D:\dog-json-master\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.csproj.AssemblyReference.cache
 D:\dog-json-master\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.csproj.CoreCompileInputs.cache
 D:\dog-json-master\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.csproj.CopyComplete
