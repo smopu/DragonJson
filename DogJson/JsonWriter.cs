@@ -177,11 +177,39 @@ namespace DogJson
                         }
                         break;
                     case JsonWriteType.Object:
-                        if (item.back == null || item.back.parent != item)
+                        if (item.back != null && item.back.parent != item)
                         {
                             if (item.isLast)
                             {
                                 sb.AppendLine("{ }");
+                                while (objStack.Peek() != item.back.parent)
+                                {
+                                    JsonWriteValue value = objStack.Pop();
+                                    sb.Append(' ', objStack.Count * backCount);
+                                    switch (value.jsonType)
+                                    {
+                                        case JsonWriteType.Object:
+                                            if (value.isLast)
+                                            {
+                                                sb.AppendLine("}");
+                                            }
+                                            else
+                                            {
+                                                sb.AppendLine("},");
+                                            }
+                                            break;
+                                        case JsonWriteType.Array:
+                                            if (value.isLast)
+                                            {
+                                                sb.AppendLine("]");
+                                            }
+                                            else
+                                            {
+                                                sb.AppendLine("],");
+                                            }
+                                            break;
+                                    }
+                                }
                             }
                             else
                             {
@@ -196,11 +224,40 @@ namespace DogJson
                         }
                         break;
                     case JsonWriteType.Array:
-                        if (item.back == null || item.back.parent != item)
+                        if (item.back != null && item.back.parent != item)
                         {
                             if (item.isLast)
+                            // if (item.parent == item.back.parent)
                             {
                                 sb.AppendLine("[ ]");
+                                while (objStack.Peek() != item.back.parent)
+                                {
+                                    JsonWriteValue value = objStack.Pop();
+                                    sb.Append(' ', objStack.Count * backCount);
+                                    switch (value.jsonType)
+                                    {
+                                        case JsonWriteType.Object:
+                                            if (value.isLast)
+                                            {
+                                                sb.AppendLine("}");
+                                            }
+                                            else
+                                            {
+                                                sb.AppendLine("},");
+                                            }
+                                            break;
+                                        case JsonWriteType.Array:
+                                            if (value.isLast)
+                                            {
+                                                sb.AppendLine("]");
+                                            }
+                                            else
+                                            {
+                                                sb.AppendLine("],");
+                                            }
+                                            break;
+                                    }
+                                }
                             }
                             else
                             {

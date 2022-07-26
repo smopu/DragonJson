@@ -1462,8 +1462,12 @@ namespace DogJson
             if (stringQueueLength < length)
             {
                 stringQueueLength = length;
-                Marshal.FreeHGlobal(stringQueueIntPtr);
-                stringQueueIntPtr = Marshal.AllocHGlobal(stringQueueLength + 2);
+
+                stringQueueIntPtr = Marshal.ReAllocHGlobal(stringQueueIntPtr, new IntPtr((stringQueueLength + 2) * sizeof(char)));
+
+                //Marshal.FreeHGlobal(stringQueueIntPtr);
+                //stringQueueIntPtr = Marshal.AllocHGlobal(stringQueueLength + 2);
+
                 stringQueue = (char*)stringQueueIntPtr.ToPointer();
             }
             int index = 0, i = 0, max = length - 1;

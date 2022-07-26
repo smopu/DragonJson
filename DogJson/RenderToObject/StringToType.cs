@@ -371,11 +371,11 @@ namespace DogJson.RenderToObject
 
        Type AppDomainGetType(string str)
         {
-            Type type;
-            if (allType.TryGetValue(str, out type))
-            {
-                return type;
-            }
+            Type type = null;
+            //if (allType.TryGetValue(str, out type))
+            //{
+            //    return type;
+            //}
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var item in assemblies)
@@ -387,7 +387,7 @@ namespace DogJson.RenderToObject
                 }
             }
 
-            allType[str] = type;
+            //allType[str] = type;
             return type;
         }
 

@@ -995,7 +995,7 @@ namespace DogJson
             Return:
             if (isSetObject)
             {
-                allPath[value] = new ObjectPath() { value = parent, obj = value };
+                allPath[value] = new ObjectPath() { value = now, obj = value };
             }
             return previous;
         }
@@ -1235,7 +1235,7 @@ namespace DogJson
         Return:
             if (isSetObject)
             {
-                allPath[value] = new ObjectPath() { value = parent, obj = value };
+                allPath[value] = new ObjectPath() { value = now, obj = value };
             }
             return previous;
         }

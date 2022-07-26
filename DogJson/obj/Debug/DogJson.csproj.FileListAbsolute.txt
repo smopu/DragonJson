@@ -128,3 +128,4 @@ G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\DynamicCustomReflection.dll
 G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\System.Buffers.dll
 G:\Download\dogjosn\DogJson-main\DogJson\bin\Debug\System.Buffers.xml
 G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.csproj.CopyComplete
+G:\Download\dogjosn\DogJson-main\DogJson\obj\Debug\DogJson.csprojAssemblyReference.cache

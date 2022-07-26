@@ -354,43 +354,51 @@ namespace DogJson
                         return;
                     }
 
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-                    var assembly = Assembly.GetAssembly(typeof(IReadCollectionObject));
-
-                    string name = assembly.GetName().Name;
-                    UnsafeOperation.dictionaryAllAssembly[name] = assembly;
-                    ChakeAssembly(assembly);
-
-                    var executingAssembly = Assembly.GetExecutingAssembly();
-                    if (executingAssembly != null)
+                    foreach (var assembly in assemblies)
                     {
-                        name = executingAssembly.GetName().Name;
-                        if (!UnsafeOperation.dictionaryAllAssembly.ContainsKey(name))
-                        {
-                            UnsafeOperation.dictionaryAllAssembly[name] = executingAssembly;
-                            ChakeAssembly(executingAssembly);
-                        }
+                        string name = assembly.GetName().Name;
+                        UnsafeOperation.dictionaryAllAssembly[name] = assembly;
+                        ChakeAssembly(assembly);
                     }
 
-                    var callingAssembly = Assembly.GetCallingAssembly();
-                    if (callingAssembly != null)
-                    {
-                        name = callingAssembly.GetName().Name;
-                        if (!UnsafeOperation.dictionaryAllAssembly.ContainsKey(name))
-                        {
-                            ChakeAssembly(callingAssembly);
-                        }
-                    }
+                    //var assembly = Assembly.GetAssembly(typeof(IReadCollectionObject));
 
-                    var entryAssembly = Assembly.GetEntryAssembly();
-                    if (entryAssembly != null)
-                    {
-                        name = entryAssembly.GetName().Name;
-                        if (!UnsafeOperation.dictionaryAllAssembly.ContainsKey(name))
-                        {
-                            ChakeAssembly(entryAssembly);
-                        }
-                    }
+                    //string name = assembly.GetName().Name;
+                    //UnsafeOperation.dictionaryAllAssembly[name] = assembly;
+                    //ChakeAssembly(assembly);
+
+                    //var executingAssembly = Assembly.GetExecutingAssembly();
+                    //if (executingAssembly != null)
+                    //{
+                    //    name = executingAssembly.GetName().Name;
+                    //    if (!UnsafeOperation.dictionaryAllAssembly.ContainsKey(name))
+                    //    {
+                    //        UnsafeOperation.dictionaryAllAssembly[name] = executingAssembly;
+                    //        ChakeAssembly(executingAssembly);
+                    //    }
+                    //}
+
+                    //var callingAssembly = Assembly.GetCallingAssembly();
+                    //if (callingAssembly != null)
+                    //{
+                    //    name = callingAssembly.GetName().Name;
+                    //    if (!UnsafeOperation.dictionaryAllAssembly.ContainsKey(name))
+                    //    {
+                    //        ChakeAssembly(callingAssembly);
+                    //    }
+                    //}
+
+                    //var entryAssembly = Assembly.GetEntryAssembly();
+                    //if (entryAssembly != null)
+                    //{
+                    //    name = entryAssembly.GetName().Name;
+                    //    if (!UnsafeOperation.dictionaryAllAssembly.ContainsKey(name))
+                    //    {
+                    //        ChakeAssembly(entryAssembly);
+                    //    }
+                    //}
 
                     isStart = true;
                     return;

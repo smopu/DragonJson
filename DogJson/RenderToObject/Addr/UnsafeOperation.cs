@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Collections.Concurrent;
 using DogJson.RenderToObject;
+using System.Runtime.InteropServices;
 
 namespace DogJson
 {
@@ -79,7 +80,29 @@ namespace DogJson
         }
 
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object Create(Type type, out GCHandle gcHandle, out byte* bytePtr, out byte* objPtr)
+        {
+            var heapSize = UnsafeOperation.SizeOf(type);
+            var sizeByte_1 = heapSize - UnsafeOperation.PTR_COUNT * 3;
+
+            object obj = new byte[sizeByte_1];
+            gcHandle = GCHandle.Alloc(obj, GCHandleType.Pinned);
+            IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
+            *ptr = GetTypeHead(type);
+            objPtr = (byte*)ptr;
+            ++ptr;
+            *ptr = new IntPtr(0);
+            bytePtr = (byte*)ptr;
+            return obj;
+        }
+
+
+
+
         static Dictionary<Type, IntPtr> allTypeHead = new Dictionary<Type, IntPtr>();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static IntPtr GetTypeHead(Type type)
         {
             if (type.IsArray)
@@ -105,8 +128,6 @@ namespace DogJson
                 return type.TypeHandle.Value;
             }
             return type.TypeHandle.Value;
-
-
             //FormatterServices.GetUninitializedObject(myObject.type);
         }
   
@@ -169,9 +190,9 @@ namespace DogJson
 
         public static Dictionary<string, Assembly> dictionaryAllAssembly = new Dictionary<string, Assembly>();
 
-        //public static Dictionary<string, Type> dictionaryGetType = new Dictionary<string, Type>();
+        public static Dictionary<string, Type> dictionaryGetType = new Dictionary<string, Type>();
         //public static Dictionary<Type, ICollectionObjectBase> dictionaryGetBox = new Dictionary<Type, ICollectionObjectBase>();
-        public static ConcurrentDictionary<string, Type> dictionaryGetType = new ConcurrentDictionary<string, Type>();
+        //public static ConcurrentDictionary<string, Type> dictionaryGetType = new ConcurrentDictionary<string, Type>();
 
         static StringToType stringToType = new StringToType(dictionaryGetType);
 
@@ -181,7 +202,10 @@ namespace DogJson
             if (!dictionaryGetType.TryGetValue(str, out type))
             {
                 type= stringToType.GetType(str);
-                dictionaryGetType[str] = type;
+                lock (dictionaryGetType)
+                {
+                    dictionaryGetType[str] = type;
+                }
             }
             return type;
         }

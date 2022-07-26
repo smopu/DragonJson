@@ -130,11 +130,13 @@ namespace DogJson
         {
             this.jsonRender = jsonRender;
             setValuesIndex = 0;
-            createObjectItems = new CreateObjectItem[jsonRender.objectQueueIndex];
-            for (int i = 0; i < jsonRender.objectQueueIndex; i++)
-            {
-                createObjectItems[i] = new CreateObjectItem();
-            }
+            bool rootLaze = false;
+            object over = null;
+            //createObjectItems = new CreateObjectItem[jsonRender.objectQueueIndex];
+            //for (int i = 0; i < jsonRender.objectQueueIndex; i++)
+            //{
+            //    createObjectItems[i] = new CreateObjectItem();
+            //}
 
             var rootItem = createObjectItems[0];
             int itemCount = jsonRender.objectQueueIndex;
@@ -180,7 +182,19 @@ namespace DogJson
                         ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
                         arg.objectType = rootItem.type;
                         arg.bridge = rootJsonObject;
-                        rootItem.obj = rootItem.readCollection.createObject(out rootItem.temp, arg);
+                        if (rootItem.isValueType)
+                        {
+                            over = UnsafeOperation.Create(type, out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                            rootItem.readCollection.createStruct(rootItem.bytePtr, out rootItem.temp, arg);
+                        }
+                        else
+                        {
+                            rootItem.obj = rootItem.readCollection.createObject(out rootItem.temp, arg);
+                        }
+                        if (rootItem.readCollection.isLaze || rootItem.temp != null)
+                        {
+                            rootLaze = true;
+                        }
                         break;
                     case CollectionManager.TypeCollectionBranch.Array:
                         rootItem.arrayWrap = rootCollection.arrayWrap;
@@ -344,7 +358,7 @@ namespace DogJson
                             case CollectionManager.TypeCollectionBranch.Wrapper:
                                 {
                                     fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
-                                    //var key = new string(v->keyStringStart, 0, v->keyStringLength);
+                                    var key = new string(v->keyStringStart, 0, v->keyStringLength);
                                     //var fieldInfo = parentObject.wrapper.nameOfField[key];
                                     if (fieldInfo.isProperty)
                                     {
@@ -605,6 +619,10 @@ namespace DogJson
                 //基本类型赋值  
                 for (int i = 0; i < jsonRender.poolIndex; i++)
                 {
+                    if (i == 28)
+                    {
+                        int ddd = 0;
+                    }
                     var v = jsonRender.pool[i];
                     CreateObjectItem myObject = createObjectItems[v.objectQueueIndex];
                     JsonObject* parent = jsonRender.objectQueue + v.objectQueueIndex;
@@ -674,9 +692,7 @@ namespace DogJson
                                                 if (fieldInfo.fieldOrPropertyType == typeof(Type))
                                                 //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                                 { 
-                                                    GeneralTool.SetObject(bytePtr + fieldInfo.offset,
-                                                        UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
-                                                        );
+                                                    fieldInfo.propertyDelegateItem.setObject(bytePtr, UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength)));
                                                 }
                                                 break;
                                             default:
@@ -1223,7 +1239,8 @@ namespace DogJson
                                     }
                                     else
                                     {
-                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
+                                        //collection.createStruct(myObject.objPtr, out myObject.temp, arg);
+                                        myObject.obj = collection.createObject(out myObject.temp, arg);
                                     }
                                 }
                                 else {
@@ -1272,8 +1289,23 @@ namespace DogJson
 
             }
 
+            if (rootLaze)
+            {
+                if (rootItem.obj == null)
+                {
+                    rootItem.readCollection.end(rootItem.bytePtr, rootItem.temp);
+                    rootItem.obj = over;
+                }
+                else
+                {
+                    over = rootItem.readCollection.endObject(rootItem.obj, rootItem.temp);
+                }
+            }
+            else
+            {
+                over = rootItem.obj;
+            }
 
-            object ovar = rootItem.obj;
             //Dubg:
             for (int i = 0; i < itemCount; i++)
             {
@@ -1283,18 +1315,19 @@ namespace DogJson
                     item.gcHandle.Free();
                     item.gcHandle = default(GCHandle);
                 }
-                //item.type = null;
-                //item.isValueType = false;
-                //item.readCollection = null;
-                //item.wrapper = null;
-                //item.arrayWrap = null;
-                //item.propertyDelegateItem = null;
-                //item.isProperty = false;
-                //item.obj = null;
-                //item.temp = null;
-                //item.arrayRank = 0;
-                //item.arrayNowItemSize = 0;
+                item.type = null;
+                item.isValueType = false;
+                item.readCollection = null;
+                item.wrapper = null;
+                item.arrayWrap = null;
+                item.propertyDelegateItem = null;
+                item.isProperty = false;
+                item.obj = null;
+                item.temp = null;
+                item.arrayRank = 0;
+                item.arrayNowItemSize = 0;
             }
+
             //GC.KeepAlive(createObjectItems);
             //for (int i = 0; i < itemCount; i++)
             //{
@@ -1305,7 +1338,7 @@ namespace DogJson
             //    }
             //}
             //GC.KeepAlive(createObjectItems);
-            return ovar;
+            return over;
         }
 
 
@@ -1332,7 +1365,7 @@ namespace DogJson
                             {
                                 return createObjectItems[obj->objectQueueIndex].obj;
                             }
-                             myObject = createObjectItems[value->objectQueueIndex];
+                            //myObject = createObjectItems[value->objectQueueIndex];
                             if (itemType == typeof(Type))
                             //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                             {
