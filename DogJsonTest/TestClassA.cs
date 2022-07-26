@@ -62,11 +62,16 @@ namespace DogJsonTest
 
         public object ddd;
         public object[] objects;
+
+        public TClassPath classPath;
         public TClass001 tClass001;
         public TClass003 testClassDD;
         public TClass003 testClassDD2;
         public TClass003 testClassDD3;
         public TClass003 testClassDD4;
+
+
+
         public TestEnum testEnum;
         public TestEnum testEnum2 { get; set; }
         public TestEnum[] testEnums;
@@ -140,6 +145,32 @@ namespace DogJsonTest
         Test006 = 32,
         Test007 = 64,
         Test008 = 128,
+    }
+
+    public struct TClassPath
+    {
+        public TClassPath1 classPath1;
+    }
+    public struct TClassPath1
+    {
+        public TClassPath2 classPath2;
+    }
+    public struct TClassPath2
+    {
+        public TClassPath3 classPath3;
+    }
+    public struct TClassPath3
+    {
+        public TClassPath4 classPath4;
+    }
+
+    public struct TClassPath4
+    {
+        public TClass001 tClass001;
+        public TClass003 testClassDD;
+        public TClass003 testClassDD2;
+        public TClass003 testClassDD3;
+        public TClass003 testClassDD4;
     }
 
     public class TClass001

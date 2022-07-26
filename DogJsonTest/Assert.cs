@@ -157,7 +157,7 @@ namespace DogJsonTest
                 }
                 else
                 {
-                    AreEqualObject(expected[key], actual[key]);
+                    _AreEqualObject(expected[key], actual[key]);
                 }
             }
             return true;
@@ -177,7 +177,7 @@ namespace DogJsonTest
                 }
                 if (!aisNext) { break; }
 
-                AreEqualObject(a.Current, b.Current);
+                _AreEqualObject(a.Current, b.Current);
             }
             return true;
         }
@@ -185,13 +185,13 @@ namespace DogJsonTest
 
 
 
-        public static void EqualNull(object expected, object actual)
+        public static bool EqualNull(object expected, object actual)
         {
             if (expected == null)
             {
                 if (actual == null)
                 {
-                    return;
+                    return true;
                 }
                 throw new Exception("expected == null " + actual);
             }
@@ -199,7 +199,9 @@ namespace DogJsonTest
             {
                 throw new Exception("actual == null " + expected);
             }
+            return false;
         }
+
         public static bool IsEqualNull(object expected, object actual)
         {
             if (expected == null)
@@ -231,7 +233,7 @@ namespace DogJsonTest
                 object value2 = array2.GetValue(i);
                 if (value1 != value2)
                 {
-                    if (!AreEqualObject(value1, value2))
+                    if (!_AreEqualObject(value1, value2))
                     {
                         throw new Exception("Unequal Value");
                     }
@@ -304,7 +306,7 @@ namespace DogJsonTest
                     object value2 = array1.GetValue(indices);
                     if (value1 != value2)
                     {
-                        if (!AreEqualObject(value1, value2))
+                        if (!_AreEqualObject(value1, value2))
                         {
                             throw new Exception("Unequal Value");
                         }
@@ -333,10 +335,42 @@ namespace DogJsonTest
                 }
             } while (true);
         }
+
+
+        static Dictionary<Tuple<object, object>, Tuple<object, object>> allChake = new Dictionary<Tuple<object, object>, Tuple<object, object>>();
         static FieldInfo fieldInfo;
         public unsafe static bool AreEqualObject(object expected, object actual)
         {
-            EqualNull(expected, actual);
+
+            return _AreEqualObject(expected, actual);
+        }
+
+        public unsafe static bool _AreEqualObject(object expected, object actual)
+        {
+            if (EqualNull(expected, actual))
+            {
+                return true;
+            }
+
+            Tuple<object, object> tuple = new Tuple<object, object>(expected, actual);
+            Tuple<object, object> tuple2;
+            if (allChake.TryGetValue(tuple, out tuple2))
+            {
+                if (
+                    GeneralTool.ObjectToVoid(tuple2.Item1)
+                    ==
+                    GeneralTool.ObjectToVoid(tuple.Item1)
+                    &&
+                    GeneralTool.ObjectToVoid(tuple2.Item2)
+                    ==
+                    GeneralTool.ObjectToVoid(tuple.Item2)
+                    )
+                {
+                    return true;
+                }
+            }
+            allChake[tuple] = tuple;
+
 
             Type type = expected.GetType();
             if (type == actual.GetType())
@@ -398,7 +432,7 @@ namespace DogJsonTest
                             if (obj1 != null)
                             {
                                 fieldInfo = item.Value;
-                                AreEqualObject(obj1, item.Value.GetValue(expected));
+                                _AreEqualObject(obj1, item.Value.GetValue(expected));
                             }
                         }
 
@@ -409,7 +443,7 @@ namespace DogJsonTest
                                 object obj1 = item.Value.GetValue(actual);
                                 if (obj1 != null)
                                 {
-                                    AreEqualObject(obj1, item.Value.GetValue(expected));
+                                    _AreEqualObject(obj1, item.Value.GetValue(expected));
                                 }
                             }
                         }

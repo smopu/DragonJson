@@ -38,8 +38,76 @@ namespace DogJsonTest
             }
         }
 
+        class TestNullClass1
+        {
+            public TestClass testClass;
+        }
+        struct TestNullStruct1
+        {
+            public TestClass testClass;
+        }
+
+
+        public struct TStructNull
+        {
+            public TStructNull1 var1;
+        }
+        public struct TStructNull1
+        {
+            public TStructNull2 var2;
+        }
+        public struct TStructNull2
+        {
+            public TStructNull3 var3;
+        }
+        public struct TStructNull3
+        {
+            public TStructNull4 var4;
+        }
+
+        public struct TStructNull4
+        {
+            public TClass001 tClass001;
+            public TClass003 testClassDD;
+            public TClass003 testClassDD2;
+            public TClass003 testClassDD3;
+            public TClass003 testClassDD4;
+        }
+
+
         [Test]
-        public unsafe void ListTest()
+        public unsafe void T001_Null()
+        {
+            {
+                TestNullClass1 inputData = new TestNullClass1();
+                string dataStr = jsonWriter.Writer(inputData);
+
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+
+                Assert.AreEqualObject(outData, inputData);
+            }
+            {
+                TestNullStruct1 inputData = new TestNullStruct1();
+                string dataStr = jsonWriter.Writer(inputData);
+
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+
+                Assert.AreEqualObject(outData, inputData);
+            }
+            {
+                TStructNull inputData = new TStructNull();
+                string dataStr = jsonWriter.Writer(inputData);
+
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+
+                Assert.AreEqualObject(outData, inputData);
+            }
+
+            
+        }
+
+        [Test]
+        public unsafe void T002_ListTest()
         {
             {
                 List<int> inputData = new List<int>() { 1, 2, 3, 4, 5, 6 };
@@ -124,7 +192,7 @@ namespace DogJsonTest
 
 
         [Test]
-        public unsafe void TestJsonClassATest()
+        public unsafe void T003_JsonClassATest()
         {
             TestJsonClassA inputData = new TestJsonClassA()
             {
@@ -500,9 +568,20 @@ namespace DogJsonTest
             };
 
             inputData.testClassDD = inputData.tClass001.tClass002.tClass003;
-            inputData.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
             inputData.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
             inputData.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+            inputData.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
+
+            //"testClassDD": "$/tClass001/tClass002/tClass003",
+            //"testClassDD2": "$/tClass001/tClass002/tClass003s/2",
+            //"testClassDD3": "$/tClass001/tClass002s/1/tClass003s/2",
+            //"testClassDD4": "$/tClass001/tClass002s/1/tClass003"
+
+            inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD = inputData.tClass001.tClass002.tClass003;
+            inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
+            inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
+            inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+
             inputData.testDelegate2 += TClassA.Foo2;
 
             inputData.testDelegate3 = inputData.Iclass0Z.Fool;
@@ -517,7 +596,7 @@ namespace DogJsonTest
         }
 
         [Test]
-        public void ClassTest()
+        public void T004_ClassTest()
         {
             {
                 TestClass2 inputData = new TestClass2()
@@ -614,7 +693,7 @@ namespace DogJsonTest
         }
 
         [Test]
-        public unsafe void StructTest()
+        public unsafe void T005_StructTest()
         {
             {
                 TestStruct2 inputData = new TestStruct2() {
@@ -716,7 +795,7 @@ namespace DogJsonTest
         /// 数组
         /// </summary>
         [Test]
-        public void ArrayTest()
+        public void T006_ArrayTest()
         {
             {
                 int[] inputData = new int[] { 1, 2, 3, 4, 5, 6 };
@@ -780,7 +859,7 @@ namespace DogJsonTest
         /// 多维数组
         /// </summary>
         [Test]
-        public void MultidimensionalArrayTest()
+        public void T007_MultidimensionalArrayTest()
         {
             {
                 int[,,] inputData = new int[,,] {
@@ -891,7 +970,7 @@ namespace DogJsonTest
         /// 字典
         /// </summary>
         [Test]
-        public void DictionaryTest()
+        public void T008_DictionaryTest()
         {
             {
                 Dictionary<int, float> inputData = new Dictionary<int, float>
@@ -1017,7 +1096,7 @@ namespace DogJsonTest
         /// 协变参数
         /// </summary>
         [Test]
-        public void CovariantParameterTest()
+        public void T009_CovariantParameterTest()
         {
             {
                 TestClassA inputData = new TestClassC()
@@ -1050,39 +1129,323 @@ namespace DogJsonTest
         /// 构造参数 Class
         /// </summary>
         [Test]
-        public void ConstructionClassTest()
+        public void T010_ConstructionClassTest()
         {
-
+            {
+                TclassDCC inputData = new TclassDCC("3213.#%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12);
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreate<TclassDCC>(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
         }
 
         /// <summary>
         /// 构造参数 Struct
         /// </summary>
         [Test]
-        public void ConstructionStructTest()
+        public void T011_ConstructionStructTest()
         {
-            //{
-            //    TclassDCC3 inputData = new TclassDCC3("3213.#%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12);
-            //    string dataStr = jsonWriter.Writer(inputData);
-            //    var outData = jsonReader.ReadJsonTextCreate<IDictionary<string, TestClass>>(dataStr);
-            //    Assert.AreEqualObject(outData, inputData);
-            //}
+            {
+                TclassDCC3 inputData = new TclassDCC3("3213.#%^&*()", new List<int> { 14, 24, 34, 44, 54 }, -3.14E-12);
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreate<TclassDCC3>(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
         }
 
         /// <summary>
         /// 循环引用
         /// </summary>
         [Test]
-        public void LoopReferenceTest()
+        public void T012_LoopReferenceTest()
         {
+            {
+                LoopReferenceClass2 inputData = new LoopReferenceClass2();
+                inputData.class3 = new LoopReferenceClass3();
+                inputData.class3.class2 = inputData;
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+            //回环
+            {
+                LoopReferenceClass4 inputData = new LoopReferenceClass4(1);
+                var now = inputData;
+                now.next = new LoopReferenceClass4(2); now = now.next;
+                now.next = new LoopReferenceClass4(3); now = now.next;
+                now.next = new LoopReferenceClass4(4); now = now.next;
+                now.next = new LoopReferenceClass4(5); now = now.next;
+                now.next = new LoopReferenceClass4(6); now = now.next;
+                now.next = inputData;
+
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+
+            //回环有尾
+            {
+                LoopReferenceClass4 inputData = new LoopReferenceClass4(1);
+                var now = inputData;
+                now.next = new LoopReferenceClass4(2); now = now.next;
+                now.next = new LoopReferenceClass4(3); now = now.next;
+                now.next = new LoopReferenceClass4(4); now = now.next;
+                var k = now;
+                now.next = new LoopReferenceClass4(5); now = now.next;
+                now.next = new LoopReferenceClass4(6); now = now.next;
+                now.next = k;
+
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+
+            {
+                LoopReferenceClass1 inputData = new LoopReferenceClass1() {
+                    tClass001 = new TClass001
+                    {
+                        objects = new object[] {
+                        (System.Int32)12,
+                        -(System.Double)3.14E-12,
+                        (System.String)"3213.#%^&*()",
+                    },
+                        tClass002s = new TClass002[] {
+                        new TClass002 {
+                            size = 1,
+                            testString = "A@0"
+                        },
+                        new TClass002 {
+                            size = 2,
+                            testString = "A@1",
+                            tClass003 = new TClass003 {
+                                testString = "testClassDD4"
+                            },
+                            tClass003s = new TClass003[] {
+                                new TClass003 {
+                                    testString = "0000"
+                                },
+                                new TClass003 {
+                                    testString = "0001"
+                                },
+                                new TClass003 {
+                                    testString = "testClassDD3"
+                                }
+                            }
+                        },
+                        new TClass002 {
+                            size = 3,
+                            testString = "asdede"
+                        }
+                    },
+
+                        tClass002 = new TClass002
+                        {
+                            size = 12,
+                            tClass003 = new TClass003
+                            {
+                                testString = "testClassDD"
+                            },
+                            tClass003s = new TClass003[] {
+                            new TClass003 {
+                                testString = "0000"
+                            },
+                            new TClass003 {
+                                testString = "0001"
+                            },
+                            new TClass003 {
+                                testString = "testClassDD2"
+                            },
+                            new TClass003 {
+                                testString = "0003"
+                            }
+                        },
+
+                            testString = "A@2"
+                        },
+                        TestDuble = -3.14E-12
+                    },
+                };
+                //"testClassDD": "$/tClass001/tClass002/tClass003",
+                //"testClassDD2": "$/tClass001/tClass002/tClass003s/2",
+                //"testClassDD3": "$/tClass001/tClass002s/1/tClass003s/2",
+                //"testClassDD4": "$/tClass001/tClass002s/1/tClass003"
+
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD = inputData.tClass001.tClass002.tClass003;
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+
+            {
+                LoopReferenceClass1 inputData = new LoopReferenceClass1()
+                {
+                    tClass001 = new TClass001
+                    {
+                        objects = new object[] {
+                        (System.Int32)12,
+                        -(System.Double)3.14E-12,
+                        (System.String)"3213.#%^&*()",
+                    },
+                        tClass002s = new TClass002[] {
+                        new TClass002 {
+                            size = 1,
+                            testString = "A@0"
+                        },
+                        new TClass002 {
+                            size = 2,
+                            testString = "A@1",
+                            tClass003 = new TClass003 {
+                                testString = "testClassDD4"
+                            },
+                            tClass003s = new TClass003[] {
+                                new TClass003 {
+                                    testString = "0000"
+                                },
+                                new TClass003 {
+                                    testString = "0001"
+                                },
+                                new TClass003 {
+                                    testString = "testClassDD3"
+                                }
+                            }
+                        },
+                        new TClass002 {
+                            size = 3,
+                            testString = "asdede"
+                        }
+                    },
+
+                        tClass002 = new TClass002
+                        {
+                            size = 12,
+                            tClass003 = new TClass003
+                            {
+                                testString = "testClassDD"
+                            },
+                            tClass003s = new TClass003[] {
+                            new TClass003 {
+                                testString = "0000"
+                            },
+                            new TClass003 {
+                                testString = "0001"
+                            },
+                            new TClass003 {
+                                testString = "testClassDD2"
+                            },
+                            new TClass003 {
+                                testString = "0003"
+                            }
+                        },
+
+                            testString = "A@2"
+                        },
+                        TestDuble = -3.14E-12
+                    },
+                };
+                inputData.testClassDD = inputData.tClass001.tClass002.tClass003;
+                inputData.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
+                inputData.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+                inputData.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
+
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+            {
+                LoopReferenceClass1 inputData = new LoopReferenceClass1()
+                {
+                    tClass001 = new TClass001
+                    {
+                        objects = new object[] {
+                        (System.Int32)12,
+                        -(System.Double)3.14E-12,
+                        (System.String)"3213.#%^&*()",
+                    },
+                        tClass002s = new TClass002[] {
+                        new TClass002 {
+                            size = 1,
+                            testString = "A@0"
+                        },
+                        new TClass002 {
+                            size = 2,
+                            testString = "A@1",
+                            tClass003 = new TClass003 {
+                                testString = "testClassDD4"
+                            },
+                            tClass003s = new TClass003[] {
+                                new TClass003 {
+                                    testString = "0000"
+                                },
+                                new TClass003 {
+                                    testString = "0001"
+                                },
+                                new TClass003 {
+                                    testString = "testClassDD3"
+                                }
+                            }
+                        },
+                        new TClass002 {
+                            size = 3,
+                            testString = "asdede"
+                        }
+                    },
+
+                        tClass002 = new TClass002
+                        {
+                            size = 12,
+                            tClass003 = new TClass003
+                            {
+                                testString = "testClassDD"
+                            },
+                            tClass003s = new TClass003[] {
+                            new TClass003 {
+                                testString = "0000"
+                            },
+                            new TClass003 {
+                                testString = "0001"
+                            },
+                            new TClass003 {
+                                testString = "testClassDD2"
+                            },
+                            new TClass003 {
+                                testString = "0003"
+                            }
+                        },
+
+                            testString = "A@2"
+                        },
+                        TestDuble = -3.14E-12
+                    },
+                };
+                inputData.testClassDD = inputData.tClass001.tClass002.tClass003;
+                inputData.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
+                inputData.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+                inputData.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
+
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD = inputData.tClass001.tClass002.tClass003;
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD4 = inputData.tClass001.tClass002s[1].tClass003;
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD2 = inputData.tClass001.tClass002.tClass003s[2];
+                inputData.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD3 = inputData.tClass001.tClass002s[1].tClass003s[2];
+
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+
 
         }
+
+
 
         /// <summary>
         /// 枚举
         /// </summary>
         [Test]
-        public void EnumTest()
+        public void T013_EnumTest()
         {
             {
                 EnumClass1 inputData = new EnumClass1
@@ -1098,6 +1461,99 @@ namespace DogJsonTest
                 Assert.AreEqualObject(outData, inputData);
             }
         }
+
+        /// <summary>
+        /// 委托
+        /// </summary>
+        [Test]
+        public void T014_DelegateTest()
+        {
+            {
+                TestDelegateClass1 inputData = new TestDelegateClass1();
+                inputData.testDelegate = inputData.Foo1;
+
+                inputData.testDelegate2 = inputData.Foo1;
+                inputData.testDelegate2 += inputData.Foo2;
+
+                inputData.testDelegate3 = inputData.Foo1;
+                inputData.testDelegate3 += inputData.Foo2;
+                inputData.testDelegate3 += TestDelegateClass1.Foo1static;
+                inputData.testDelegate3 += TestDelegateClass1.Foo2static;
+
+                inputData.testDelegate4 = inputData.Foo1;
+                inputData.testDelegate4 += inputData.Foo2;
+                inputData.testDelegate4 += inputData.testDelegateClass2.Foo3;
+                inputData.testDelegate4 += inputData.testDelegateClass2.Foo4;
+
+                inputData.testDelegate5 = inputData.Foo1;
+                inputData.testDelegate5 += inputData.Foo2;
+                inputData.testDelegate5 += inputData.testDelegateClass2.Foo3;
+                inputData.testDelegate5 += inputData.testDelegateClass2.Foo4;
+                inputData.testDelegate5 += TestDelegateClass1.Foo1static;
+                inputData.testDelegate5 += TestDelegateClass2.Foo3static;
+
+                inputData.testDelegate6 = inputData.Foo1;
+                inputData.testDelegate6 += inputData.Foo2;
+                inputData.testDelegate6 += inputData.testDelegateClass2.Foo3;
+                inputData.testDelegate6 += inputData.testDelegateClass2.Foo4;
+                inputData.testDelegate6 += TestDelegateClass1.Foo1static;
+                inputData.testDelegate6 += TestDelegateClass1.Foo2static;
+                inputData.testDelegate6 += TestDelegateClass2.Foo3static;
+                inputData.testDelegate6 += TestDelegateClass2.Foo4static;
+
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreate<TestDelegateClass1>(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+        }
+
+        /// <summary>
+        /// 类型
+        /// </summary>
+        [Test]
+        public void T015_ypeTest()
+        {
+            {
+                TypeClass inputData = new TypeClass();
+                string dataStr = jsonWriter.Writer(inputData);
+                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+        }
+
+            
+        class LoopReferenceClass1
+        {
+            public TClassPath classPath;
+            public TClass001 tClass001;
+            public TClass003 testClassDD;
+            public TClass003 testClassDD2;
+            public TClass003 testClassDD3;
+            public TClass003 testClassDD4;
+        }
+        class LoopReferenceClass2
+        {
+            public int num = 444; 
+            public LoopReferenceClass3 class3;
+        }
+
+        class LoopReferenceClass3
+        {
+            public int ff = 3; 
+            public LoopReferenceClass2 class2;
+        }
+
+        class LoopReferenceClass4
+        {
+            public LoopReferenceClass4(int node)
+            {
+                this.node = node;
+            }
+            public int node = 1; 
+            public LoopReferenceClass4 next;
+        }
+
+
 
         enum TestEnum1
         {
@@ -1117,66 +1573,6 @@ namespace DogJsonTest
             public TestEnum1[] testEnums;
             public TestEnum1 testEnum3;
             public TestEnum1 testEnum4;
-        }
-
-
-        /// <summary>
-        /// 委托
-        /// </summary>
-        [Test]
-        public void DelegateTest()
-        {
-            {
-                TestDelegateClass1 inputData = new TestDelegateClass1();
-                inputData.testDelegate = inputData.Foo1;
-
-                inputData.testDelegate2 = inputData.Foo1;
-                inputData.testDelegate2 += inputData.Foo2;
-
-                inputData.testDelegate3 = inputData.Foo1;
-                inputData.testDelegate3 += inputData.Foo2;
-                inputData.testDelegate3 += TestDelegateClass1.Foo1static;
-                inputData.testDelegate3 += TestDelegateClass1.Foo2static;
-
-                inputData.testDelegate4 = inputData.Foo1;
-                inputData.testDelegate4 += inputData.Foo2;
-                inputData.testDelegate4 += inputData.testDelegateClass2.Foo3;
-                inputData.testDelegate4 += inputData.testDelegateClass2.Foo4;
-
-                //inputData.testDelegate5 = inputData.Foo1;
-                //inputData.testDelegate5 += inputData.Foo2;
-                //inputData.testDelegate5 += inputData.testDelegateClass2.Foo3;
-                //inputData.testDelegate5 += inputData.testDelegateClass2.Foo4;
-                //inputData.testDelegate5 += TestDelegateClass1.Foo1static;
-                //inputData.testDelegate5 += TestDelegateClass2.Foo3static;
-
-                //inputData.testDelegate6 = inputData.Foo1;
-                //inputData.testDelegate6 += inputData.Foo2;
-                //inputData.testDelegate6 += inputData.testDelegateClass2.Foo3;
-                //inputData.testDelegate6 += inputData.testDelegateClass2.Foo4;
-                //inputData.testDelegate6 += TestDelegateClass1.Foo1static;
-                //inputData.testDelegate6 += TestDelegateClass1.Foo2static;
-                //inputData.testDelegate6 += TestDelegateClass2.Foo3static;
-                //inputData.testDelegate6 += TestDelegateClass2.Foo4static;
-
-                string dataStr = jsonWriter.Writer(inputData);
-                var outData = jsonReader.ReadJsonTextCreate<TestDelegateClass1>(dataStr);
-                Assert.AreEqualObject(outData, inputData);
-            }
-        }
-
-        /// <summary>
-        /// 类型
-        /// </summary>
-        [Test]
-        public void TypeTest()
-        {
-            {
-                TypeClass inputData = new TypeClass();
-                string dataStr = jsonWriter.Writer(inputData);
-                var outData = jsonReader.ReadJsonTextCreateObject(dataStr);
-                Assert.AreEqualObject(outData, inputData);
-            }
         }
 
 
@@ -1475,7 +1871,7 @@ namespace DogJsonTest
         {
             public TypeClass()
             {
-                var types = new[] { type1, type2, type3, type4, type5, type6, type7, type8, type9, type10, type11 };
+                var types = new[] { type1, type3, type2, type3, type4, type5, type6, type7, type8, type9, type10, type11 };
                 listTypes = new List<Type>() { type1, type2, type3, type4, type5, type6, type7, type8, type9, type10, type11 };
                 foreach (var item in types)
                 {
@@ -1483,18 +1879,21 @@ namespace DogJsonTest
                     dictionary2[item] = item.ToString();
                 }
             }
+
             public Dictionary<Type, string> dictionary2 = new Dictionary<Type, string>();
+            public Dictionary<string, Type> dictionary1 = new Dictionary<string, Type>();
 
             public Type[] types;
             public List<Type> listTypes;
-            public Dictionary<string, Type> dictionary1 = new Dictionary<string, Type>();
 
 
             public Type type1 = typeof(DogJsonTest.E[]);
             public Type type2 = typeof(AAA<int, string>.BBB);
+
             public Type type3 = typeof(Dictionary<Tuple<string, int>, List<string[][,,,]>>[,][]);
             public Type type4 = typeof(Dictionary<AAA<int, List<string>>, Tuple<int, Dictionary<int, List<string>>, AAA<string, Tuple<int, double>>.BBB>>);
             public Type type5 = typeof(Dictionary<AAA<int[][,,,], List<CCC.DDD<List<string>, List<string[][,,,]>[,][]>>[][,]>[,][], Tuple<int, Dictionary<int, List<string>[]>, AAA<string, Tuple<int, double>[]>.BBB>[]>);
+
             public Type type6 = typeof(int);
             public Type type7 = typeof(float);
             public Type type8 = typeof(string);

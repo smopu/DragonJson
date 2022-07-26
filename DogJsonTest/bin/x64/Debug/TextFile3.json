@@ -1,692 +1,82 @@
 ﻿{
-    "#type": "DogJsonTest,DogJsonTest.TestJsonClassA",
-    "testDelegate": [
-        {
-            "type": "DogJsonTest,DogJsonTest.TClassA",
-            "name": "Fool",
-            "args": [
-                "mscorlib,System.Int32",
-                "mscorlib,System.String"
-            ]
-        },
-        {
-            "type": "DogJsonTest,DogJsonTest.TClassA",
-            "name": "Foo2",
-            "args": [
-                "mscorlib,System.Int32",
-                "mscorlib,System.String"
-            ]
-        }
-    ],
-    "testDelegate2": [
-        {
-            "type": "DogJsonTest,DogJsonTest.TClassA",
-            "name": "Fool",
-            "args": [
-                "mscorlib,System.Int32",
-                "mscorlib,System.String"
-            ]
-        },
-        {
-            "type": "DogJsonTest,DogJsonTest.TClassA",
-            "name": "Foo2",
-            "args": [
-                "mscorlib,System.Int32",
-                "mscorlib,System.String"
-            ]
-        }
-    ],
-    "testDelegate3": [
-        {
-            "type": "DogJsonTest,DogJsonTest.TclassA",
-            "name": "Fool",
-            "args": [
-                "mscorlib,System.Int32",
-                "mscorlib,System.String"
-            ],
-            "target": "$/Iclass0Z"
-        },
-        {
-            "type": "DogJsonTest,DogJsonTest.TclassA",
-            "name": "Foo2",
-            "args": [
-                "mscorlib,System.Int32",
-                "mscorlib,System.String"
-            ],
-            "target": "$/Iclass0Z"
-        }
-    ],
-    "arrayLinkedList": [
-        1,
-        2,
-        3,
-        4,
-        7
-    ],
-    "arrayArray1": [
-        [
-            [
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            [
-                11,
-                12,
-                13,
-                14,
-                15
-            ],
-            [
-                21,
-                22,
-                23,
-                24,
-                25
-            ]
-        ],
-        [
-            [
-                101,
-                102,
-                103,
-                104,
-                105
-            ],
-            [
-                1011,
-                1012,
-                1013,
-                1014,
-                1015
-            ],
-            [
-                1021,
-                1022,
-                1023,
-                1024,
-                1025
-            ]
-        ]
-    ],
-    "arrayArray2": [
-        [
-            [
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            [
-                11,
-                12,
-                13,
-                14,
-                15
-            ],
-            [
-                21,
-                22,
-                23,
-                24,
-                25
-            ]
-        ],
-        [
-            [
-                101,
-                102,
-                103,
-                104,
-                105
-            ],
-            [
-                1011,
-                1012,
-                1013,
-                1014,
-                1015
-            ],
-            [
-                1021,
-                1022,
-                1023,
-                1024,
-                1025
-            ]
-        ]
-    ],
-    "arrayArray3": [
-        1,
-        2,
-        3,
-        4,
-        5
-    ],
-    "arrayArray4": [
-        [
-            1,
-            2,
-            3,
-            4,
-            5
-        ],
-        [
-            11,
-            12,
-            13,
-            14,
-            15
-        ],
-        [
-            21,
-            22,
-            23,
-            24,
-            25
-        ]
-    ],
-    "arrayArray5": [
-        [
-            [
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            [
-                11,
-                12,
-                13,
-                14,
-                15
-            ],
-            [
-                21,
-                22,
-                23,
-                24,
-                25
-            ]
-        ],
-        [
-            [
-                1001,
-                1002,
-                1003,
-                1004,
-                1005
-            ],
-            [
-                1011,
-                1012,
-                1013,
-                1014,
-                1015
-            ],
-            [
-                1021,
-                1022,
-                1023,
-                1024,
-                1025
-            ]
-        ]
-    ],
-    "listB": [
-        {
-            "b": true,
-            "num": -8.56,
-            "str": "00001"
-        },
-        {
-            "b": false,
-            "num": 10000888.999,
-            "str": "aaaa2"
-        }
-    ],
-    "listE": [
-        {
-            "b": true,
-            "k": -3E-12,
-            "str": "ff出错fvv"
-        },
-        {
-            "b": false,
-            "k": 124,
-            "str": "3特瑞aV"
-        },
-        {
-            "b": true,
-            "k": -999.45,
-            "str": "_@W#W$%^&"
-        }
-    ],
-    "b": true,
-    "kk": -15,
-    "str": "4ERWRds",
-    "gcc": {
-        "k": 12,
-        "bbb": {
-            "b": true,
-            "num": -8.56,
-            "str": "cc"
-        }
-    },
-    "gD": {
-        "b": true,
-        "k": -3.14E-12,
-        "str": "3特瑞aV"
-    },
-    "gDs": [
-        {
-            "b": true,
-            "k": -6466,
-            "str": "FF"
-        },
-        {
-            "b": true,
-            "k": -3.14E-12,
-            "str": "RRRR"
-        },
-        {
-            "b": true,
-            "k": 55.999,
-            "str": "3特瑞aV"
-        }
-    ],
-    "v3": [
-        3,
-        2,
-        1
-    ],
-    "testOB": {
-        "_p3_0": {
-            "x": 1.2,
-            "y": -1.8,
-            "z": 33
-        },
-        "p3_2": {
-            "x": -12,
-            "y": 18,
-            "z": 3.3
-        },
-        "numI": 13,
-        "num": 3.6
-    },
-    "dcc": {
-        "#create": [
-            {
-                "#type": "mscorlib,System.String",
-                "#value": "3213.#%^&*()"
-            },
-            {
-                "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "#value": [
-                    14,
-                    24,
-                    34,
-                    44,
-                    54
-                ]
-            },
-            {
-                "#type": "mscorlib,System.Double",
-                "#value": -3.14E-12
-            }
-        ]
-    },
-    "dcc3": {
-        "#create": [
-            {
-                "#type": "mscorlib,System.String",
-                "#value": "3213.#%^&*()"
-            },
-            {
-                "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "#value": [
-                    14,
-                    24,
-                    34,
-                    44,
-                    54
-                ]
-            },
-            {
-                "#type": "mscorlib,System.Double",
-                "#value": -3.14E-12
-            }
-        ]
-    },
-    "dcc2": {
-        "#type": "DogJsonTest,DogJsonTest.TclassDCC",
-        "#create": [
-            {
-                "#type": "mscorlib,System.String",
-                "#value": "3213.#%^&*()"
-            },
-            {
-                "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-                "#value": [
-                    14,
-                    24,
-                    34,
-                    44,
-                    54
-                ]
-            },
-            {
-                "#type": "mscorlib,System.Double",
-                "#value": -3.14E-12
-            }
-        ]
-    },
-    "ddd": {
-        "#type": "mscorlib,System.Double",
-        "#value": -3.14E-12
-    },
-    "objects": [
-        {
-            "#type": "mscorlib,System.Int32",
-            "#value": 12
-        },
-        {
-            "#type": "mscorlib,System.Double",
-            "#value": -3.14E-12
-        },
-        {
-            "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-            "#value": [
-                1,
-                2,
-                4
-            ]
-        }
-    ],
-    "tClass001": {
-        "objects": [
-            {
-                "#type": "mscorlib,System.Int32",
-                "#value": 12
-            },
-            {
-                "#type": "mscorlib,System.Double",
-                "#value": -3.14E-12
-            },
-            {
-                "#type": "mscorlib,System.String",
-                "#value": "3213.#%^&*()"
-            }
-        ],
-        "tClass002": {
-            "size": 12,
-            "testString": "A@2",
-            "tClass003s": [
-                {
-                    "testString": "0000"
-                },
-                {
-                    "testString": "0001"
-                },
-                "$/testClassDD2",
-                {
-                    "testString": "0003"
-                }
-            ],
-            "tClass003": "$/testClassDD"
-        },
-        "TestDuble": -3.14E-12,
-        "tClass002s": [
-            {
-                "size": 1,
-                "testString": "A@0"
-            },
-            {
-                "size": 2,
-                "testString": "A@1",
-                "tClass003s": [
-                    {
-                        "testString": "0000"
+    "#type": "DogJsonTest.WriteReadTest+LoopReferenceClass1",
+    "classPath": {
+        "classPath1": {
+            "classPath2": {
+                "classPath3": {
+                    "classPath4": {},
+                    "tClass001": {
+                        "objects": [
+                            {
+                                "#type": "System.Int32",
+                                "#value": 12
+                            },
+                            {
+                                "#type": "System.Double",
+                                "#value": -3.14E-12
+                            },
+                            {
+                                "#type": "System.String",
+                                "#value": "3213.#%^&*()"
+                            }
+                        ],
+                        "tClass002": {
+                            "size": 12,
+                            "testString": "A@2",
+                            "tClass003s": [
+                                {
+                                    "testString": "0000"
+                                },
+                                {
+                                    "testString": "0001"
+                                },
+                                "$/testClassDD2",
+                                {
+                                    "testString": "0003"
+                                }
+                            ],
+                            "tClass003": "$/testClassDD"
+                        },
+                        "TestDuble": -3.14E-12,
+                        "tClass002s": [
+                            {
+                                "size": 1,
+                                "testString": "A@0"
+                            },
+                            {
+                                "size": 2,
+                                "testString": "A@1",
+                                "tClass003s": [
+                                    {
+                                        "testString": "0000"
+                                    },
+                                    {
+                                        "testString": "0001"
+                                    },
+                                    "$/testClassDD3"
+                                ],
+                                "tClass003": "$/testClassDD4"
+                            },
+                            {
+                                "size": 3,
+                                "testString": "asdede"
+                            }
+                        ]
                     },
-                    {
-                        "testString": "0001"
+                    "testClassDD": {
+                        "testString": "testClassDD"
                     },
-                    "$/testClassDD3"
-                ],
-                "tClass003": "$/testClassDD4"
-            },
-            {
-                "size": 3,
-                "testString": "asdede"
-            }
-        ]
-    },
-    "testClassDD": {
-        "testString": "testClassDD"
-    },
-    "testClassDD2": {
-        "testString": "testClassDD2"
-    },
-    "testClassDD3": {
-        "testString": "testClassDD3"
-    },
-    "testClassDD4": {
-        "testString": "testClassDD4"
-    },
-    "testEnum": [
-        "Test002",
-        "Test003",
-        "Test008"
-    ],
-    "testEnums": [
-        [
-            "Test002"
-        ],
-        [
-            "Test004"
-        ],
-        [
-            "Test003"
-        ]
-    ],
-    "arrayint2": {
-        "#type": "mscorlib,System.Collections.Generic.List`1[System.Int32]",
-        "#value": [
-            14,
-            24,
-            34,
-            44,
-            54
-        ]
-    },
-    "Iclass0Z": {
-        "#type": "DogJsonTest,DogJsonTest.TclassC",
-        "value": 1.444,
-        "b": 122,
-        "bbb": {
-            "b": true,
-            "num": -3.14E-12,
-            "str": "hello world"
-        }
-    },
-    "p3": {
-        "x": 2,
-        "y": 1,
-        "z": 33
-    },
-    "arrayRekn": [
-        [
-            [
-                {
-                    "b": false,
-                    "num": 1
-                },
-                {
-                    "b": false,
-                    "num": 2,
-                    "str": "ddd"
+                    "testClassDD2": {
+                        "testString": "testClassDD2"
+                    },
+                    "testClassDD3": {
+                        "testString": "testClassDD3"
+                    },
+                    "testClassDD4": {
+                        "testString": "testClassDD4"
+                    }
                 }
-            ],
-            [
-                {
-                    "b": false,
-                    "num": 3
-                },
-                {
-                    "b": false,
-                    "num": 4
-                }
-            ]
-        ],
-        [
-            [
-                {
-                    "b": false,
-                    "num": 5,
-                    "str": "5"
-                },
-                {
-                    "b": false,
-                    "num": 6,
-                    "str": "6"
-                }
-            ],
-            [
-                {
-                    "b": false,
-                    "num": 7,
-                    "str": "7"
-                },
-                {
-                    "b": false,
-                    "num": 8,
-                    "str": "8"
-                }
-            ]
-        ],
-        [
-            [
-                {
-                    "b": false,
-                    "num": 9,
-                    "str": "9"
-                },
-                {
-                    "b": false,
-                    "num": 10,
-                    "str": "10"
-                }
-            ],
-            [
-                {
-                    "b": false,
-                    "num": 11,
-                    "str": "11"
-                },
-                {
-                    "b": false,
-                    "num": 12,
-                    "str": "12"
-                }
-            ]
-        ]
-    ],
-    "arrayStack": [
-        3,
-        4,
-        5
-    ],
-    "fd": [
-        {
-            "b": true,
-            "num": -3.14E-12,
-            "str": "ddd"
-        },
-        {
-            "b": false,
-            "num": 34.5
-        },
-        {
-            "b": false,
-            "num": 999999
-        }
-    ],
-    "arraydouble": [
-        3.333,
-        -4.8888,
-        -5.34E+108
-    ],
-    "arraystring": [
-        "true",
-        "null",
-        "ed false"
-    ],
-    "arraybool": [
-        false,
-        true,
-        false
-    ],
-    "dictionary3": [
-        [
-            [
-                3,
-                2,
-                1
-            ],
-            {
-                "b": false,
-                "num": 11111,
-                "str": "rradads"
-            }
-        ],
-        [
-            [
-                1,
-                4,
-                -9.8
-            ],
-            {
-                "b": false,
-                "num": 888,
-                "str": "热热我"
-            }
-        ],
-        [
-            [
-                -3.2E-13,
-                3E+13,
-                0.99
-            ],
-            {
-                "b": false,
-                "num": 999999,
-                "str": "特别强势人物了"
-            }
-        ]
-    ],
-    "tstructA": {
-        "value": 3.6,
-        "_b": {
-            "kk": "FC",
-            "_c": {
-                "id": 21443
             }
         }
-    },
-    "Num": 33.56,
-    "BB": {
-        "b": true,
-        "num": -9999.232,
-        "str": "Wvs"
-    },
-    "testEnum2": [
-        "Test001",
-        "Test002",
-        "Test003"
-    ]
+    }
 }
-

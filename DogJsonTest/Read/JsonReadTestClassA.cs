@@ -13,7 +13,7 @@ namespace DogJsonTest.Read
 {
     public class JsonReadTestClassA
     {
-        [Test]
+        //[Test]
         public void ReadClassTestJsonClassA()
         {
             TestJsonClassA test1 = new TestJsonClassA()
@@ -353,10 +353,17 @@ namespace DogJsonTest.Read
 
             };
 
-            test1.testClassDD = test1.tClass001.tClass002.tClass003;
-            test1.testClassDD4 = test1.tClass001.tClass002s[1].tClass003;
-            test1.testClassDD2 = test1.tClass001.tClass002.tClass003s[2];
-            test1.testClassDD3 = test1.tClass001.tClass002s[1].tClass003s[2];
+            //test1.testClassDD = test1.tClass001.tClass002.tClass003;
+            //test1.testClassDD4 = test1.tClass001.tClass002s[1].tClass003;
+            //test1.testClassDD2 = test1.tClass001.tClass002.tClass003s[2];
+            //test1.testClassDD3 = test1.tClass001.tClass002s[1].tClass003s[2];
+
+            //test1.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD = test1.tClass001.tClass002.tClass003;
+            //test1.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD4 = test1.tClass001.tClass002s[1].tClass003;
+            //test1.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD2 = test1.tClass001.tClass002.tClass003s[2];
+            //test1.classPath.classPath1.classPath2.classPath3.classPath4.testClassDD3 = test1.tClass001.tClass002s[1].tClass003s[2];
+
+
 
             var kkk = Assembly.GetAssembly(typeof(TclassC));
             //
