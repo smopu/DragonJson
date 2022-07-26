@@ -1511,7 +1511,7 @@ namespace DogJsonTest
         /// 类型
         /// </summary>
         [Test]
-        public void T015_ypeTest()
+        public void T015_TypeTest()
         {
             {
                 TypeClass inputData = new TypeClass();
