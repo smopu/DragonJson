@@ -1,0 +1,12 @@
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\TextFile2.json
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\TextFile3.json
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\TextFile1.json
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\DogJson.dll.config
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\DogJson.dll
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\DogJson.pdb
+D:\DogJson\DogJson\DogJson\bin\x64\Debug\DynamicCustomReflection.dll
+D:\DogJson\DogJson\DogJson\obj\x64\Debug\DragonJson.csproj.AssemblyReference.cache
+D:\DogJson\DogJson\DogJson\obj\x64\Debug\DragonJson.csproj.CoreCompileInputs.cache
+D:\DogJson\DogJson\DogJson\obj\x64\Debug\DragonJson.csproj.CopyComplete
+D:\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.dll
+D:\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.pdb

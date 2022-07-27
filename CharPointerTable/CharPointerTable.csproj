@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{547A8FF2-BCCA-4CDF-8301-8DA98302B331}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CharPointerTable</RootNamespace>
     <AssemblyName>CharPointerTable</AssemblyName>
@@ -91,12 +91,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="StringTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TypeAddrWarp.cs" />
-    <Compile Include="UnsafeUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -1,0 +1,9 @@
+D:\DogJson\DogJson\DragonJson\bin\Release\DragonJson.dll.config
+D:\DogJson\DogJson\DragonJson\bin\Release\DragonJson.dll
+D:\DogJson\DogJson\DragonJson\bin\Release\DragonJson.pdb
+D:\DogJson\DogJson\DragonJson\bin\Release\DynamicCustomReflection.dll
+D:\DogJson\DogJson\DragonJson\obj\Release\DragonJson.csproj.AssemblyReference.cache
+D:\DogJson\DogJson\DragonJson\obj\Release\DragonJson.csproj.CoreCompileInputs.cache
+D:\DogJson\DogJson\DragonJson\obj\Release\DragonJson.csproj.CopyComplete
+D:\DogJson\DogJson\DragonJson\obj\Release\DragonJson.dll
+D:\DogJson\DogJson\DragonJson\obj\Release\DragonJson.pdb
