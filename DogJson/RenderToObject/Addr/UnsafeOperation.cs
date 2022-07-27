@@ -69,7 +69,10 @@ namespace DogJson
                 }
                 else
                 {
-                    int sizeOfGG = allSize[type] = (int)typeof(TypeTool<>).MakeGenericType(type).GetMethod("SizeOf", BindingFlags.Static | BindingFlags.Public).Invoke(null, null);
+                    //int sizeOfGG = allSize[type] = SizeOf(type) - PTR_COUNT * 2;
+                    //int sizeOfGG = allSize[type] = Marshal.SizeOf(type); 
+                    int sizeOfGG = allSize[type] =
+                        (int)typeof(TypeTool<>).MakeGenericType(type).GetMethod("SizeOf", BindingFlags.Static | BindingFlags.Public).Invoke(null, null);
                     return sizeOfGG;
                 }
             }
@@ -78,7 +81,6 @@ namespace DogJson
                 return sizeof(IntPtr);
             }
         }
-
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

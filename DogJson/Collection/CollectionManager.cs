@@ -409,6 +409,7 @@ namespace DogJson
 
         private static void ChakeAssembly(Assembly assembly)
         {
+            //Assembly.UnsafeLoadFrom
             foreach (var collectionType in assembly.GetTypes())
             {
                 //CollectionReadAttribute attribute = collectionType.GetCustomAttribute<CollectionReadAttribute>();

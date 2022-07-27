@@ -7,3 +7,12 @@ D:\git\DogJson\CharPointerTable\bin\x64\Debug\DynamicCustomReflection.dll
 D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CopyComplete
 D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.exe
 D:\git\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.pdb
+G:\Download\c\DogJson-main\CharPointerTable\bin\x64\Debug\CharPointerTable.exe.config
+G:\Download\c\DogJson-main\CharPointerTable\bin\x64\Debug\CharPointerTable.exe
+G:\Download\c\DogJson-main\CharPointerTable\bin\x64\Debug\CharPointerTable.pdb
+G:\Download\c\DogJson-main\CharPointerTable\bin\x64\Debug\DynamicCustomReflection.dll
+G:\Download\c\DogJson-main\CharPointerTable\obj\x64\Debug\CharPointerTable.csprojAssemblyReference.cache
+G:\Download\c\DogJson-main\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CoreCompileInputs.cache
+G:\Download\c\DogJson-main\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CopyComplete
+G:\Download\c\DogJson-main\CharPointerTable\obj\x64\Debug\CharPointerTable.exe
+G:\Download\c\DogJson-main\CharPointerTable\obj\x64\Debug\CharPointerTable.pdb

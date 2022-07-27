@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{169180BC-815E-428A-BD24-71B9022B800D}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <RootNamespace>DogJson</RootNamespace>
     <AssemblyName>DogJson</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -97,6 +97,9 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DynamicCustomReflection, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -132,6 +135,7 @@
     <Compile Include="Collection\StringCollection\StringCollectionBase.cs" />
     <Compile Include="Collection\ArrayCollection\WriterDictionary.cs" />
     <Compile Include="Collection\ArrayCollection\WriterEnumerable.cs" />
+    <Compile Include="CreateAssembly.cs" />
     <Compile Include="IJsonRenderToObject.cs" />
     <Compile Include="JsonValue.cs" />
     <Compile Include="DataBaseExtend.cs" />
@@ -146,14 +150,13 @@
     <Compile Include="WriterToObject\WriterReflection.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RenderToObject\Addr\AddrToObject.cs" />
     <Compile Include="RenderToObject\Addr\ArrayWrapper.cs" />
     <Compile Include="RenderToObject\Addr\MulticastDelegateValue.cs" />
     <Compile Include="RenderToObject\Addr\PropertyWrapper.cs" />
     <Compile Include="RenderToObject\Addr\StringTable.cs" />
     <Compile Include="RenderToObject\Addr\TypeAddrWrapper.cs" />
     <Compile Include="RenderToObject\Addr\UnsafeOperation.cs" />
-    <Compile Include="RenderToObject\Addr\AddrToObject2.cs" />
+    <Compile Include="RenderToObject\Addr\AddrToObject.cs" />
     <Compile Include="RenderToObject\ReflectionToObject.cs" />
     <Compile Include="StringTable.cs" />
     <Compile Include="StringTableLive.cs" />

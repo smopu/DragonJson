@@ -49,9 +49,29 @@ namespace DogJsonTest
             return type;
         }
 
+        public struct KKKK {
+            public string str;
+            public int num1;
+            public double num;
+            public char c;
+            public float f;
+            public KKKKClass kkkkc;
+        }
+        public class KKKKClass
+        {
+            public string str;
+            public int num1;
+            public double num;
+            public char c;
+            public float f;
+        }
+
         public static unsafe void Main(string[] args)
         {
-            DogJson.大家发财了哇 是= new 大家发财了哇();
+            int sizeKKKK = UnsafeOperation.SizeOfStack(typeof(KKKK));
+            int sizeKKKK2 = Marshal.SizeOf(typeof(KKKK));
+
+            int sizeKKKKc = UnsafeOperation.SizeOfStack(typeof(KKKKClass));
 
             IArrayWrap arrayWrap = ArrayWrapManager.GetIArrayWrap(typeof(B[,,]));
             int* array_lengths = stackalloc int[10];

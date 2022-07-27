@@ -303,7 +303,7 @@ namespace DogJsonTest
                     indices[0] = i;
 
                     object value1 = array1.GetValue(indices);
-                    object value2 = array1.GetValue(indices);
+                    object value2 = array2.GetValue(indices);
                     if (value1 != value2)
                     {
                         if (!_AreEqualObject(value1, value2))

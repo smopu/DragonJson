@@ -85,7 +85,6 @@ namespace CustomReflection
             //动态创建模块
             ModuleBuilder mb = dynamicAssembly.DefineDynamicModule(DemoName.Name, DemoName.Name + ".dll");
             //动态创建类MyClass
-
             TypeBuilder tb = mb.DefineType("GeneralTool", TypeAttributes.Public);
 
             MethodBuilder mainMethodBuilder2 = tb.DefineMethod("SetObject", MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard,
@@ -97,8 +96,6 @@ namespace CustomReflection
             ilGenerator.Emit(OpCodes.Ldarg_1);
             ilGenerator.Emit(OpCodes.Stobj, typeof(object));
             ilGenerator.Emit(OpCodes.Ret);
-
-
 
             MethodBuilder mainMethodBuilder3 = tb.DefineMethod("VoidToObject", MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard,
                   typeof(object), new Type[] { typeof(void*) }

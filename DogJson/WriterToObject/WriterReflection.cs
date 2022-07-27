@@ -649,11 +649,12 @@ namespace DogJson
                             now.jsonType = JsonWriteType.String;
                             break;
                         case TypeCode.DateTime:
-                            now.value = (*(DateTime*)(value)).ToString();
+                            now.value = "\"" + (*(DateTime*)(value)).ToString() + "\"";
                             now.jsonType = JsonWriteType.String;
                             break;
                         case TypeCode.String:
-                            now.value = "\"" + (*(DateTime*)(value)) + "\"";
+                            var str = GeneralTool.VoidToObject((*(void**)(value)));
+                            now.value = "\"" + ((string)str) + "\"";
                             now.jsonType = JsonWriteType.String;
                             break;
                         default:

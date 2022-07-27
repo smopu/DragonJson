@@ -63,7 +63,7 @@ namespace DogJson
             }
             if (jsonRenderToObject == null)
             {
-                this.jsonRenderToObject = new AddrToObject2();
+                this.jsonRenderToObject = new AddrToObject();
             }
             else
             {
@@ -88,8 +88,6 @@ namespace DogJson
             this.stackLength = 2;//jsonStackLength
             this.poolLength = 12;//poolLength
             this.objectQueueLength = 12;
-
-
             //stackIntPtr = Marshal.AllocHGlobal(jsonStackLength * sizeof(typeof(JsonObject*)));
             stackIntPtr = Marshal.AllocHGlobal(jsonStackLength * sizeof(int));
             objectQueueIntPtr = Marshal.AllocHGlobal(objectQueueLength * sizeof(JsonObject));
@@ -1434,7 +1432,7 @@ namespace DogJson
             fixed (char* startChar = str)
             {
                 ReadJsonText(startChar, length);
-                return (T)jsonRenderToObject.CreateObject(this, startChar, length);
+                return (T)jsonRenderToObject.CreateObject(this, typeof(T), startChar, length);
             }
         }
 
@@ -1444,7 +1442,7 @@ namespace DogJson
             fixed (char* startChar = str)
             {
                 ReadJsonText(startChar, length);
-                return jsonRenderToObject.CreateObject(this, startChar, length);
+                return jsonRenderToObject.CreateObject(this, null, startChar, length);
             }
         }
 

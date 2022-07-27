@@ -1431,6 +1431,8 @@ namespace DogJson
         static Dictionary<Type, Type> mainType2 = new Dictionary<Type, Type>();
         static unsafe void Main44(string[] args)
         {
+            //Marshal
+            //System.Runtime.CompilerServices.Unsafe
             //ReadCollectionLink read;
             //DictionaryReader2<string, int> dictionaryReader2 = new DictionaryReader2<string, int>(out read);
             //object obj1;

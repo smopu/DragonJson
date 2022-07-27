@@ -101,7 +101,6 @@ namespace CustomReflection
             mainMethodBuilder5.DefineParameter(3, ParameterAttributes.None, "byteCount");
 
 
-
             TypeBuilder tb2 = mb.DefineType("TypeTool", TypeAttributes.Public);
 
             //创建类型参数名，将达到这样的效果：public MyClass<TParam1,TParam2>

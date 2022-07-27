@@ -1,815 +1,1586 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Reflection;
-//using System.Runtime.InteropServices;
-//using System.Text;
-//using System.Threading.Tasks;
+﻿using DogJson.RenderToObject;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
-//namespace DogJson
-//{
-//    public unsafe class AddrToObject : IJsonRenderToObject
-//    {
-//        Dictionary<Type, TypeAddrReflectionWrapper> allTypeWrapper = new Dictionary<Type, TypeAddrReflectionWrapper>();
-//        public TypeAddrReflectionWrapper GetTypeWrapper(Type type)
-//        {
-//            TypeAddrReflectionWrapper ob;
-//            if (allTypeWrapper.TryGetValue(type, out ob))
-//            {
-//                return ob;
-//            }
-//            return allTypeWrapper[type] = new TypeAddrReflectionWrapper(type);
-//        }
+namespace DogJson
+{
+    public unsafe class AddrToObject : IJsonRenderToObject
+    {
+        public AddrToObject()
+        {
+            //proxy = new ReadCollectionProxy();
+            //proxy.callGetValue = GetValue;
+            for (int i = 0; i < createObjectItems.Length; i++)
+            {
+                createObjectItems[i] = new CreateObjectItem();
+            }
 
-//        public class CreateObjectItem
-//        {
-//            public CreateObjectItem(int index)
-//            {
-//                this.index = index;
-//            }
-//            public GCHandle gcHandle;
-//            public object obj;
-//            public void* voidP;
-//            public byte* byteP;
-//            public object Obj
-//            {
-//                get { return obj; }
-//                set
-//                {
-//                    obj = value;
-//                    voidP = GeneralTool.ObjectToVoid(obj);
-//                    byteP = (byte*)voidP + sizeof(IntPtr);
-//                    voidP = (void*)(byteP);
-//                }
-//            }
+            setValuesLength = 1024;
+            setValuesIntPtr = Marshal.AllocHGlobal(setValuesLength * sizeof(int));
+            setValues = (int*)setValuesIntPtr.ToPointer();
 
-//            public Type type;
-//            public Type sourceType;
-//            public TypeAddrFieldAndProperty fieldInfo;
-//            public string key;
-//            public Array objArray;
-//            public TypeCode ArrayItemTypeCode;
-//            public Type ArrayItemType;
-//            public int ArrayRank;
-//            public int[] ArrayRankLengths;
-//            public int[] ArrayRankIndex;
-
-//            public JsonObject jsonObject;
-
-//            public List<CreateObjectItem> sub = new List<CreateObjectItem>();
-//            public bool isValueType;
-//            public int index;
-//            public IReadCollectionObject collectionArray;
-//            public IReadCollectionObject collectionObject;
-//            public TypeAddrReflectionWrapper wrapper;
-
-//        }
-
-//        static BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-//        public unsafe object CreateObject(JsonRender jsonRender, Type type, char* vs, int length)
-//        {
-//            CreateObjectItem[] createObjectItems = new CreateObjectItem[jsonRender.objectQueueIndex];
-//            {
-//                var rootItem = createObjectItems[0] = new CreateObjectItem(0);
-//                rootItem.wrapper = GetTypeWrapper(type);
-//                rootItem.type = type;
-//                rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);
-//                //rootItem.gcHandle.Free();
-//                rootItem.isValueType = type.IsValueType;
-//                rootItem.jsonObject = jsonRender.objectQueue[0];
-//                //对象数组创建
-//                for (int i = 1; i < jsonRender.objectQueueIndex; i++)
-//                {
-//                    CreateObjectItem myObject = createObjectItems[i] = new CreateObjectItem(i);
-//                    JsonObject v = jsonRender.objectQueue[i];
-//                    JsonObject parent = jsonRender.objectQueue[v.parentObjectIndex];
-//                    CreateObjectItem parentObject = createObjectItems[v.parentObjectIndex];
-//                    createObjectItems[i].jsonObject = jsonRender.objectQueue[i];
-
-//                    parentObject.sub.Add(myObject);
-//                    if (parent.isObject)
-//                    {
-//                        IReadCollectionObject collectionParent = parentObject.collectionObject;
-//                        if (collectionParent == null)
-//                        {
-//                            //var fieldInfo = parentObject.wrapper.Find(vs + v.keyStringStart, v.keyStringLength);
-//                            string key = new string(v.keyStringStart, 0, v.keyStringLength);
-//                            myObject.key = key;
-//                            var fieldInfo = parentObject.wrapper.nameOfField[key];
-
-//                            myObject.fieldInfo = fieldInfo;
-//                            if (v.isCommandValue)
-//                            {
-//                                string typeName = new string(vs, v.typeStartIndex, v.typeLength);
-//                                var valueType = Type.GetType(typeName);
-//                                myObject.type = typeof(Box<>).MakeGenericType(valueType);
-//                            }
-//                            else
-//                            {
-//                                if (v.typeLength > 0)
-//                                {
-//                                    string typeName = new string(vs, v.typeStartIndex, v.typeLength);
-//                                    myObject.type = Type.GetType(typeName);
-//                                }
-//                                else
-//                                {
-//                                    myObject.type = fieldInfo.fieldType;
-//                                }
-//                            }
-//                        }
-//                        else
-//                        {
-//                            if (v.typeLength > 0)
-//                            {
-//                                myObject.type = Type.GetType(new string(vs, v.typeStartIndex, v.typeLength));
-//                            }
-//                            else
-//                            {
-//                                myObject.type = collectionParent.GetItemType(&v);
-//                            }
-//                        }
-//                    }
-//                    else
-//                    {
-//                        if (v.typeLength > 0)
-//                        {
-//                            if (v.isCommandValue)
-//                            {
-//                                string typeName = new string(vs, v.typeStartIndex, v.typeLength);
-//                                var valueType = Type.GetType(typeName);
-//                                myObject.type = typeof(Box<>).MakeGenericType(valueType);
-//                            }
-//                            else
-//                            {
-//                                myObject.type = Type.GetType(new string(vs, v.typeStartIndex, v.typeLength));
-//                            }
-//                        }
-//                        else
-//                        {
-//                            IReadCollectionObject collectionParent = parentObject.collectionArray;
-//                            if (collectionParent == null)
-//                            {
-//                                myObject.type = parentObject.ArrayItemType;
-//                            }
-//                            else
-//                            {
-//                                myObject.type = collectionParent.GetItemType(&v);
-//                            }
-//                        }
-//                    }
-
-//                    myObject.sourceType = myObject.type;
-//                    //"#create"
-//                    if (v.isConstructor)
-//                    {
-//                        myObject.type = typeof(ConstructorWrapper);
-//                    }
-
-//                    if (v.isObject)
-//                    {
-//                        IReadCollectionObject collection;
-//                        if (CollectionManager.readObjectMap.TryGetValue(myObject.type, out collection))
-//                        {
-//                            myObject.Obj = collection.Create(&v, parentObject.obj, myObject.sourceType, parentObject.type);
-//                            myObject.collectionObject = collection;
-//                        }
-//                        else
-//                        {
-//                            Type collectionType;
-//                            if (myObject.type.IsGenericType && CollectionManager.readObjectTypeMap.TryGetValue(myObject.type.GetGenericTypeDefinition(), out collectionType))
-//                            {
-//                                Type type1 = collectionType.MakeGenericType(myObject.type.GetGenericArguments());
-//                                CollectionManager.readObjectMap[myObject.type] = collection
-//                                    = Activator.CreateInstance(type1) as IReadCollectionObject;
-
-//                                myObject.Obj = collection.Create(&v, parentObject.obj, myObject.type, parentObject.type);
-//                                myObject.collectionObject = collection;
-//                            }
-//                            else
-//                            {
-//                                myObject.wrapper = GetTypeWrapper(myObject.type);
-//                                //if (myObject.isValueType)
-//                                //{
-//                                //    parentObject
-//                                //}
-//                                //else
-//                                //{
-//                                //    myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
-//                                //}
-//                                myObject.Obj = myObject.wrapper.Create(out myObject.gcHandle);
-//                            }
-//                        }
-//                    }
-//                    else
-//                    {
-//                        IReadCollectionObject collection;
-//                        if (CollectionManager.readObjectMap.TryGetValue(myObject.type, out collection))
-//                        {
-//                            myObject.Obj = collection.Create(&v, parentObject.obj, myObject.type, parentObject.type);
-//                            myObject.collectionArray = collection;
-//                        }
-//                        else
-//                        {
-//                            if (myObject.type.IsGenericType)
-//                            {
-//                                Type collectionType;
-//                                if (CollectionManager.readObjectTypeMap.TryGetValue(myObject.type.GetGenericTypeDefinition(), out collectionType))
-//                                {
-//                                    Type type1 = collectionType.MakeGenericType(myObject.type.GetGenericArguments());
-//                                    CollectionManager.readObjectMap[myObject.type] = collection
-//                                        = Activator.CreateInstance(type1) as IReadCollectionObject;
-
-//                                    myObject.Obj = collection.Create(&v, parentObject.obj, myObject.type, parentObject.type);
-//                                    myObject.collectionArray = collection;
-//                                }
-//                                else
-//                                {
-//                                    if (myObject.type.IsSubclassOf(typeof(MulticastDelegate)))
-//                                    {
-//                                        collection = CollectionManager.readObjectMap[typeof(MulticastDelegate)];
-//                                        myObject.Obj = collection.Create(&v, parentObject.obj, myObject.type, parentObject.type);
-//                                        myObject.collectionArray = collection;
-//                                    }
-//                                    else
-//                                    {
-//                                        //myObject.obj = Activator.CreateInstance(myObject.type);
-//                                        throw new Exception("JSON数组类型容器未注册");
-//                                    }
-//                                }
-//                            }
-//                            else
-//                            {
-//                                if (myObject.type.IsArray)
-//                                {
-//                                    var rank = myObject.type.GetArrayRank();
-//                                    //var lengths = myObject.type.getl();
-//                                    //Array array = Array.CreateInstance(elementType, lengths);
-//                                    var elementType = myObject.type.GetElementType();
-//                                    if (rank == 1)//数组的秩= 1 直接遍历赋值
-//                                    {
-//                                        myObject.ArrayRank = 1;
-//                                        myObject.ArrayItemType = elementType;
-//                                        myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-//                                        myObject.Obj = myObject.objArray = Array.CreateInstance(elementType, v.arrayCount);
-//                                    }
-//                                    else
-//                                    {
-//                                        if (parentObject.type.IsArray && parentObject.ArrayRank > 1)
-//                                        {
-//                                            myObject.ArrayRank = parentObject.ArrayRank - 1;
-//                                            myObject.ArrayRankLengths = parentObject.ArrayRankLengths;
-//                                            myObject.ArrayRankIndex = new int[parentObject.ArrayRankIndex.Length];
-//                                            parentObject.ArrayRankIndex.CopyTo(myObject.ArrayRankIndex, 0);
+            setValuesOrderLength = 1024;
+            setValuesOrderIntPtr = Marshal.AllocHGlobal(setValuesOrderLength * sizeof(int));
+            setValuesOrder = (int*)setValuesOrderIntPtr.ToPointer();
 
 
-//                                            myObject.ArrayRankIndex[parentObject.ArrayRankIndex.Length - parentObject.ArrayRank] = v.arrayIndex;
+            this.maxRank = 10;
+            arrayRankIntPtr = Marshal.AllocHGlobal(100);
+            arrayLengths = (int*)arrayRankIntPtr.ToPointer();
+        }
 
-//                                            myObject.Obj = myObject.objArray = parentObject.objArray;
-//                                            if (myObject.ArrayRank == 1)
-//                                            {
-//                                                myObject.ArrayItemType = elementType;
-//                                                myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-//                                            }
-//                                            else
-//                                            {
-//                                                myObject.ArrayItemType = myObject.type;
-//                                            }
-//                                        }
-//                                        else
-//                                        {
-//                                            myObject.ArrayRank = rank;
-//                                            myObject.ArrayItemType = myObject.type;
-//                                            //myObject.ArrayItemType = elementType;
-//                                            myObject.ArrayItemTypeCode = Type.GetTypeCode(elementType);
-//                                            myObject.ArrayRankLengths = new int[rank];
+        unsafe void ResizeSetValues()
+        {
+            setValuesLength *= 2;
+            setValuesIntPtr = Marshal.ReAllocHGlobal(setValuesIntPtr, new IntPtr(setValuesLength * sizeof(int)));
+            setValues = (int*)setValuesIntPtr.ToPointer();
+        }
 
-//                                            if (rank + i > jsonRender.objectQueueIndex)
-//                                            {
-//                                                throw new Exception("无法满足秩");
-//                                            }
+        unsafe void ResizeSetValuesOrder()
+        {
+            setValuesOrderLength = setValuesLength;
+            setValuesOrderIntPtr = Marshal.ReAllocHGlobal(setValuesOrderIntPtr, new IntPtr(setValuesLength * sizeof(int)));
+            setValuesOrder = (int*)setValuesOrderIntPtr.ToPointer();
+        }
 
-//                                            myObject.ArrayRankLengths[0] = v.arrayCount;
-//                                            for (int j = 1; j < rank; j++)
-//                                            {
-//                                                JsonObject v1 = jsonRender.objectQueue[j + i];
-//                                                if (v1.parentObjectIndex == j + i - 1 && !v1.isObject)
-//                                                {
-//                                                    myObject.ArrayRankLengths[j] = v1.arrayCount;
-//                                                }
-//                                                else
-//                                                {
-//                                                    throw new Exception("无法满足秩");
-//                                                }
-//                                            }
-//                                            myObject.Obj = myObject.objArray = Array.CreateInstance(elementType, myObject.ArrayRankLengths);
-//                                            myObject.ArrayRankIndex = new int[rank];
-//                                        }
+        ~AddrToObject()
+        {
+            Marshal.FreeHGlobal(setValuesIntPtr);
+            Marshal.FreeHGlobal(setValuesOrderIntPtr);
+            Marshal.FreeHGlobal(arrayRankIntPtr);
+        }
 
-//                                    }
-//                                }
-//                                else
-//                                {
-//                                    throw new Exception("类型不是数组");
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
+        IntPtr setValuesIntPtr;
+        int* setValues;
+        int setValuesLength = 1024;
 
 
-//                object set_value = null;
-//                //基本类型赋值
-//                for (int i = 0; i < jsonRender.poolIndex; i++)
-//                {
-//                    var v = jsonRender.pool[i];
-//                    CreateObjectItem myObject = createObjectItems[v.objectQueue->objectQueueIndex];
-//                    JsonObject* parent = v.objectQueue;
-//                    if (parent->isObject)
-//                    {
-//                        IReadCollectionObject collection = myObject.collectionObject;
-//                        if (collection != null)
-//                        {
-//                            collection.AddValue(myObject.obj, vs, &v);
-//                        }
-//                        else
-//                        {
-//                            var key = new string(vs, v.keyStringStart, v.keyStringLength);
-//                            //TypeAddrField fieldInfo = myObject.wrapper.Find(vs + v.keyStringStart, v.keyStringLength);
-//                            TypeAddrFieldAndProperty fieldInfo = myObject.wrapper.nameOfField[key];
-//                            var itemTypeCode = fieldInfo.typeCode;
-//                            switch (v.type)
-//                            {
-//                                case JsonValueType.String:
-//                                    switch (itemTypeCode)
-//                                    {
-//                                        case TypeCode.Char:
-//                                            *(char*)(myObject.byteP + fieldInfo.offset) = vs[v.vStringStart];
-//                                            break;
-//                                        case TypeCode.String:
-//                                            GeneralTool.SetObject(myObject.byteP + fieldInfo.offset,
-//                                                new string(vs, v.vStringStart, v.vStringLength));
-//                                            break;
-//                                        case TypeCode.Object:
-//                                            GeneralTool.SetObject(myObject.byteP + fieldInfo.offset,
-//                                                PathToObject(vs + v.vStringStart, v.vStringLength, createObjectItems[0]));
-//                                            break;
-//                                        default:
-
-//                                            if (fieldInfo.isEnum)
-//                                            {
-//                                                var strEnum = new string(vs, v.vStringStart, v.vStringLength);
-//                                                Array Arrays = Enum.GetValues(fieldInfo.fieldType);
-//                                                for (int k = 0; k < Arrays.Length; k++)
-//                                                {
-//                                                    if (Arrays.GetValue(k).ToString().Equals(strEnum))
-//                                                    {
-//                                                        GeneralTool.Memcpy(myObject.byteP + fieldInfo.offset
-//                                                        , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
-//                                                        , UnsafeOperation.SizeOfStack(fieldInfo.fieldType)
-//                                                        );
-//                                                    }
-//                                                }
-//                                            }
-//                                            break;
-//                                    }
-//                                    break;
-//                                case JsonValueType.Long:
-//                                    switch (itemTypeCode)
-//                                    {
-//                                        case TypeCode.SByte:
-//                                            *(SByte*)(myObject.byteP + fieldInfo.offset) = (SByte)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Byte:
-//                                            *(Byte*)(myObject.byteP + fieldInfo.offset) = (Byte)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Int16:
-//                                            *(Int16*)(myObject.byteP + fieldInfo.offset) = (Int16)v.valueLong;
-//                                            break;
-//                                        case TypeCode.UInt16:
-//                                            *(UInt16*)(myObject.byteP + fieldInfo.offset) = (UInt16)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Int32:
-//                                            *(Int32*)(myObject.byteP + fieldInfo.offset) = (Int32)v.valueLong;
-//                                            break;
-//                                        case TypeCode.UInt32:
-//                                            *(UInt32*)(myObject.byteP + fieldInfo.offset) = (UInt32)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Int64:
-//                                            *(Int64*)(myObject.byteP + fieldInfo.offset) = v.valueLong;
-//                                            break;
-//                                        case TypeCode.UInt64:
-//                                            *(UInt64*)(myObject.byteP + fieldInfo.offset) = (UInt64)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Single:
-//                                            *(Single*)(myObject.byteP + fieldInfo.offset) = (Single)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Double:
-//                                            *(Double*)(myObject.byteP + fieldInfo.offset) = (Double)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Decimal:
-//                                            *(Decimal*)(myObject.byteP + fieldInfo.offset) = (Decimal)v.valueLong;
-//                                            break;
-//                                    }
-//                                    break;
-//                                case JsonValueType.Double:
-//                                    switch (itemTypeCode)
-//                                    {
-//                                        case TypeCode.Single:
-//                                            *(Single*)(myObject.byteP + fieldInfo.offset) = (Single)v.valueDouble;
-//                                            break;
-//                                        case TypeCode.Double:
-//                                            *(Double*)(myObject.byteP + fieldInfo.offset) = v.valueDouble;
-//                                            break;
-//                                        case TypeCode.Decimal:
-//                                            *(Decimal*)(myObject.byteP + fieldInfo.offset) = (Decimal)v.valueDouble;
-//                                            break;
-//                                    }
-//                                    break;
-//                                case JsonValueType.Boolean:
-//                                    *(bool*)(myObject.byteP + fieldInfo.offset) = v.valueBool;
-//                                    break;
-//                                case JsonValueType.Object:
-//                                    if (myObject.type == (typeof(Type)))
-//                                    {
-//                                        GeneralTool.SetObject(myObject.byteP + fieldInfo.offset,
-//                                            Type.GetType(new string(vs, v.vStringStart, v.vStringLength))
-//                                            );
-
-//                                        //fieldInfo.SetValue(
-//                                        //    myObject.Obj, Type.GetType(new string(vs, v.vStringStart, v.vStringLength)
-//                                        //    ));
-//                                    }
-//                                    break;
-//                                default:
-//                                    break;
-//                            }
-//                        }
-//                    }
-//                    else
-//                    {
-//                        IReadCollectionObject collection = myObject.collectionArray;
-//                        if (collection != null)
-//                        {
-//                            collection.AddValue(myObject.Obj, vs, &v);
-//                        }
-//                        else
-//                        {
-//                            Type itemType;
-//                            TypeCode itemTypeCode;
-//                            if (v.typeLength > 0)
-//                            {
-//                                string typeName = new string(vs, v.typeStartIndex, v.typeLength);
-//                                itemType = Type.GetType(typeName);
-//                                itemTypeCode = Type.GetTypeCode(itemType);
-//                            }
-//                            else
-//                            {
-//                                itemType = myObject.ArrayItemType;
-//                                itemTypeCode = myObject.ArrayItemTypeCode;
-//                            }
-//                            switch (v.type)
-//                            {
-//                                case JsonValueType.String:
-//                                    switch (itemTypeCode)
-//                                    {
-//                                        case TypeCode.Char:
-//                                            set_value = vs[v.vStringStart];
-//                                            break;
-//                                        case TypeCode.String:
-//                                            set_value = new string(vs, v.vStringStart, v.vStringLength);
-//                                            break;
-//                                        default:
-//                                            if (myObject.ArrayItemType.IsEnum)
-//                                            {
-//                                                var strEnum = new string(vs, v.vStringStart, v.vStringLength);
-//                                                Array Arrays = Enum.GetValues(myObject.ArrayItemType);
-//                                                for (int k = 0; k < Arrays.Length; k++)
-//                                                {
-//                                                    if (Arrays.GetValue(k).ToString().Equals(strEnum))
-//                                                    {
-//                                                        set_value = Arrays.GetValue(k);
-//                                                    }
-//                                                }
-//                                            }
-//                                            else
-//                                            {
-//                                                set_value = PathToObject(vs + v.vStringStart, v.vStringLength, createObjectItems[0]);
-//                                            }
-//                                            break;
-//                                    }
-//                                    break;
-//                                case JsonValueType.Long:
-//                                    switch (itemTypeCode)
-//                                    {
-//                                        case TypeCode.SByte:
-//                                            set_value = (SByte)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Byte:
-//                                            set_value = (Byte)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Int16:
-//                                            set_value = (Int16)v.valueLong;
-//                                            break;
-//                                        case TypeCode.UInt16:
-//                                            set_value = (UInt16)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Int32:
-//                                            set_value = (Int32)v.valueLong;
-//                                            break;
-//                                        case TypeCode.UInt32:
-//                                            set_value = (UInt32)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Int64:
-//                                            set_value = v.valueLong;
-//                                            break;
-//                                        case TypeCode.UInt64:
-//                                            set_value = (UInt64)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Single:
-//                                            set_value = (Single)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Double:
-//                                            set_value = (Double)v.valueLong;
-//                                            break;
-//                                        case TypeCode.Decimal:
-//                                            set_value = (Decimal)v.valueLong;
-//                                            break;
-//                                    }
-//                                    break;
-//                                case JsonValueType.Double:
-//                                    switch (itemTypeCode)
-//                                    {
-//                                        case TypeCode.Single:
-//                                            set_value = (Single)v.valueDouble;
-//                                            break;
-//                                        case TypeCode.Double:
-//                                            set_value = (Double)v.valueDouble;
-//                                            break;
-//                                        case TypeCode.Decimal:
-//                                            set_value = (Decimal)v.valueDouble;
-//                                            break;
-//                                    }
-//                                    break;
-//                                case JsonValueType.Boolean:
-//                                    set_value = v.valueBool;
-//                                    break;
-//                                case JsonValueType.Object:
-//                                    if (myObject.type == (typeof(Type)))
-//                                    {
-//                                        set_value = Type.GetType(new string(vs, v.vStringStart, v.vStringLength));
-//                                    }
-//                                    break;
-//                            }
-
-//                            if (myObject.ArrayRank == 1)
-//                            {
-//                                if (myObject.ArrayRankIndex == null)
-//                                {
-//                                    myObject.objArray.SetValue(set_value, v.arrayIndex);
-//                                }
-//                                else
-//                                {
-//                                    myObject.objArray.SetValue(set_value, myObject.ArrayRankIndex);
-//                                    var nowRank = myObject.ArrayRankIndex.Length - 1;//到下一个秩，相当于进一位
-//                                    Chake:
-//                                    ++myObject.ArrayRankIndex[nowRank];
-//                                    if (myObject.ArrayRankIndex[nowRank] == myObject.ArrayRankLengths[nowRank])//进一位
-//                                    {
-//                                        --nowRank;
-//                                        if (nowRank >= 0)
-//                                        {
-//                                            goto Chake;
-//                                        }
-//                                        else
-//                                        {
-//                                            //break;
-//                                        }
-//                                    }
-//                                    //进位后，小位数的下标变成0
-//                                    for (int k = myObject.ArrayRankIndex.Length - 1; k > nowRank; k--)
-//                                    {
-//                                        myObject.ArrayRankIndex[k] = 0;
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
+        IntPtr setValuesOrderIntPtr;
+        int* setValuesOrder;
+        int setValuesOrderLength = 1024;
+        //int[] setValues = new int[1024];
+        //int[] setValuesOrder = new int[1024];
 
 
-//                //类类型赋值
-//                for (int i = createObjectItems.Length - 2; i >= 0; i--)
-//                {
-//                    CreateObjectItem parentObject = createObjectItems[i];
-//                    JsonObject parent = jsonRender.objectQueue[parentObject.index];
-//                    foreach (var myObject in createObjectItems[i].sub)
-//                    {
-//                        JsonObject v = jsonRender.objectQueue[myObject.index];
-//                        if (v.isObject)
-//                        {
-//                            IReadCollectionObject collection = myObject.collectionObject;
-//                            if (collection != null)
-//                            {
-//                                myObject.Obj = collection.End(myObject.Obj);
-//                            }
-//                        }
-//                        else
-//                        {
-//                            IReadCollectionObject collection = myObject.collectionArray;
-//                            if (collection != null)
-//                            {
-//                                myObject.Obj = collection.End(myObject.Obj);
-//                            }
-//                        }
+        IntPtr arrayRankIntPtr;
+        int* arrayLengths;
+        int maxRank = 10;
+
+        unsafe void ResizeSetArrayRank()
+        {
+            arrayRankIntPtr = Marshal.ReAllocHGlobal(arrayRankIntPtr, new IntPtr(maxRank * sizeof(int)));
+            arrayLengths = (int*)arrayRankIntPtr.ToPointer();
+        }
 
 
+        static BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-//                        if (parent.isObject)
-//                        {
-//                            IReadCollectionObject parentCollection = parentObject.collectionObject;
-//                            if (parentCollection == null)
-//                            {
-//                                if (myObject.fieldInfo.isValueType)
-//                                {
-//                                    TypeAddrFieldAndProperty.SetStruct(parentObject.byteP + myObject.fieldInfo.offset,
-//                                        GeneralTool.ObjectToVoid(myObject.Obj),
-//                                        UnsafeOperation.SizeOf(myObject.type));
+        class CreateObjectItem
+        {
+            public Type type;
+            public bool isValueType;
 
-//                                    //myObject.fieldInfo.SetValue(parentObject.Obj, myObject.Obj);
-//                                }
-//                                else
-//                                {
-//                                    GeneralTool.SetObject(parentObject.byteP + myObject.fieldInfo.offset,
-//                                       myObject.Obj);
-//                                }
-//                                //
-//                            }
-//                            else
-//                            {
-//                                parentCollection.Add(parentObject.Obj, &v, myObject.Obj);
-//                            }
-//                        }
-//                        else
-//                        {
-//                            IReadCollectionObject parentCollection = parentObject.collectionArray;
+            public CollectionManager.TypeCollectionBranch readBranch = CollectionManager.TypeCollectionBranch.Wrapper;
+            public ReadCollectionLink readCollection;
+            public TypeAddrReflectionWrapper wrapper;
+            public IArrayWrap arrayWrap;
 
-//                            if (parentCollection == null)
-//                            {
-//                                if (parentObject.ArrayRank == 1)
-//                                {
-//                                    if (parentObject.ArrayRankIndex == null)
-//                                    {
-//                                        parentObject.objArray.SetValue(myObject.Obj, v.arrayIndex);
-//                                    }
-//                                    else
-//                                    {
-//                                        //myObject.objArray.SetValue(set_value, myObject.ArrayRankIndex);
+            public PropertyDelegateItem2 propertyDelegateItem;
+            public bool isProperty;
+            public int offset;
+            
+            public byte* bytePtr;
+            public byte* objPtr;
+            public object obj;
+            public object temp;
 
-//                                        parentObject.ArrayRankIndex[parentObject.ArrayRankIndex.Length - 1] = v.arrayIndex;
-//                                        parentObject.objArray.SetValue(myObject.Obj, parentObject.ArrayRankIndex);
-//                                    }
-//                                }
-//                            }
-//                            else
-//                            {
-//                                parentCollection.Add(parentObject.Obj, &v, myObject.Obj);
-//                            }
+            public int arrayRank;
+            public int arrayNowItemSize;
+            public GCHandle gcHandle;
+        }
+
+        int setValuesIndex = 0;
+
+        CreateObjectItem[] createObjectItems = new CreateObjectItem[1024];
+
+        JsonReader jsonRender;
+        public static int indexDbug = 0;
+        public unsafe object CreateObject(JsonReader jsonRender, Type type, char* vs, int length)
+        {
+            this.jsonRender = jsonRender;
+            setValuesIndex = 0;
+            bool rootLaze = false;
+            object over = null;
+            //createObjectItems = new CreateObjectItem[jsonRender.objectQueueIndex];
+            //for (int i = 0; i < jsonRender.objectQueueIndex; i++)
+            //{
+            //    createObjectItems[i] = new CreateObjectItem();
+            //}
+
+            var rootItem = createObjectItems[0];
+            int itemCount = jsonRender.objectQueueIndex;
+            {
+                JsonObject* rootJsonObject = jsonRender.objectQueue;
+                CollectionManager.TypeAllCollection rootCollection;
+                if (rootJsonObject->typeLength > 0)
+                {
+                    string rootTypeName = new string(vs, rootJsonObject->typeStartIndex, rootJsonObject->typeLength);
+                    if (rootJsonObject->isCommandValue)
+                    {
+                        if (rootJsonObject->isObject)
+                        {
+                            rootCollection = CollectionManager.GetBoxTypeCollection(rootTypeName);
+                        }
+                        else
+                        {
+                            rootCollection = CollectionManager.GetTypeCollection(rootTypeName);
+                        }
+                    }
+                    else
+                    {
+                        rootCollection = CollectionManager.GetTypeCollection(rootTypeName);
+                    }
+                    type = rootCollection.type;
+                }
+                else
+                {
+                    if (rootJsonObject->isCommandValue)
+                    {
+                        if (rootJsonObject->isObject)
+                        {
+                            rootCollection = CollectionManager.GetTypeCollection(type).GetBox();
+                        }
+                        else
+                        {
+                            rootCollection = CollectionManager.GetTypeCollection(type);
+                        }
+                    }
+                    else
+                    {
+                        rootCollection = CollectionManager.GetTypeCollection(type);
+                    }
+                }
+               
+                rootItem.isValueType = type.IsValueType;
+                rootItem.type = type;
+
+                //"#create"
+                if (rootJsonObject->isConstructor)
+                {
+                    rootCollection = rootCollection.GetConstructor();
+                }
+                rootItem.readBranch = rootCollection.readBranch;
+
+                switch (rootCollection.readBranch)
+                {
+                    case CollectionManager.TypeCollectionBranch.Wrapper:
+                        rootItem.wrapper = rootCollection.wrapper;
+                        rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                        break;
+                    case CollectionManager.TypeCollectionBranch.ReadCollection:
+                        rootItem.readCollection = rootCollection.readCollection;
+                        ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                        arg.objectType = rootItem.type;
+                        arg.bridge = rootJsonObject;
+                        if (rootItem.isValueType)
+                        {
+                            over = UnsafeOperation.Create(type, out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                            rootItem.readCollection.createStruct(rootItem.bytePtr, out rootItem.temp, arg);
+                        }
+                        else
+                        {
+                            rootItem.obj = rootItem.readCollection.createObject(out rootItem.temp, arg);
+                        }
+                        if (rootItem.readCollection.isLaze || rootItem.temp != null)
+                        {
+                            rootLaze = true;
+                        }
+                        break;
+                    case CollectionManager.TypeCollectionBranch.Array:
+                        rootItem.arrayWrap = rootCollection.arrayWrap;
+
+                        var rank = rootItem.arrayWrap.rank;
+                        if (rank == 1)//数组的秩= 1 直接遍历赋值
+                        {
+                            rootItem.arrayRank = 1;
+
+                            rootItem.obj = rootItem.arrayWrap.CreateArray(rootJsonObject->arrayCount, arrayLengths,
+                                out rootItem.objPtr, out rootItem.bytePtr, out rootItem.gcHandle);
+                            rootItem.arrayNowItemSize = rootItem.arrayWrap.elementTypeSize;
+                            //myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                            //rootItem.arrayItemTypeSize = rootItem.arrayWrap.elementTypeSize;
+                        }
+                        else
+                        {
+                            rootItem.arrayRank = rank;
+
+                            if (rank > jsonRender.objectQueueIndex)
+                            {
+                                throw new Exception("无法满足秩");
+                            }
+
+                            if (maxRank < rank)
+                            {
+                                maxRank = rank;
+                                ResizeSetArrayRank();
+                            }
+
+                            int rankIndex = 0;
+                            arrayLengths[rankIndex] = rootJsonObject->arrayCount;
+                            ++rankIndex;
+                            int arraySize = rootJsonObject->arrayCount;
+
+                            for (int j = 1; j < rank; j++)
+                            {
+                                JsonObject* v1 = jsonRender.objectQueue + (j);
+                                if (v1->parentObjectIndex == j - 1 && !v1->isObject)
+                                {
+                                    arrayLengths[rankIndex] = v1->arrayCount;
+                                    ++rankIndex;
+                                    arraySize *= v1->arrayCount;
+                                    //arrayWrapper.SetSize(v1->arrayCount);
+                                }
+                                else
+                                {
+                                    throw new Exception("无法满足秩");
+                                }
+                            }
+
+                            rootItem.arrayNowItemSize = arraySize / rootJsonObject->arrayCount;
+
+                            rootItem.obj = rootItem.arrayWrap.CreateArray(arraySize, arrayLengths,
+                                out rootItem.objPtr, out rootItem.bytePtr, out rootItem.gcHandle);
+
+                            rootItem.arrayNowItemSize *= rootItem.arrayWrap.elementTypeSize;
+
+                        }
+                        break;
+                }
 
 
-//                        }
-//                    }
-//                }
+                //if (rootJsonObject->isCommandValue)
+                //{
+                //    rootCollection = rootCollection.GetBox();
+                //    rootItem.type = rootCollection.boxType;
+                //    rootItem.collectionObject = rootCollection.read;
+                //    ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                //    arg.objectType = type;
+                //    arg.bridge = rootJsonObject;
+                //    rootItem.obj = rootItem.collectionObject.createObject(out rootItem.temp, arg);
+                //}
+                //else
+                //{
+                //    switch (rootCollection.typeCollectionEnum)
+                //    {
+                //        case CollectionManager.TypeCollectionEnum.Wrapper:
+                //            rootItem.wrapper = rootCollection.wrapper;
+                //            rootItem.obj = rootItem.wrapper.Create(out rootItem.gcHandle, out rootItem.bytePtr, out rootItem.objPtr);
+                //            break;
+                //        case CollectionManager.TypeCollectionEnum.Read:
+                //            rootItem.collectionObject = rootCollection.read;
+                //            ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                //            arg.objectType = rootItem.type;
+                //            arg.bridge = rootJsonObject;
+                //            rootItem.obj = rootItem.collectionObject.createObject(out rootItem.temp, arg);
+                //            break;
+                //        case CollectionManager.TypeCollectionEnum.Array:
+                //            break;
+                //    }
+                //}
+
+
+                //rootItem.Obj = rootItem.wrapper.Create(out rootItem.gcHandle);//out rootItem.gcHandle
+
+                //对象数组创建
+                for (int i = 1; i < jsonRender.objectQueueIndex; i++)
+                {
+                    CreateObjectItem myObject = createObjectItems[i];
+                    JsonObject* v = jsonRender.objectQueue + i;
+                    JsonObject* parent = jsonRender.objectQueue + v->parentObjectIndex;
+                    CreateObjectItem parentObject = createObjectItems[v->parentObjectIndex];
+                    ReadCollectionLink parentCollection = parentObject.readCollection;
+                    myObject.obj = null;
+
+                    TypeAddrFieldAndProperty fieldInfo = null;
+                    myObject.isProperty = false;
+                    //string key;
+                   
+                    CollectionManager.TypeAllCollection typeAllCollection = null;
+
+                    if (v->typeLength > 0)
+                    {
+                        if (v->isCommandValue)
+                        {
+                            string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                            if (v->isObject)
+                            {
+                                typeAllCollection = CollectionManager.GetBoxTypeCollection(typeName);
+                            }
+                            else
+                            {
+                                typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                            }
+                        }
+                        else
+                        {
+                            string typeName = new string(vs, v->typeStartIndex, v->typeLength);
+                            typeAllCollection = CollectionManager.GetTypeCollection(typeName);
+                        }
+
+                        switch (parentObject.readBranch)
+                        {
+                            case CollectionManager.TypeCollectionBranch.Wrapper:
+                                fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                                if (fieldInfo.isProperty)
+                                {
+                                    myObject.isProperty = true;
+                                    myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                                }
+                                else
+                                {
+                                    myObject.offset = fieldInfo.offset;
+                                }
+                                break;
+                            case CollectionManager.TypeCollectionBranch.ReadCollection:
+                                break;
+                            case CollectionManager.TypeCollectionBranch.Array:
+                                myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        #region 没有 typeLength
+                        switch (parentObject.readBranch)
+                        {
+                            case CollectionManager.TypeCollectionBranch.Wrapper:
+                                {
+                                    fieldInfo = parentObject.wrapper.Find(v->keyStringStart, v->keyStringLength);
+                                    var key = new string(v->keyStringStart, 0, v->keyStringLength);
+                                    //var fieldInfo = parentObject.wrapper.nameOfField[key];
+                                    if (fieldInfo.isProperty)
+                                    {
+                                        myObject.isProperty = true;
+                                        myObject.propertyDelegateItem = fieldInfo.propertyDelegateItem;
+                                    }
+                                    else
+                                    {
+                                        myObject.offset = fieldInfo.offset;
+                                    }
+                                    typeAllCollection = fieldInfo.GetTypeAllCollection();
+                                }
+                                break;
+                            case CollectionManager.TypeCollectionBranch.ReadCollection:
+                                {
+                                    typeAllCollection = parentCollection.getItemType(new ReadCollectionLink.GetItemType_Args() { bridge = v });
+                                }
+                                break;
+                            case CollectionManager.TypeCollectionBranch.Array:
+                                {
+                                    if (parentObject.arrayWrap.rank == 1)//数组的秩= 1 直接遍历赋值
+                                    {
+                                        typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
+                                        myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                    }
+                                    else
+                                    {
+                                        if (parentObject.arrayRank > 1)
+                                        {
+                                            myObject.arrayRank = parentObject.arrayRank - 1;
+
+                                            //myObject.arrayItemTypeSize = parentObject.arrayWrap.elementTypeSize;
+                                            myObject.arrayNowItemSize = parentObject.arrayNowItemSize / v->arrayCount;
+                                            myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                            myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+
+
+                                            myObject.obj = parentObject.obj;
+
+                                            myObject.arrayWrap = parentObject.arrayWrap;
+                                            myObject.readBranch = CollectionManager.TypeCollectionBranch.Array;
+                                            myObject.type = parentObject.type;
+                                            myObject.isValueType = false;
+                                            
+                                            continue;
+                                        }
+                                        else
+                                        {
+                                            typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
+                                            myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                        }
+                                    }
+
+
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                        #endregion
+
+                    }
+
+                    myObject.type = typeAllCollection.type;
+                    myObject.isValueType = typeAllCollection.IsValueType;
+
+                    //"#create"
+                    if (v->isConstructor)
+                    {
+                        typeAllCollection = typeAllCollection.GetConstructor();
+                        //myObject.readCollection = typeAllCollection.readCollection;
+                    }
+                    myObject.readBranch = typeAllCollection.readBranch;
+
+                    //switch (typeAllCollection.readBranch)
+                    //{
+                    //    case CollectionManager.TypeCollectionBranch.Wrapper:
+                    //        myObject.wrapper = typeAllCollection.wrapper;
+                    //        break;
+                    //    case CollectionManager.TypeCollectionBranch.ReadCollection:
+                    //        myObject.readCollection = typeAllCollection.readCollection;
+                    //        break;
+                    //    case CollectionManager.TypeCollectionBranch.Array:
+                    //        myObject.arrayWrap = typeAllCollection.arrayWrap;
+                    //        break;
+                    //}
+                    switch (typeAllCollection.readBranch)
+                    {
+                        case CollectionManager.TypeCollectionBranch.Wrapper:
+                            if (!v->isObject)
+                            {
+                                throw new Exception("数组容器未注册");
+                            }
+                            myObject.wrapper = typeAllCollection.wrapper;
+                            //父对象是容器就延迟赋值
+                            if (parentCollection != null)
+                            {
+                                myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                            }
+                            else
+                            {
+                                //对象是属性延迟赋值
+                                if (myObject.isProperty)
+                                {
+                                    myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                                }
+                                else
+                                {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                        myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+                                    }
+                                    else
+                                    {
+                                        myObject.obj = myObject.wrapper.Create(out myObject.gcHandle, out myObject.bytePtr, out myObject.objPtr);
+                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                    }
+                                }
+                            }
+                            break;
+                        case CollectionManager.TypeCollectionBranch.ReadCollection:
+                            ReadCollectionLink collection = myObject.readCollection = typeAllCollection.readCollection;
+                            ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                            arg.objectType = myObject.type;
+                            arg.bridge = v;
+                            //arg.parent = parentObject.objPtr;
+
+                            //父对象是容器就延迟赋值
+                            if (parentCollection != null)
+                            {
+                                myObject.obj = collection.createObject(out myObject.temp, arg);
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                            }
+                            else
+                            {
+                                //对象是属性延迟赋值
+                                if (myObject.isProperty)
+                                {
+                                    myObject.obj = collection.createObject(out myObject.temp, arg);
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                                }
+                                else
+                                {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                        myObject.objPtr = myObject.bytePtr = parentObject.bytePtr + myObject.offset;
+                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
+                                        if (collection.isLaze)
+                                        {
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        myObject.obj = collection.createObject(out myObject.temp, arg);
+                                        if (collection.isLaze)
+                                        {
+                                            setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                                        }
+                                        else
+                                        {
+                                            GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        case CollectionManager.TypeCollectionBranch.Array:
+                            myObject.arrayWrap = typeAllCollection.arrayWrap;
+
+                            var rank = myObject.arrayWrap.rank;
+                            if (rank == 1)//数组的秩= 1 直接遍历赋值
+                            {
+                                myObject.arrayRank = 1;
+
+                                myObject.obj = myObject.arrayWrap.CreateArray(v->arrayCount, arrayLengths,
+                                    out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle);
+                                myObject.arrayNowItemSize = myObject.arrayWrap.elementTypeSize;
+
+                                //myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                                //myObject.arrayItemTypeSize = myObject.arrayWrap.elementTypeSize;
+                            }
+                            else
+                            {
+                                myObject.arrayRank = rank;
+
+                                if (rank + i > jsonRender.objectQueueIndex)
+                                {
+                                    throw new Exception("无法满足秩");
+                                }
+
+                                if (maxRank < rank)
+                                {
+                                    maxRank = rank;
+                                    ResizeSetArrayRank();
+                                }
+
+                                int rankIndex = 0;
+                                arrayLengths[rankIndex] = v->arrayCount;
+                                ++rankIndex;
+                                int arraySize = v->arrayCount;
+
+                                for (int j = 1; j < rank; j++)
+                                {
+                                    JsonObject* v1 = jsonRender.objectQueue + (j + i);
+                                    if (v1->parentObjectIndex == j + i - 1 && !v1->isObject)
+                                    {
+                                        arrayLengths[rankIndex] = v1->arrayCount;
+                                        ++rankIndex;
+                                        arraySize *= v1->arrayCount;
+                                        //arrayWrapper.SetSize(v1->arrayCount);
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("无法满足秩");
+                                    }
+                                }
+
+                                myObject.arrayNowItemSize = arraySize / v->arrayCount;
+
+                                myObject.obj = myObject.arrayWrap.CreateArray(arraySize, arrayLengths,
+                                    out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle);
+
+                                myObject.arrayNowItemSize *= myObject.arrayWrap.elementTypeSize;
+                            }
+
+                            //父对象是容器就延迟赋值
+                            if (parentCollection != null)
+                            {
+                                setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                            }
+                            else
+                            {
+                                //对象是属性延迟赋值
+                                if (myObject.isProperty)
+                                {
+                                    setValues[setValuesIndex++] = i; if (setValuesIndex == setValuesLength) { ResizeSetValues(); }
+                                }
+                                else
+                                {
+                                    GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                }
+                            }
+                            break;
+                    }
+
+                }
 
 
 
 
-//            }
+                //goto Dubg;
+
+                //基本类型赋值  
+                for (int i = 0; i < jsonRender.poolIndex; i++)
+                {
+                    if (i == 28)
+                    {
+                        int ddd = 0;
+                    }
+                    var v = jsonRender.pool[i];
+                    CreateObjectItem myObject = createObjectItems[v.objectQueueIndex];
+                    JsonObject* parent = jsonRender.objectQueue + v.objectQueueIndex;
+                    if (parent->isObject)
+                    {
+                        ReadCollectionLink collection = myObject.readCollection;
+                        if (collection != null)
+                        {
+                            ReadCollectionLink.AddValue_Args addValue_Args = new ReadCollectionLink.AddValue_Args();
+                            addValue_Args.callGetValue = GetValue;
+                            addValue_Args.str = vs;
+                            addValue_Args.temp = myObject.temp;
+                            addValue_Args.value = jsonRender.pool + i;
+
+                            if (myObject.obj == null)
+                            {
+                                collection.addValueStruct(myObject.objPtr, addValue_Args);
+                            }
+                            else
+                            {
+                                collection.addValueClass(myObject.obj, addValue_Args);
+                            }
+                            //parentCollection.add(parentObject.bytePtr, myObject.bytePtr, add_Args);
+                        }
+                        else
+                        {
+                            //var debug = new string(vs, v.keyStringStart, v.keyStringLength);
+                            TypeAddrFieldAndProperty fieldInfo = myObject.wrapper.Find(vs + v.keyStringStart, v.keyStringLength);
+                            var itemTypeCode = fieldInfo.typeCode;
+                            if (fieldInfo.isProperty)
+                            {
+                                CreateObjectItem parentObject = createObjectItems[parent->objectQueueIndex];
+                                byte* bytePtr;
+                                
+                                //if (parentObject.isValueType)
+                                //{
+                                //    bytePtr = myObject.bytePtr;
+                                //}
+                                //else
+                                //{
+                                //    bytePtr = myObject.dataStartPtr;
+                                //}
+                                bytePtr = myObject.objPtr;
+
+                                //* fieldInfo.propertyDelegateItem.setTargetPtr = bytePtrStart;
+                                switch (v.type)
+                                {
+                                    case JsonValueType.String:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Char:
+                                                fieldInfo.propertyDelegateItem.setChar(bytePtr, vs[v.valueStringStart]);
+                                                break;
+                                            case TypeCode.String:
+                                                fieldInfo.propertyDelegateItem.setString(bytePtr, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
+                                                break;
+                                            case TypeCode.Object:
+                                                JsonObject* obj = jsonRender.objectQueue;
+                                                if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
+                                                {
+                                                    var taget = createObjectItems[obj->objectQueueIndex]; 
+                                                    fieldInfo.propertyDelegateItem.setObject(bytePtr, taget.obj);
+                                                    break;
+                                                }
+                                                //var k2 = new string(vs, v.vStringStart, v.vStringLength);
+
+                                                if (fieldInfo.fieldOrPropertyType == typeof(Type))
+                                                //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                                                { 
+                                                    fieldInfo.propertyDelegateItem.setObject(bytePtr, UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength)));
+                                                }
+                                                break;
+                                            default:
+
+                                                if (fieldInfo.isEnum)
+                                                {
+                                                    var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
+                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldOrPropertyType);
+                                                    for (int k = 0; k < Arrays.Length; k++)
+                                                    {
+                                                        if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                                        {
+                                                            switch (itemTypeCode)
+                                                            {
+                                                                case TypeCode.SByte:
+                                                                    fieldInfo.propertyDelegateItem.setSByte(bytePtr, (sbyte)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Byte:
+                                                                    fieldInfo.propertyDelegateItem.setByte(bytePtr, (byte)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Int16:
+                                                                    fieldInfo.propertyDelegateItem.setInt16(bytePtr, (short)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.UInt16:
+                                                                    fieldInfo.propertyDelegateItem.setUInt16(bytePtr, (ushort)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Int32:
+                                                                    fieldInfo.propertyDelegateItem.setInt32(bytePtr, (int)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.UInt32:
+                                                                    fieldInfo.propertyDelegateItem.setUInt32(bytePtr, (uint)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.Int64:
+                                                                    fieldInfo.propertyDelegateItem.setInt64(bytePtr, (long)Arrays.GetValue(k));
+                                                                    break;
+                                                                case TypeCode.UInt64:
+                                                                    fieldInfo.propertyDelegateItem.setUInt64(bytePtr, (ulong)Arrays.GetValue(k));
+                                                                    break;
+                                                            }
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Long:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.SByte:
+                                                fieldInfo.propertyDelegateItem.setSByte(bytePtr, (SByte)v.valueLong);
+                                                break;
+                                            case TypeCode.Byte:
+                                                fieldInfo.propertyDelegateItem.setByte(bytePtr, (Byte)v.valueLong);
+                                                break;
+                                            case TypeCode.Int16:
+                                                fieldInfo.propertyDelegateItem.setInt16(bytePtr, (Int16)v.valueLong);
+                                                break;
+                                            case TypeCode.UInt16:
+                                                fieldInfo.propertyDelegateItem.setUInt16(bytePtr, (UInt16)v.valueLong);
+                                                break;
+                                            case TypeCode.Int32:
+                                                fieldInfo.propertyDelegateItem.setInt32(bytePtr, (Int32)v.valueLong);
+                                                break;
+                                            case TypeCode.UInt32:
+                                                fieldInfo.propertyDelegateItem.setUInt32(bytePtr, (UInt32)v.valueLong);
+                                                break;
+                                            case TypeCode.Int64:
+                                                fieldInfo.propertyDelegateItem.setInt64(bytePtr, v.valueLong);
+                                                break;
+                                            case TypeCode.UInt64:
+                                                fieldInfo.propertyDelegateItem.setUInt64(bytePtr, (UInt64)v.valueLong);
+                                                break;
+                                            case TypeCode.Single:
+                                                fieldInfo.propertyDelegateItem.setSingle(bytePtr, (Single)v.valueLong);
+                                                break;
+                                            case TypeCode.Double:
+                                                fieldInfo.propertyDelegateItem.setDouble(bytePtr, (Double)v.valueLong);
+                                                break;
+                                            case TypeCode.Decimal:
+                                                fieldInfo.propertyDelegateItem.setDecimal(bytePtr, (Decimal)v.valueLong);
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Double:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Single:
+                                                fieldInfo.propertyDelegateItem.setSingle(bytePtr, (Single)v.valueDouble);
+                                                break;
+                                            case TypeCode.Double:
+                                                fieldInfo.propertyDelegateItem.setDouble(bytePtr, v.valueDouble);
+                                                break;
+                                            case TypeCode.Decimal:
+                                                fieldInfo.propertyDelegateItem.setDecimal(bytePtr, (Decimal)v.valueDouble);
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Boolean:
+                                        fieldInfo.propertyDelegateItem.setBoolean(bytePtr, v.valueBool);
+                                        break;
+                                    case JsonValueType.Object:
+                                        if (myObject.type == (typeof(Type)))
+                                        {
+                                            fieldInfo.propertyDelegateItem.setObject(bytePtr,
+                                                UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
+                                                );
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                switch (v.type)
+                                {
+                                    case JsonValueType.String:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Char:
+                                                *(char*)(myObject.bytePtr + fieldInfo.offset) = vs[v.valueStringStart];
+                                                break;
+                                            case TypeCode.String:
+                                                GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
+                                                break;
+                                            case TypeCode.Object:
+                                                JsonObject* obj = jsonRender.objectQueue;
+                                                if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
+                                                {
+                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                      createObjectItems[obj->objectQueueIndex].obj);
+                                                    break;
+                                                }
+                                                if (fieldInfo.fieldOrPropertyType == typeof(Type))
+                                                //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                                                {
+                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                        UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
+                                                        );
+                                                }
+                                                break;
+                                            default:
+
+                                                if (fieldInfo.isEnum)
+                                                {
+                                                    var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
+                                                    Array Arrays = Enum.GetValues(fieldInfo.fieldOrPropertyType);
+                                                    for (int k = 0; k < Arrays.Length; k++)
+                                                    {
+                                                        if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                                        {
+                                                            GeneralTool.Memcpy(myObject.bytePtr + fieldInfo.offset
+                                                                , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
+                                                                , UnsafeOperation.SizeOfStack(fieldInfo.fieldOrPropertyType)
+                                                                );
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Long:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.SByte:
+                                                *(SByte*)(myObject.bytePtr + fieldInfo.offset) = (SByte)v.valueLong;
+                                                break;
+                                            case TypeCode.Byte:
+                                                *(Byte*)(myObject.bytePtr + fieldInfo.offset) = (Byte)v.valueLong;
+                                                break;
+                                            case TypeCode.Int16:
+                                                *(Int16*)(myObject.bytePtr + fieldInfo.offset) = (Int16)v.valueLong;
+                                                break;
+                                            case TypeCode.UInt16:
+                                                *(UInt16*)(myObject.bytePtr + fieldInfo.offset) = (UInt16)v.valueLong;
+                                                break;
+                                            case TypeCode.Int32:
+                                                *(Int32*)(myObject.bytePtr + fieldInfo.offset) = (Int32)v.valueLong;
+                                                break;
+                                            case TypeCode.UInt32:
+                                                *(UInt32*)(myObject.bytePtr + fieldInfo.offset) = (UInt32)v.valueLong;
+                                                break;
+                                            case TypeCode.Int64:
+                                                *(Int64*)(myObject.bytePtr + fieldInfo.offset) = v.valueLong;
+                                                break;
+                                            case TypeCode.UInt64:
+                                                *(UInt64*)(myObject.bytePtr + fieldInfo.offset) = (UInt64)v.valueLong;
+                                                break;
+                                            case TypeCode.Single:
+                                                *(Single*)(myObject.bytePtr + fieldInfo.offset) = (Single)v.valueLong;
+                                                break;
+                                            case TypeCode.Double:
+                                                *(Double*)(myObject.bytePtr + fieldInfo.offset) = (Double)v.valueLong;
+                                                break;
+                                            case TypeCode.Decimal:
+                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offset) = (Decimal)v.valueLong;
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Double:
+                                        switch (itemTypeCode)
+                                        {
+                                            case TypeCode.Single:
+                                                *(Single*)(myObject.bytePtr + fieldInfo.offset) = (Single)v.valueDouble;
+                                                break;
+                                            case TypeCode.Double:
+                                                *(Double*)(myObject.bytePtr + fieldInfo.offset) = v.valueDouble;
+                                                break;
+                                            case TypeCode.Decimal:
+                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offset) = (Decimal)v.valueDouble;
+                                                break;
+                                        }
+                                        break;
+                                    case JsonValueType.Boolean:
+                                        *(bool*)(myObject.bytePtr + fieldInfo.offset) = v.valueBool;
+                                        break;
+                                    case JsonValueType.Object:
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ReadCollectionLink collection = myObject.readCollection;
+                        if (collection != null)
+                        {
+                            ReadCollectionLink.AddValue_Args addValue_Args = new ReadCollectionLink.AddValue_Args();
+                            addValue_Args.callGetValue = GetValue;
+                            addValue_Args.str = vs;
+                            addValue_Args.temp = myObject.temp;
+                            addValue_Args.value = jsonRender.pool + i;
+
+                            if (myObject.obj == null)
+                            {
+                                collection.addValueStruct(myObject.objPtr, addValue_Args);
+                            }
+                            else
+                            {
+                                collection.addValueClass(myObject.obj, addValue_Args);
+                            }
+                            //collection.addValue(myObject.objPtr, addValue_Args);
+                            //collection.AddValue(myObject.obj, vs, jsonRender.pool + i, proxy);
+                        }
+                        else
+                        {
+                            Type itemType;
+                            TypeCode itemTypeCode;
+                            if (v.typeLength > 0)
+                            {
+                                string typeName = new string(vs, v.typeStartIndex, v.typeLength);
+                                itemType = UnsafeOperation.GetType(typeName);
+                                itemTypeCode = Type.GetTypeCode(itemType);
+                            }
+                            else
+                            {
+                                itemType = myObject.arrayWrap.elementType;
+                                itemTypeCode = myObject.arrayWrap.elementTypeCode;
+                            }
+                            byte* pByte = myObject.bytePtr + myObject.arrayWrap.elementTypeSize * v.arrayIndex;
+
+                            switch (v.type)
+                            {
+                                case JsonValueType.String:
+                                    switch (itemTypeCode)
+                                    {
+                                        case TypeCode.Char:
+                                            *(char*)(pByte) = vs[v.valueStringStart];
+                                            break;
+                                        case TypeCode.String:
+                                            GeneralTool.SetObject(pByte, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
+                                            break;
+                                        case TypeCode.Object:
+                                            JsonObject* obj = jsonRender.objectQueue;
+                                            if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
+                                            {
+                                                GeneralTool.SetObject(pByte,
+                                                  createObjectItems[obj->objectQueueIndex].obj);
+                                                    break;
+                                            }
+                                            if (itemType == typeof(Type))
+                                            //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                                            {
+                                                GeneralTool.SetObject(pByte,
+                                                    UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
+                                                    );
+                                            }
+                                            //set_value = PathToObject(vs + v.vStringStart, v.vStringLength, createObjectItems[0]);
+                                            break;
+                                        default:
+                                            if (itemType.IsEnum)
+                                            {
+                                                var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
+                                                Array Arrays = Enum.GetValues(myObject.arrayWrap.elementType);
+                                                for (int k = 0; k < Arrays.Length; k++)
+                                                {
+                                                    if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                                    {
+                                                        GeneralTool.Memcpy(pByte
+                                                            , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
+                                                            , UnsafeOperation.SizeOfStack(itemType)
+                                                            );
+                                                        break;
+                                                    }
+                                                }
+                                                break;
+                                            }
+                                            break;
+                                    }
+                                    break;
+                                case JsonValueType.Long:
+                                    switch (itemTypeCode)
+                                    {
+                                        case TypeCode.SByte:
+                                            *(SByte*)(pByte) = (SByte)v.valueLong;
+                                            break;
+                                        case TypeCode.Byte:
+                                            *(Byte*)(pByte) = (Byte)v.valueLong;
+                                            break;
+                                        case TypeCode.Int16:
+                                            *(Int16*)(pByte) = (Int16)v.valueLong;
+                                            break;
+                                        case TypeCode.UInt16:
+                                            *(UInt16*)(pByte) = (UInt16)v.valueLong;
+                                            break;
+                                        case TypeCode.Int32:
+                                            *(Int32*)(pByte) = (Int32)v.valueLong;
+                                            break;
+                                        case TypeCode.UInt32:
+                                            *(UInt32*)(pByte) = (UInt32)v.valueLong;
+                                            break;
+                                        case TypeCode.Int64:
+                                            *(Int64*)(pByte) = v.valueLong;
+                                            break;
+                                        case TypeCode.UInt64:
+                                            *(UInt64*)(pByte) = (UInt64)v.valueLong;
+                                            break;
+                                        case TypeCode.Single:
+                                            *(Single*)(pByte) = (Single)v.valueLong;
+                                            break;
+                                        case TypeCode.Double:
+                                            *(Double*)(pByte) = (Double)v.valueLong;
+                                            break;
+                                        case TypeCode.Decimal:
+                                            *(Decimal*)(pByte) = (Decimal)v.valueLong;
+                                            break;
+                                    }
+                                    break;
+                                case JsonValueType.Double:
+                                    switch (itemTypeCode)
+                                    {
+                                        case TypeCode.Single:
+                                            *(Single*)(pByte) = (Single)v.valueDouble;
+                                            break;
+                                        case TypeCode.Double:
+                                            *(Double*)(pByte) = v.valueDouble;
+                                            break;
+                                        case TypeCode.Decimal:
+                                            *(Decimal*)(pByte) = (Decimal)v.valueDouble;
+                                            break;
+                                    }
+                                    break;
+                                case JsonValueType.Boolean:
+                                    *(Boolean*)(pByte) = v.valueBool;
+                                    break;
+                                case JsonValueType.Object:
+                                    if (myObject.type == (typeof(Type)))
+                                    {
+                                        GeneralTool.SetObject(pByte,
+                                            UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength)));
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                }
 
 
-//            for (int i = 0; i < createObjectItems.Length; i++)
-//            {
-//                if (createObjectItems[i].gcHandle != default(GCHandle))
-//                {
-//                    createObjectItems[i].gcHandle.Free();
-//                }
-//            }
 
-//            //Console.ReadKey();
-//            return createObjectItems[0].Obj;
-//        }
+                ///*
+               if (setValuesIndex > 0)
+                {
+                    if (setValuesOrderLength != setValuesLength) { ResizeSetValuesOrder(); }
+                    int indexLeft = 0;
+                   int indexRight = setValuesIndex - 1;
 
+                   setValuesOrder[indexRight] = 0;
 
+                   for (int i = 1; i < setValuesIndex; i++)
+                   {
+                   Loop:
+                       //右边没对象，则进入
+                       if (indexRight == setValuesIndex)
+                       {
+                           --indexRight;
+                           setValuesOrder[indexRight] = i;
+                           continue;
+                       }
+                       //比较右边如果右边的对象是当前的父对象，则进入右边队伍，否则把右边的对象转移到左边队伍，然后继续比较
+                       JsonObject* now = jsonRender.objectQueue + setValues[i];
+                       JsonObject* next = jsonRender.objectQueue + setValues[setValuesOrder[indexRight]];
+                       if (now->parentObjectIndex >= next->objectQueueIndex)
+                       {
+                           --indexRight;
+                           setValuesOrder[indexRight] = i;
+                           continue;
+                       }
+                       setValuesOrder[indexLeft] = setValuesOrder[indexRight];
+                       ++indexLeft;
+                       ++indexRight;
+                       goto Loop;
+                   }
 
-//        private unsafe object PathToObject(char* nowChar, int vStringLength, CreateObjectItem nowObject)
-//        {
-//            var nowSub = nowObject.sub;
-//            int startKey = 0;
-//            int index = 0;
-//            for (int k = 0; k < vStringLength; k++)
-//            {
-//                char* now = nowChar + k;
-//                if (nowObject.jsonObject.isObject)
-//                {
-//                    if (*now == '/')
-//                    {
-//                        var pathKey = new string(nowChar, startKey, k - startKey);
-//                        startKey = k + 1;
-//                        foreach (var sub in nowSub)
-//                        {
-//                            if (sub.key == pathKey)
-//                            {
-//                                nowSub = sub.sub;
-//                                nowObject = sub;
-//                                goto Continue;
-//                            }
-//                        }
-//                        return null;
+                   //goto Dubg;
+                   //类类型赋值
+                   for (int j = 0; j < setValuesIndex; j++)
+                   {
+                       //int i = j;
+                       int i = setValuesOrder[j];
+                       //SetValue setValue = setValues[i];
+                       JsonObject* objValue = jsonRender.objectQueue + setValues[i];
 
-//                        Continue:
-//                        continue;
-//                    }
-//                }
-//                else
-//                {
-//                    if (*now == '/')
-//                    {
-//                        startKey = k + 1;
-//                        if (nowSub[index].jsonObject.arrayIndex == index)
-//                        {
-//                            nowObject = nowSub[index];
-//                            nowSub = nowObject.sub;
-//                            index = 0;
-//                            goto Continue;
-//                        }
-//                        foreach (var sub in nowSub)
-//                        {
-//                            if (sub.jsonObject.arrayIndex == index)
-//                            {
-//                                nowSub = sub.sub;
-//                                nowObject = sub;
-//                                index = 0;
-//                                goto Continue;
-//                            }
-//                        }
-//                        return null;
-
-//                        Continue:
-//                        continue;
-//                    }
-//                    else
-//                    {
-//                        if (*now < '0' || *now > '9')
-//                        {
-//                            return null;
-//                        }
-//                        else
-//                        {
-//                            index *= 10;
-//                            index += (*now - '0');
-//                        }
-//                    }
-
-//                }
-//            }
-//            if (startKey < vStringLength)
-//            {
-//                if (nowObject.jsonObject.isObject)
-//                {
-//                    var pathKey = new string(nowChar, startKey, vStringLength - startKey);
-//                    foreach (var sub in nowSub)
-//                    {
-//                        if (sub.key == pathKey)
-//                        {
-//                            return sub.Obj;
-//                        }
-//                    }
-//                    return null;
-//                }
-//                else
-//                {
-//                    if (nowSub[index].jsonObject.arrayIndex == index)
-//                    {
-//                        return nowSub[index].Obj;
-//                    }
-//                    foreach (var sub in nowSub)
-//                    {
-//                        if (sub.jsonObject.arrayIndex == index)
-//                        {
-//                            return sub.Obj;
-//                        }
-//                    }
-//                    return null;
-//                }
-//            }
-//            else
-//            {
-//                return nowObject.Obj;
-//            }
-//        }
+                       //CreateObjectItem myObject = setValue.myObject;
+                       CreateObjectItem myObject = createObjectItems[objValue->objectQueueIndex];
+                       JsonObject* parent = jsonRender.objectQueue + objValue->parentObjectIndex;
+                       CreateObjectItem parentObject = createObjectItems[objValue->parentObjectIndex];
+                        ReadCollectionLink collection = myObject.readCollection;
+                        ReadCollectionLink parentCollection = parentObject.readCollection;
+                        if (myObject.temp != null || collection != null && collection.isLaze)
+                        {
+                            if (myObject.obj == null)
+                            {
+                                collection.end(myObject.objPtr, myObject.temp);
+                            }
+                            else
+                            {
+                                myObject.obj = collection.endObject(myObject.obj, myObject.temp);
+                            }
+                            //if (myObject.isSet)
+                            //{
+                            //    continue;
+                            //}
+                        }
 
 
+                        //父对象是容器
+                        if (parentCollection != null)
+                        {
+                            ReadCollectionLink.Add_Args arg = new ReadCollectionLink.Add_Args();
+                            arg.bridge = objValue;
+                            arg.temp = parentObject.temp;
+                            if (parentObject.obj == null)
+                            {
+                                parentCollection.addObjectStruct(parentObject.bytePtr, myObject.obj, arg);
+                            }
+                            else
+                            {
+                                parentCollection.addObjectClass(parentObject.obj, myObject.obj, arg);
+                            }
+                        }
+                        else
+                        {
+                            //对象是属性
+                            if (myObject.isProperty)
+                            {
+                                TypeCode typeCode = Type.GetTypeCode(myObject.type);
+                                switch (typeCode)
+                                {
+                                    case TypeCode.Boolean:
+                                        myObject.propertyDelegateItem.setBoolean(parentObject.objPtr, (bool)myObject.obj);
+                                        break;
+                                    case TypeCode.Char:
+                                        myObject.propertyDelegateItem.setChar(parentObject.objPtr, (Char)myObject.obj);
+                                        break;
+                                    case TypeCode.SByte:
+                                        myObject.propertyDelegateItem.setSByte(parentObject.objPtr, (SByte)myObject.obj);
+                                        break;
+                                    case TypeCode.Byte:
+                                        myObject.propertyDelegateItem.setByte(parentObject.objPtr, (Byte)myObject.obj);
+                                        break;
+                                    case TypeCode.Int16:
+                                        myObject.propertyDelegateItem.setInt16(parentObject.objPtr, (Int16)myObject.obj);
+                                        break;
+                                    case TypeCode.UInt16:
+                                        myObject.propertyDelegateItem.setUInt16(parentObject.objPtr, (UInt16)myObject.obj);
+                                        break;
+                                    case TypeCode.Int32:
+                                        myObject.propertyDelegateItem.setInt32(parentObject.objPtr, (Int32)myObject.obj);
+                                        break;
+                                    case TypeCode.UInt32:
+                                        myObject.propertyDelegateItem.setUInt32(parentObject.objPtr, (UInt32)myObject.obj);
+                                        break;
+                                    case TypeCode.Int64:
+                                        myObject.propertyDelegateItem.setInt64(parentObject.objPtr, (Int64)myObject.obj);
+                                        break;
+                                    case TypeCode.UInt64:
+                                        myObject.propertyDelegateItem.setUInt64(parentObject.objPtr, (UInt64)myObject.obj);
+                                        break;
+                                    case TypeCode.Single:
+                                        myObject.propertyDelegateItem.setSingle(parentObject.objPtr, (Single)myObject.obj);
+                                        break;
+                                    case TypeCode.Double:
+                                        myObject.propertyDelegateItem.setDouble(parentObject.objPtr, (Double)myObject.obj);
+                                        break;
+                                    case TypeCode.Decimal:
+                                        myObject.propertyDelegateItem.setDecimal(parentObject.objPtr, (Decimal)myObject.obj);
+                                        break;
+                                    case TypeCode.DateTime:
+                                        myObject.propertyDelegateItem.setDateTime(parentObject.objPtr, (DateTime)myObject.obj);
+                                        break;
+                                    case TypeCode.Object:
+                                    case TypeCode.String:
+                                        if (myObject.obj == null)
+                                        {
+                                            myObject.propertyDelegateItem.setVoidPtr(parentObject.objPtr, myObject.objPtr);
+                                        }
+                                        else
+                                        {
+                                            myObject.propertyDelegateItem.setObject(parentObject.objPtr, myObject.obj);
+                                        }
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                ReadCollectionLink.Create_Args arg = new ReadCollectionLink.Create_Args();
+                                //arg.objectType = myObject.sourceType;
+                                arg.bridge = objValue;
+                                //arg.parent = parentObject.objPtr;
+
+
+                                if (collection == null)
+                                {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                        collection.createStruct(myObject.objPtr, out myObject.temp, arg);
+                                    }
+                                    else
+                                    {
+                                        //collection.createStruct(myObject.objPtr, out myObject.temp, arg);
+                                        myObject.obj = collection.createObject(out myObject.temp, arg);
+                                    }
+                                }
+                                else {
+                                    //对象是值类型字段就取指针
+                                    if (myObject.isValueType)
+                                    {
+                                    }
+                                    else
+                                    {
+                                        GeneralTool.SetObject(parentObject.bytePtr + myObject.offset, myObject.obj);
+                                    }
+                                }
+                            }
+                        }
+
+
+                       // if (myObject.isProperty)
+                       // {
+                       //     myObject.propertyDelegateItem.setObject(parentObject.objPtr, myObject.obj);
+                       // }
+                       // else
+                       //{
+                       //    if (parentObject.collectionObject == null)
+                       //    {
+                       //         throw new Exception("Error");
+                       //    }
+                       //    else
+                       //    {
+                       //         ReadCollectionLink.Add_Args arg = new ReadCollectionLink.Add_Args();
+                       //         arg.bridge = objValue;
+                       //         arg.temp = myObject.temp;
+
+                       //         //* (IntPtr*)(parentObject.bytePtr + myObject.offset) = (IntPtr)myObject.objPtr;
+                       //         parentObject.collectionObject.addObject3(parentObject.obj, myObject.obj, arg);
+                       //        //void Add(void* obj, void* value, Add_Args arg);
+                       //    }
+                       //}
 
 
 
-//    }
-//}
+                    }
+                }
+
+
+               // */
+
+            }
+
+            if (rootLaze)
+            {
+                if (rootItem.obj == null)
+                {
+                    rootItem.readCollection.end(rootItem.bytePtr, rootItem.temp);
+                    rootItem.obj = over;
+                }
+                else
+                {
+                    over = rootItem.readCollection.endObject(rootItem.obj, rootItem.temp);
+                }
+            }
+            else
+            {
+                over = rootItem.obj;
+            }
+
+            //Dubg:
+            for (int i = 0; i < itemCount; i++)
+            {
+                var item = createObjectItems[i];
+                if (item.gcHandle != default(GCHandle))
+                {
+                    item.gcHandle.Free();
+                    item.gcHandle = default(GCHandle);
+                }
+                item.type = null;
+                item.isValueType = false;
+                item.readCollection = null;
+                item.wrapper = null;
+                item.arrayWrap = null;
+                item.propertyDelegateItem = null;
+                item.isProperty = false;
+                item.obj = null;
+                item.temp = null;
+                item.arrayRank = 0;
+                item.arrayNowItemSize = 0;
+            }
+
+            //GC.KeepAlive(createObjectItems);
+            //for (int i = 0; i < itemCount; i++)
+            //{
+            //    if (createObjectItems[i].obj != null)
+            //    {
+            //        GC.KeepAlive(createObjectItems[i].obj);
+            //        //GC.KeepAlive(createObjectItems[i]);
+            //    }
+            //}
+            //GC.KeepAlive(createObjectItems);
+            return over;
+        }
+
+
+        //public ReadCollectionProxy proxy = new ReadCollectionProxy();
+        object GetValue(TypeCode typeCode, char* str, JsonValue* value, Type itemType)
+        {
+            CreateObjectItem myObject;
+            JsonObject* parent = jsonRender.objectQueue + value->objectQueueIndex;
+            switch (value->type)
+            {
+                case JsonValueType.String:
+                    switch (typeCode)
+                    {
+                        case TypeCode.Char:
+                            return str[value->valueStringStart];
+
+                        case TypeCode.String:
+                            return jsonRender.EscapeString(str + value->valueStringStart, value->valueStringLength);
+                            //return new string(str, value->valueStringStart, value->valueStringLength);
+
+                        case TypeCode.Object:
+                            JsonObject* obj = jsonRender.objectQueue;
+                            if (PathToObject(str + value->valueStringStart, value->valueStringLength, parent, jsonRender, ref obj))
+                            {
+                                return createObjectItems[obj->objectQueueIndex].obj;
+                            }
+                            //myObject = createObjectItems[value->objectQueueIndex];
+                            if (itemType == typeof(Type))
+                            //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                            {
+                                return UnsafeOperation.GetType(new string(str, value->valueStringStart, value->valueStringLength));
+                            }
+                            break;
+                        default:
+                             myObject = createObjectItems[value->objectQueueIndex];
+                            if (myObject.type.IsEnum)
+                            {
+                                var strEnum = new string(str, value->valueStringStart, value->valueStringLength);
+                                Array Arrays = Enum.GetValues(myObject.type);
+                                for (int k = 0; k < Arrays.Length; k++)
+                                {
+                                    if (Arrays.GetValue(k).ToString().Equals(strEnum))
+                                    {
+                                        return Arrays.GetValue(k);
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                    break;
+                case JsonValueType.Long:
+                    switch (typeCode)
+                    {
+                        case TypeCode.SByte:
+                            return (SByte)value->valueLong;
+                        case TypeCode.Byte:
+                            return (Byte)value->valueLong;
+                        case TypeCode.Int16:
+                            return (Int16)value->valueLong;
+                        case TypeCode.UInt16:
+                            return (UInt16)value->valueLong;
+                        case TypeCode.Int32:
+                            return (Int32)value->valueLong;
+                        case TypeCode.UInt32:
+                            return (UInt32)value->valueLong;
+                        case TypeCode.Int64:
+                            return value->valueLong;
+                        case TypeCode.UInt64:
+                            return (UInt64)value->valueLong;
+                        case TypeCode.Single:
+                            return (Single)value->valueLong;
+                        case TypeCode.Double:
+                            return (Double)value->valueLong;
+                        case TypeCode.Decimal:
+                            return (Decimal)value->valueLong;
+                    }
+                    break;
+                case JsonValueType.Double:
+                    switch (typeCode)
+                    {
+                        case TypeCode.Single:
+                            return (Single)value->valueDouble;
+                        case TypeCode.Double:
+                            return (Double)value->valueDouble;
+                        case TypeCode.Decimal:
+                            return (Decimal)value->valueDouble;
+                    }
+                    break;
+                case JsonValueType.Boolean:
+                    return value->valueBool;
+            }
+            return null;
+        }
+
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static unsafe bool PathToObject(char* path, int pathLength, JsonObject* nowParent, JsonReader render, ref JsonObject* obj)
+        {
+            if (*path == '$')
+            {
+                if (pathLength == 1)
+                {
+                    return true;
+                }
+                ++path;
+                if (*path == '/')
+                {
+                    ++path;
+                    pathLength -= 2;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            JsonObject* parent = obj;
+
+            //JsonObject* now = jsonRender.objectQueue + obj->objectQueueIndex + 1;
+            ++obj;
+        Start:
+            if (parent->isObject)
+            {
+                int keySize = pathLength;
+                for (int i = 0; i < pathLength; i++)
+                {
+                    if (*(path + i) == '/')
+                    {
+                        keySize = i;
+                        break;
+                    }
+                }
+
+            ObjectStart:
+                if (keySize != obj->keyStringLength)
+                {
+                    goto False;
+                }
+
+                char* now = obj->keyStringStart;
+
+                for (int i = 0; i < keySize; i++)
+                {
+                    if (*(path + i) == *(now + i))
+                    {
+                    }
+                    else
+                    {
+                        goto False;
+                    }
+                }
+
+                //true
+                pathLength -= keySize + 1;
+                if (pathLength <= 0)
+                {
+                    return true;
+                }
+                path += keySize;
+                if (*path == '/')
+                {
+                    if (obj->objectQueueIndex + 1 >= render.objectQueueIndex)
+                    {
+                        return false;
+                    }
+                    parent = obj;
+                    ++obj;
+                    ++path;
+                    goto Start;
+                }
+            False:
+                //寻找下一个
+                if (obj->objectNext >= render.objectQueueIndex)
+                {
+                    return false;
+                }
+                var next = render.objectQueue + obj->objectNext;
+                //如果下一个的父对象不是和之前的一样
+                //next->keyStringStart == null || 
+                if (next->parentObjectIndex != obj->parentObjectIndex)
+                {
+                    return false;
+                }
+                obj = next;
+                goto ObjectStart;
+            }
+            else
+            {
+                int pathIndex = 0;
+                int pathSize = 0;
+                for (int i = 0; i < pathLength; i++)
+                {
+                    if (*(path + i) == '/')
+                    {
+                        break;
+                    }
+                    if (*path < '0' || *path > '9')
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        ++pathSize;
+                        pathIndex *= 10;
+                        pathIndex += (*path - '0');
+                    }
+                }
+
+                if (pathIndex >= parent->arrayCount)
+                {
+                    return false;
+                }
+                for (int i = 0; i < pathIndex; i++)
+                {
+                    obj = render.objectQueue + obj->objectNext;
+                }
+                path += pathSize + 1;
+                pathLength -= pathSize + 1;
+                if (pathLength <= 0)
+                {
+                    return true;
+                }
+                parent = obj;
+                ++obj;
+                goto Start;
+            }
+
+        }
+
+
+
+
+    }
+}

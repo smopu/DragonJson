@@ -862,6 +862,34 @@ namespace DogJsonTest
         public void T007_MultidimensionalArrayTest()
         {
             {
+                string[,,] inputData = new string[,,] {
+                    {
+                      { "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" }
+                    },
+                    {
+                      { "FFFF", "#ED", "*&*($DD", "大家好！\u6211\u662f\u4f60\u7238\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" }
+                    },
+                    {
+                      { "SS", "fff", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" }
+                    }
+                };
+                string[,,] inputData2 = new string[,,] {
+                    {
+                      { "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！" }
+                    },
+                    {
+                      { "FFFF", "#ED", "*&*($DD", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！" }
+                    },
+                    {
+                      { "SS", "fff", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！" }
+                    }
+                };
+                string dataStr = jsonWriter.Writer(inputData2);
+                var outData = jsonReader.ReadJsonTextCreate<string[,,]>(dataStr);
+                Assert.AreEqualObject(outData, inputData);
+            }
+
+            {
                 int[,,] inputData = new int[,,] {
                     {
                         { 1, 2, 3, 4, 5, 6 }, { 11, 12, 13, 14, 15, 16 }, { 101, 102, 103, 104, 105, 106 }
@@ -892,34 +920,6 @@ namespace DogJsonTest
                 };
                 string dataStr = jsonWriter.Writer(inputData);
                 var outData = jsonReader.ReadJsonTextCreate<double[,,]>(dataStr);
-                Assert.AreEqualObject(outData, inputData);
-            }
-
-            {
-                string[,,] inputData = new string[,,] {
-                    {
-                      { "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" }
-                    },
-                    {
-                      { "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" }
-                    },
-                    {
-                      { "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\u6211\u662f\u4f60\u7238\u7238！" }
-                    }
-                };
-                string[,,] inputData2 = new string[,,] {
-                    {
-                      { "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！！" }
-                    },
-                    {
-                      { "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！！" }
-                    },
-                    {
-                      { "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！！" },{ "asdas", "d23re", "*&*(HJ", "大家好！\\u6211\\u662f\\u4f60\\u7238\\u7238！！" }
-                    }
-                };
-                string dataStr = jsonWriter.Writer(inputData2);
-                var outData = jsonReader.ReadJsonTextCreate<string[,,]>(dataStr);
                 Assert.AreEqualObject(outData, inputData);
             }
 
