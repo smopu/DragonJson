@@ -115,7 +115,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Collection\ArrayCollection\Class1.cs" />
     <Compile Include="Collection\ArrayCollection\CollectionArrayLinkedList.cs" />
     <Compile Include="Collection\ArrayCollection\CollectionArrayStack.cs" />
     <Compile Include="Collection\ArrayCollection\CollectionArrayHashSet.cs" />
@@ -171,8 +170,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Collection\Read\" />
-    <Folder Include="Collection\Write\ArrayCollection\" />
-    <Folder Include="Collection\Write\ObjectCollection\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

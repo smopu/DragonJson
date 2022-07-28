@@ -91,7 +91,7 @@ namespace DragonJson
             public TypeAddrReflectionWrapper wrapper;
             public IArrayWrap arrayWrap;
 
-            public PropertyDelegateItem2 propertyDelegateItem;
+            public PropertyDelegateItem propertyDelegateItem;
             public bool isProperty;
             public int offset;
             

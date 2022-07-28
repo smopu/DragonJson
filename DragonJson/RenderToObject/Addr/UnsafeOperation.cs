@@ -156,18 +156,18 @@ namespace DragonJson
         /// </summary>
         /// <param name="ptr"></param>
         /// <returns></returns>
-        public unsafe static int GetFeildOffset(IntPtr ptr)
+        public unsafe static int GetFieldOffset(IntPtr ptr)
         {
             ptr = ptr + 4 + sizeof(IntPtr);
             short length = *(short*)(ptr);
             byte chunkSize = *(byte*)(ptr + 2);
             return length + (chunkSize << 16);
         }
-        public unsafe static int GetFeildOffset(FieldInfo fieldInfo)
+        public unsafe static int GetFieldOffset(FieldInfo fieldInfo)
         {
             var ptr = fieldInfo.FieldHandle.Value;
             ptr = ptr + 4 + sizeof(IntPtr);
-            short length = *(short*)(ptr);
+            ushort length = *(ushort*)(ptr);
             byte chunkSize = *(byte*)(ptr + 2);
             return length + (chunkSize << 16);
         }
@@ -257,14 +257,6 @@ namespace DragonJson
         }
 
 
-        /// <summary>
-        ///  获取32位程序的字段声明偏移位置
-        /// <param name="ptr"></param>
-        /// <returns></returns>
-        public unsafe static int GetFeildOffset32(IntPtr ptr)
-        {
-            return *(Int16*)(ptr + 8) + 4;
-        }
 
         /// <summary>
         /// 将对象的地址设置到目标地址，不会有类型判定和引用计数，操作堆数据会造成GC判定错误，推荐在栈上操作
@@ -310,16 +302,6 @@ namespace DragonJson
 
             return __refvalue(tr, object);
 
-        }
-
-        /// <summary>
-        /// 获取64位程序的字段声明偏移位置
-        /// </summary>
-        /// <param name="ptr"></param>
-        /// <returns></returns>
-        public unsafe static int GetFeildOffset64(IntPtr ptr)
-        {
-            return *(Int16*)(ptr + 12) + 8;
         }
 
         /// <summary>

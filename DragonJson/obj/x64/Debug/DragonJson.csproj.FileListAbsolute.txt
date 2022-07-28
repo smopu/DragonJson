@@ -10,3 +10,12 @@ D:\DogJson\DogJson\DogJson\obj\x64\Debug\DragonJson.csproj.CoreCompileInputs.cac
 D:\DogJson\DogJson\DogJson\obj\x64\Debug\DragonJson.csproj.CopyComplete
 D:\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.dll
 D:\DogJson\DogJson\DogJson\obj\x64\Debug\DogJson.pdb
+D:\DogJson\DogJson\DragonJson\bin\x64\Debug\DragonJson.dll.config
+D:\DogJson\DogJson\DragonJson\bin\x64\Debug\DragonJson.dll
+D:\DogJson\DogJson\DragonJson\bin\x64\Debug\DragonJson.pdb
+D:\DogJson\DogJson\DragonJson\bin\x64\Debug\DynamicCustomReflection.dll
+D:\DogJson\DogJson\DragonJson\obj\x64\Debug\DragonJson.csproj.AssemblyReference.cache
+D:\DogJson\DogJson\DragonJson\obj\x64\Debug\DragonJson.csproj.CoreCompileInputs.cache
+D:\DogJson\DogJson\DragonJson\obj\x64\Debug\DragonJson.csproj.CopyComplete
+D:\DogJson\DogJson\DragonJson\obj\x64\Debug\DragonJson.dll
+D:\DogJson\DogJson\DragonJson\obj\x64\Debug\DragonJson.pdb

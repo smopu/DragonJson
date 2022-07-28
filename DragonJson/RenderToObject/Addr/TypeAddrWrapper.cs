@@ -82,15 +82,15 @@ namespace DragonJson
 
 
         ~TypeAddrReflectionWrapper() {
-            Marshal.FreeHGlobal(delegateValueIntPtr);
+            //Marshal.FreeHGlobal(delegateValueIntPtr);
         }
         public static bool IsFundamental(Type type)
         {
             return type.IsPrimitive || type.IsEnum || type.Equals(typeof(string)) || type.Equals(typeof(DateTime));
         }
 
-        MulticastDelegateValue* delegateValue;
-        IntPtr delegateValueIntPtr;
+        //MulticastDelegateValue* delegateValue;
+        //IntPtr delegateValueIntPtr;
 
         public unsafe TypeAddrReflectionWrapper(Type type)
         {
@@ -382,7 +382,7 @@ namespace DragonJson
             this.isProperty = false;
             this.fieldInfo = fieldInfo;
             this.fieldOrPropertyType = fieldInfo.FieldType;
-            offset = UnsafeOperation.GetFeildOffset(fieldInfo);
+            offset = UnsafeOperation.GetFieldOffset(fieldInfo);
             typeCode = Type.GetTypeCode(fieldOrPropertyType);
             isValueType = fieldOrPropertyType.IsValueType;
             isArray = fieldOrPropertyType.IsArray;
@@ -419,7 +419,7 @@ namespace DragonJson
 
             this.isPropertySet = propertyInfo.SetMethod != null;
             this.isPropertyGet = propertyInfo.GetMethod != null;
-            this.propertyDelegateItem = new PropertyDelegateItem2();
+            this.propertyDelegateItem = new PropertyDelegateItem();
             if (this.isPropertyGet)
             {
                 this.propertyDelegateItem._get = PropertyWrapper.CreateGetTargetDelegate(propertyInfo);
@@ -431,7 +431,7 @@ namespace DragonJson
                     Delegate sourceDelegate;
                     Delegate set = PropertyWrapper.CreateStructIPropertyWrapperTarget(parntType,
                         propertyInfo, out sourceDelegate);
-                    this.propertyDelegateItem = new PropertyDelegateItem2();
+                    this.propertyDelegateItem = new PropertyDelegateItem();
                     this.propertyDelegateItem._set = set;
 
                     //this.propertyWrapper = PropertyWrapper.CreateStructIPropertyWrapperTarget(propertyInfo);
@@ -469,7 +469,7 @@ namespace DragonJson
         public bool isPropertySet = true;
         public bool isPropertyGet = true;
         public PropertyInfo propertyInfo;
-        public PropertyDelegateItem2 propertyDelegateItem;
+        public PropertyDelegateItem propertyDelegateItem;
         public IPropertyWrapperTarget propertyWrapper;
         
 

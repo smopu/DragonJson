@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Collections.Concurrent;
 using DragonJson.RenderToObject;
+using System.Reflection;
 
 //namespace DogJson
 //{
@@ -66,7 +67,100 @@ namespace DragonJsonTest
             public float f;
         }
 
+
+
         public static unsafe void Main(string[] args)
+        {
+            UnsafeTool unsafeTool = new UnsafeTool();
+
+            TestClassA testClassA = new TestClassA();
+            testClassA.a = 2.718281828459;
+            testClassA.d = "大家好";
+
+            byte* objPtr = (byte*)unsafeTool.objectToVoidPtr(testClassA);
+            objPtr += sizeof(IntPtr);
+
+            byte* ptr = objPtr;
+            //取得字段的偏移量
+            int offset = GetFieldOffset(testClassA.GetType().GetField("a", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public));
+            ptr += offset;
+
+            //取得字段的值
+            double a = *(double*)ptr;
+            Console.WriteLine(a);
+
+            //给字段的赋值
+            *(double*)ptr = 3.1415926535;
+            Console.WriteLine(testClassA.a);
+
+            ptr = objPtr;
+            //取得字段的偏移量
+            offset = GetFieldOffset(testClassA.GetType().GetField("d", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public));
+            ptr += offset;
+
+            //取得字段的值
+            string d = (string)unsafeTool.voidPtrToObject(*(void**)ptr);
+            Console.WriteLine(d);
+
+            //给字段的赋值
+            *(IntPtr*)ptr = (IntPtr)unsafeTool.objectToVoidPtr("草泥马");
+            Console.WriteLine(testClassA.d);
+
+            Console.ReadKey();
+        }
+
+
+        public unsafe static int GetFieldOffset(FieldInfo fieldInfo)
+        {
+            var ptr = fieldInfo.FieldHandle.Value;
+            ptr = ptr + 4 + sizeof(IntPtr);
+            ushort length = *(ushort*)(ptr);
+            byte chunkSize = *(byte*)(ptr + 2);
+            return length + (chunkSize << 16);
+        }
+
+
+        [StructLayout(LayoutKind.Explicit)]
+        public class TestClassA
+        {
+            [FieldOffset(0)]
+            public double a;
+            [FieldOffset(8)]
+            public int b;
+            [FieldOffset(16)]
+            private long c;
+            [FieldOffset(24)]
+            public string d;
+        }
+
+
+        [StructLayout(LayoutKind.Explicit)]
+        public unsafe class UnsafeTool
+        {
+            public delegate void* ObjectToVoidPtr(object obj);
+            [FieldOffset(0)]
+            public ObjectToVoidPtr objectToVoidPtr;
+            [FieldOffset(0)]
+            Func<object, object> func;
+
+            public delegate object VoidPtrToObject(void* ptr);
+            [FieldOffset(0)]
+            public VoidPtrToObject voidPtrToObject;
+            [FieldOffset(0)]
+            Func<object, object> func2;
+
+            public UnsafeTool() 
+            {
+                func = Out;
+                func2 = Out;
+            }
+            object Out(object o) { return o; }
+        }
+
+
+
+
+        public static unsafe void Main3(string[] args)
         {
             int sizeKKKK = UnsafeOperation.SizeOfStack(typeof(KKKK));
             int sizeKKKK2 = Marshal.SizeOf(typeof(KKKK));

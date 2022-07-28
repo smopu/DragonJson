@@ -15,7 +15,7 @@ namespace DragonJson
 
 
     [StructLayout(LayoutKind.Explicit)]
-    public unsafe class PropertyDelegateItem
+    public unsafe class PropertyDelegateItem2
     {
         [FieldOffset(0)]
         public object _set;
@@ -151,7 +151,7 @@ namespace DragonJson
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public unsafe class PropertyDelegateItem2
+    public unsafe class PropertyDelegateItem
     {
         [FieldOffset(0)]
         public object _set;
@@ -192,8 +192,6 @@ namespace DragonJson
         public ActionVoidPtr<DateTime> setDateTime;
         [FieldOffset(0)]
         public ActionVoidPtr<string> setString;
-
-
 
         [FieldOffset(16)]
         public object _get;
@@ -260,7 +258,6 @@ namespace DragonJson
         //public Action<object, float> get_float2;
     }
 
-
     public interface IPropertyWrapper
     {
         void Set(object target, object value);
@@ -268,7 +265,6 @@ namespace DragonJson
         void SetGet(Delegate d);
         void SetSet(Delegate d);
     }
-
 
 
     public class PropertyWrapper
@@ -300,7 +296,7 @@ namespace DragonJson
             }
         }
 
-        public static unsafe PropertyDelegateItem CreateStructTargetSetDelegate(PropertyInfo propertyInfo)
+        public static unsafe PropertyDelegateItem2 CreateStructTargetSetDelegate(PropertyInfo propertyInfo)
         {
             var setValue = propertyInfo.GetSetMethod().
                 CreateDelegate(typeof(Action<>).MakeGenericType(propertyInfo.PropertyType), null);
@@ -310,7 +306,7 @@ namespace DragonJson
             propertyWrapper.set = setValue;
             Action<object> setValueCall = propertyWrapper.Set;
 
-            PropertyDelegateItem propertyDelegateItem = new PropertyDelegateItem();
+            PropertyDelegateItem2 propertyDelegateItem = new PropertyDelegateItem2();
             propertyDelegateItem._setDelegate = setValueCall;
             var logp = (IntPtr*)GeneralTool.ObjectToVoid(setValue);
             ++logp;

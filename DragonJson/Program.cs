@@ -2032,14 +2032,14 @@ namespace DragonJson
             logp++;
             var logpO = GeneralTool.VoidToObject((long*)*logp);
 
-            PropertyDelegateItem propertyWrapperAction2 = new PropertyDelegateItem();
+            DragonJson.PropertyDelegateItem2 propertyWrapperAction2 = new DragonJson.PropertyDelegateItem2();
             propertyWrapperAction2.Set = setValue24;
             *propertyWrapperAction2.setTarget = (IntPtr)GeneralTool.ObjectToVoid(objccc);
             propertyWrapperAction2.setDouble(777.0);
 
 
             var @this = 0;
-            PropertyDelegateItem propertyWrapperAction = new PropertyDelegateItem();
+            DragonJson.PropertyDelegateItem2 propertyWrapperAction = new DragonJson.PropertyDelegateItem2();
             propertyWrapperAction.Set = setValue2;
             //propertyWrapperAction.get2 = setValue;
 
