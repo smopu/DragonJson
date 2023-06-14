@@ -16,10 +16,12 @@ namespace DragonJson
     }
     public class EnumWrapper
     {
-        public EnumWrapper(object inEnum)
+        public EnumWrapper(Type type, object inEnum)
         {
+            this.type = type;
             this.inEnum = inEnum;
         }
+        public Type type;
         public object inEnum;
     }
 

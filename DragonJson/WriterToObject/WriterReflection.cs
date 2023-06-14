@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DragonJson.Collection.ArrayCollection;
+using PtrReflection;
 
 namespace DragonJson
 {
@@ -290,14 +291,17 @@ namespace DragonJson
                             }
                             foreach (var item in warp.nameOfField)
                             {
+                                ObjReference objReference = new ObjReference(parent.data);
+                                void** handleVoid = (void**)GeneralTool.AsPointer<ObjReference>(ref objReference);
+
                                 if (item.Value.isProperty)
                                 {
                                     switch (structPropertyWriter)
                                     {
                                         case WriterType.All:
                                             {
-                                                object value = item.Value.propertyInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.propertyInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetPropertyValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -306,8 +310,8 @@ namespace DragonJson
                                         case WriterType.Public:
                                             if (item.Value.isPublic)
                                             {
-                                                object value = item.Value.propertyInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.propertyInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetPropertyValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -321,8 +325,8 @@ namespace DragonJson
                                     {
                                         case WriterType.All:
                                             {
-                                                object value = item.Value.fieldInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.fieldInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetFieldValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -331,8 +335,8 @@ namespace DragonJson
                                         case WriterType.Public:
                                             if (item.Value.isPublic)
                                             {
-                                                object value = item.Value.fieldInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                //  object value = item.Value.fieldInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetFieldValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -356,14 +360,17 @@ namespace DragonJson
                             }
                             foreach (var item in warp.nameOfField)
                             {
+                                ObjReference objReference = new ObjReference(parent.data);
+                                void** handleVoid = (void**)GeneralTool.AsPointer<ObjReference>(ref objReference);
+
                                 if (item.Value.isProperty)
                                 {
                                     switch (classPropertyWriter)
                                     {
                                         case WriterType.All:
                                             {
-                                                object value = item.Value.propertyInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.propertyInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetPropertyValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -372,8 +379,8 @@ namespace DragonJson
                                         case WriterType.Public:
                                             if (item.Value.isPublic)
                                             {
-                                                object value = item.Value.propertyInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.propertyInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetPropertyValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -387,8 +394,8 @@ namespace DragonJson
                                     {
                                         case WriterType.All:
                                             {
-                                                object value = item.Value.fieldInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.fieldInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetFieldValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -397,8 +404,8 @@ namespace DragonJson
                                         case WriterType.Public:
                                             if (item.Value.isPublic)
                                             {
-                                                object value = item.Value.fieldInfo.GetValue(parent.data);
-                                                // object value = item.Value.GetValue(parent.data);
+                                                // object value = item.Value.fieldInfo.GetValue(parent.data);
+                                                object value = item.Value.ClassGetFieldValue(handleVoid);
                                                 previous = ObjectItem(writers, nows, parent, previous, last, item.Key, item.Value.fieldOrPropertyType, value);
                                             }
                                             break;
@@ -523,16 +530,16 @@ namespace DragonJson
             length = lengths[rank - 1];
             parentLength *= lengths[rank - 2];
 
-            byte* startOffcet = (byte*)GeneralTool.ObjectToVoid(array) +
+            byte* startOffcet = (byte*)GeneralTool.ObjectToVoidPtr(array) +
               UnsafeOperation.PTR_COUNT * 2 + rank * 2 * 4;
 
-            if (elementTypeCode == TypeCode.Object)
-            {
-                if (ArrayWrapper.IsObjectArrayAddOffcet && !elementTypeIsValue)
-                {
-                    startOffcet += ArrayWrapper.objectArray1StartOffcetAdd;
-                }
-            }
+            //if (elementTypeCode == TypeCode.Object)
+            //{
+            //    if (ArrayWrapManager.IsObjectArrayAddOffcet && !elementTypeIsValue)
+            //    {
+            //        startOffcet += ArrayWrapManager.objectArray1StartOffcetAdd;
+            //    }
+            //}
 
             int arrayIndex = 0;
             int arrayItemSize = UnsafeOperation.SizeOfStack(elementType);
@@ -568,12 +575,12 @@ namespace DragonJson
                             {
                                 IntPtr* intPtr = elementWrapper.CreateGetIntPtr(out now.data);
                                 ++intPtr;
-                                GeneralTool.Memcpy(intPtr, value, elementWrapper.heapSize - UnsafeOperation.PTR_COUNT * 2);
+                                GeneralTool.MemCpy(intPtr, value, elementWrapper.heapSize - UnsafeOperation.PTR_COUNT * 2);
                                 //GC.Collect();
                             }
                             else
                             {
-                                now.data = GeneralTool.VoidToObject(*(IntPtr**)value);
+                                now.data = GeneralTool.VoidPtrToObject(*(IntPtr**)value);
                             }
                             if (now.data == null)
                             {
@@ -653,7 +660,7 @@ namespace DragonJson
                             now.jsonType = JsonWriteType.String;
                             break;
                         case TypeCode.String:
-                            var str = GeneralTool.VoidToObject((*(void**)(value)));
+                            var str = GeneralTool.VoidPtrToObject((*(void**)(value)));
                             now.value = "\"" + ((string)str) + "\"";
                             now.jsonType = JsonWriteType.String;
                             break;
@@ -709,6 +716,20 @@ namespace DragonJson
         {
             JsonWriteValue now;
             bool isSetObject = false;
+
+            if (fieldType.IsEnum)
+            {
+                now = new JsonWriteValue(writers.Count, parent);
+                now.data = new EnumWrapper(fieldType, value);
+                now.key = key;
+                previous.back = now;
+                writers.Add(now);
+                previous = now;
+                now.jsonType = JsonWriteType.Array;
+                nows.Add(now);
+                goto Return;
+            }
+
             if (value == null)
             {
                 now = new JsonWriteValue(writers.Count, parent);
@@ -721,11 +742,7 @@ namespace DragonJson
                 bool isArray = false;
 
                 var valueType = value.GetType();
-                if (valueType == typeof(DragonJson.ArrayCollection.MulticastDelegateWrapper))
-                {
-                    int mhy = 0;
-                }
-                IWriterCollectionString writeString = CollectionManager.GetWriterCollectionString(fieldType);
+                ICollectionString writeString = CollectionManager.GetWriterCollectionString(fieldType);
                 if (writeString != null)
                 {
                     now = new JsonWriteValue(writers.Count, parent);
@@ -733,7 +750,7 @@ namespace DragonJson
                     now.key = key;
                     previous.back = now;
                     now.jsonType = JsonWriteType.String;
-                    now.value = "\"" + writeString.GetStringValue(value) + "\"";
+                    now.value = "\"" + writeString.ToStringValue(value) + "\"";
                     writers.Add(now);
                     previous = now;
                     goto Return;
@@ -763,7 +780,7 @@ namespace DragonJson
                     if (allPath.TryGetValue(value, out path))
                     {
                         if (value == path.obj &&
-                              GeneralTool.ObjectToVoid(value) == GeneralTool.ObjectToVoid(path.obj)
+                              GeneralTool.ObjectToVoidPtr(value) == GeneralTool.ObjectToVoidPtr(path.obj)
                             )
                         {
                             if (path.path == null)
@@ -785,66 +802,30 @@ namespace DragonJson
                 }
                 typeCode = Type.GetTypeCode(fieldType);
 
-                if (fieldType.IsEnum)
-                {
-                    now = new JsonWriteValue(writers.Count, parent);
-                    now.data = new EnumWrapper(value);
-                    now.key = key;
-                    previous.back = now;
-                    writers.Add(now);
-                    previous = now;
-                    now.jsonType = JsonWriteType.Array;
-                    nows.Add(now);
-                    goto Return;
-                    /*
-                    now = new JsonWriteValue(writers.Count, parent);
-                    now.data = value;
-                    now.key = key;
-                    previous.back = now;
-                    writers.Add(now);
-                    previous = now;
-                    now.jsonType = JsonWriteType.String;
-
-                    Array Arrays = Enum.GetValues(fieldType);
-                    switch (typeCode)
-                    {
-                        case TypeCode.SByte:
-                            now.value = "\"" + Arrays.GetValue((SByte)now.data) + "\"";
-                            break;
-                        case TypeCode.Byte:
-                            now.value = "\"" + Arrays.GetValue((Byte)now.data) + "\"";
-                            break;
-                        case TypeCode.Int16:
-                            now.value = "\"" + Arrays.GetValue((Int16)now.data) + "\"";
-                            break;
-                        case TypeCode.UInt16:
-                            now.value = "\"" + Arrays.GetValue((UInt16)now.data) + "\"";
-                            break;
-                        case TypeCode.Int32:
-                            now.value = "\"" + Arrays.GetValue((Int32)now.data) + "\"";
-                            break;
-                        case TypeCode.UInt32:
-                            now.value = "\"" + Arrays.GetValue((UInt32)now.data) + "\"";
-                            break;
-                        case TypeCode.Int64:
-                            now.value = "\"" + Arrays.GetValue((Int64)now.data) + "\"";
-                            break;
-                        case TypeCode.UInt64:
-                            now.value = "\"" + Arrays.GetValue((long)(UInt64)now.data) + "\"";
-                            break;
-                        default:
-                            now.value = "\"" + now.data + "\"";
-                            break;
-                    }
-                     */
-                }
-                else
                 {
                     if (valueType != fieldType
-                       && fieldType != typeof(Type)
-                       && !valueType.IsSubclassOf(typeof(Type))
+                       //&& fieldType != typeof(Type)
+                       //&& !valueType.IsSubclassOf(typeof(Type))
                         )
                     {
+                        writeString = CollectionManager.GetWriterCollectionString(valueType);
+                        if (writeString != null)
+                        {
+                            now = new JsonWriteValue(writers.Count, parent);
+                            now.data = Activator.CreateInstance(typeof(Box<>).MakeGenericType(valueType));
+                            IBox box = (IBox)now.data;
+                            box.SetObject(value);
+
+                            now.key = key;
+                            now.type = valueType;
+                            previous.back = now;
+                            writers.Add(now);
+                            previous = now;
+                            now.jsonType = JsonWriteType.Object;
+                            nows.Add(now);
+                            isSetObject = false;
+                            goto Return;
+                        }
                         typeCode = Type.GetTypeCode(valueType);
                         isArray = valueType.IsArray;
 
@@ -1007,6 +988,20 @@ namespace DragonJson
         {
             JsonWriteValue now = new JsonWriteValue(writers.Count, parent);
             bool isSetObject = false;
+            if (fieldType.IsEnum)
+            {
+                now = new JsonWriteValue(writers.Count, parent);
+                now.data = new EnumWrapper(fieldType, value);
+                now.key = null;
+                now.arrayIndex = i;
+                previous.back = now;
+                writers.Add(now);
+                previous = now;
+                now.jsonType = JsonWriteType.Array;
+                nows.Add(now);
+                goto Return;
+
+            }
             if (value == null)
             {
                 now.jsonType = JsonWriteType.None;
@@ -1034,7 +1029,7 @@ namespace DragonJson
                 {
                     int mhy = 0;
                 }
-                IWriterCollectionString writeString = CollectionManager.GetWriterCollectionString(fieldType);
+                ICollectionString writeString = CollectionManager.GetWriterCollectionString(fieldType);
                 if (writeString != null)
                 {
                     now = new JsonWriteValue(writers.Count, parent);
@@ -1042,7 +1037,7 @@ namespace DragonJson
                     now.arrayIndex = i;
                     previous.back = now;
                     now.jsonType = JsonWriteType.String;
-                    now.value = "\"" + writeString.GetStringValue(value) + "\"";
+                    now.value = "\"" + writeString.ToStringValue(value) + "\"";
                     writers.Add(now);
                     previous = now;
                     goto Return;
@@ -1072,7 +1067,7 @@ namespace DragonJson
                     if (allPath.TryGetValue(value, out path))
                     {
                         if (value == path.obj &&
-                              GeneralTool.ObjectToVoid(value) == GeneralTool.ObjectToVoid(path.obj)
+                              GeneralTool.ObjectToVoidPtr(value) == GeneralTool.ObjectToVoidPtr(path.obj)
                             )
                         {
                             if (path.path == null)
@@ -1093,39 +1088,31 @@ namespace DragonJson
                     isSetObject = true;
                 }
 
-                if (fieldType.IsEnum)
-                {
-                    //now.key = null;
-                    //now.arrayIndex = i;
-                    //writers.Add(now);
-                    //previous.back = now;
-                    //previous = now;
-
-                    //Enum _enum = (Enum)value;
-                    //now.value = "\"" + _enum.ToString() + "\"";
-                    //now.jsonType = JsonWriteType.String;
-
-
-                    now = new JsonWriteValue(writers.Count, parent);
-                    now.data = new EnumWrapper(value);
-                    now.key = null;
-                    now.arrayIndex = i;
-                    previous.back = now;
-                    writers.Add(now);
-                    previous = now;
-                    now.jsonType = JsonWriteType.Array;
-                    nows.Add(now);
-                    goto Return;
-
-                }
-                else
                 {
 
                     if (valueType != fieldType
-                       && fieldType != typeof(Type)
-                       && !valueType.IsSubclassOf(typeof(Type))
+                        //&& fieldType != typeof(Type)
+                        //&& !valueType.IsSubclassOf(typeof(Type))
                         )
                     {
+                        writeString = CollectionManager.GetWriterCollectionString(valueType);
+                        if (writeString != null)
+                        {
+                            now = new JsonWriteValue(writers.Count, parent);
+                            now.data = Activator.CreateInstance(typeof(Box<>).MakeGenericType(valueType));
+                            IBox box = (IBox)now.data;
+                            box.SetObject(value);
+
+                            now.arrayIndex = i;
+                            now.type = valueType;
+                            previous.back = now;
+                            writers.Add(now);
+                            previous = now;
+                            now.jsonType = JsonWriteType.Object;
+                            nows.Add(now);
+                            isSetObject = false;
+                            goto Return;
+                        }
                         var typeCode = Type.GetTypeCode(valueType);
                         var isArray = valueType.IsArray;
 

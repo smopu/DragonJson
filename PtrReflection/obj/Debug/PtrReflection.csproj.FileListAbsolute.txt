@@ -1,0 +1,12 @@
+D:\a\old\DragonJson\PtrReflection\bin\Debug\PtrReflection.dll.config
+D:\a\old\DragonJson\PtrReflection\bin\Debug\PtrReflection.dll
+D:\a\old\DragonJson\PtrReflection\bin\Debug\PtrReflection.pdb
+D:\a\old\DragonJson\PtrReflection\bin\Debug\DynamicCustomReflection.dll
+D:\a\old\DragonJson\PtrReflection\obj\Debug\PtrReflection.csproj.AssemblyReference.cache
+D:\a\old\DragonJson\PtrReflection\obj\Debug\PtrReflection.csproj.CoreCompileInputs.cache
+D:\a\old\DragonJson\PtrReflection\obj\Debug\PtrReflection.csproj.CopyComplete
+D:\a\old\DragonJson\PtrReflection\obj\Debug\PtrReflection.dll
+D:\a\old\DragonJson\PtrReflection\obj\Debug\PtrReflection.pdb
+D:\a\old\DragonJson\PtrReflection\bin\Debug\UnsafeApplication.dll
+D:\a\old\DragonJson\PtrReflection\bin\Debug\UnsafeApplication.pdb
+D:\a\old\DragonJson\PtrReflection\bin\Debug\UnsafeApplication.dll.config

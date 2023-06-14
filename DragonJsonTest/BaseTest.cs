@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using DragonJson;
-using DragonJson.RenderToObject;
+using PtrReflection;
 using NUnit.Framework;
 namespace DragonJsonTest
 {
@@ -177,10 +177,10 @@ namespace DragonJsonTest
                 byte* objPtr;
                 byte* startItemOffcet;
                 GCHandle gCHandle;
-                int itemTypeSize;
+                //int itemTypeSize;
                 object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
-                Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
+                Assert.Equal(inData, GeneralTool.VoidPtrToObject(objPtr));
 
                 TestStruct[,,] outData = new TestStruct[2, 3, 4];
                 for (int x = 0; x < 2; x++)
@@ -193,7 +193,7 @@ namespace DragonJsonTest
                             outData[x, y, z].num2 = x * y + z;
                             fixed (TestStruct* p = &outData[x, y, z])
                             {
-                                GeneralTool.Memcpy(
+                                GeneralTool.MemCpy(
                                      startItemOffcet + (x * 3 * 4 + y * 4 + z) * arrayWrap.elementTypeSize, p
                                      , arrayWrap.elementTypeSize);
                             }
@@ -217,7 +217,7 @@ namespace DragonJsonTest
                 GCHandle gCHandle;
                 object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
-                Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
+                Assert.Equal(inData, GeneralTool.VoidPtrToObject(objPtr));
 
                 TestClass[,,] outData = new TestClass[2, 3, 4];
                 for (int x = 0; x < 2; x++)
@@ -252,7 +252,7 @@ namespace DragonJsonTest
                 GCHandle gCHandle;
                 object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
-                Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
+                Assert.Equal(inData, GeneralTool.VoidPtrToObject(objPtr));
 
                 int[,,] outData = new int[2, 3, 4];
                 for (int x = 0; x < 2; x++)
@@ -265,7 +265,7 @@ namespace DragonJsonTest
 
                             fixed (int* p = &outData[x, y, z])
                             {
-                                GeneralTool.Memcpy(
+                                GeneralTool.MemCpy(
                                      startItemOffcet + (x * 3 * 4 + y * 4 + z) * arrayWrap.elementTypeSize, p
                                      , arrayWrap.elementTypeSize);
                             }
@@ -284,10 +284,10 @@ namespace DragonJsonTest
                 byte* objPtr;
                 byte* startItemOffcet;
                 GCHandle gCHandle;
-                int itemTypeSize;
+                //int itemTypeSize;
                 object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
-                Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
+                Assert.Equal(inData, GeneralTool.VoidPtrToObject(objPtr));
 
                 TestStruct[] outData = new TestStruct[size];
                 for (int i = 0; i < size; i++)
@@ -296,7 +296,7 @@ namespace DragonJsonTest
                     outData[i].num2 = i * i;
                     fixed (TestStruct* p = &outData[i])
                     {
-                        GeneralTool.Memcpy(
+                        GeneralTool.MemCpy(
                              startItemOffcet + i * arrayWrap.elementTypeSize, p
                              , arrayWrap.elementTypeSize);
                     }
@@ -315,7 +315,7 @@ namespace DragonJsonTest
                 GCHandle gCHandle;
                 object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
-                Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
+                Assert.Equal(inData, GeneralTool.VoidPtrToObject(objPtr));
 
                 TestClass[] outData = new TestClass[size];
                 for (int i = 0; i < size; i++)
@@ -341,7 +341,7 @@ namespace DragonJsonTest
                 GCHandle gCHandle;
                 object inData = arrayWrap.CreateArray(size, array_lengths, out objPtr, out startItemOffcet, out gCHandle);
 
-                Assert.Equal(inData, GeneralTool.VoidToObject(objPtr));
+                Assert.Equal(inData, GeneralTool.VoidPtrToObject(objPtr));
 
                 int[] outData = new int[size];
                 for (int i = 0; i < size; i++)
@@ -350,7 +350,7 @@ namespace DragonJsonTest
 
                     fixed (int* p = &outData[i])
                     {
-                        GeneralTool.Memcpy(
+                        GeneralTool.MemCpy(
                              startItemOffcet + (i) * arrayWrap.elementTypeSize, p
                              , arrayWrap.elementTypeSize);
                     }

@@ -1,4 +1,4 @@
-﻿using DragonJson.RenderToObject;
+﻿using PtrReflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,7 +94,8 @@ namespace DragonJson
             public PropertyDelegateItem propertyDelegateItem;
             public bool isProperty;
             public int offset;
-            
+            //public int offsetPtr;
+
             public byte* bytePtr;
             public byte* objPtr;
             public object obj;
@@ -213,7 +214,7 @@ namespace DragonJson
                             rootItem.obj = rootItem.arrayWrap.CreateArray(rootJsonObject->arrayCount, arrayLengths,
                                 out rootItem.objPtr, out rootItem.bytePtr, out rootItem.gcHandle);
                             rootItem.arrayNowItemSize = rootItem.arrayWrap.elementTypeSize;
-                            //myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                            //myObject.objPtr = (byte*)GeneralTool.ObjectToVoidPtr(myObject.obj);
                             //rootItem.arrayItemTypeSize = rootItem.arrayWrap.elementTypeSize;
                         }
                         else
@@ -344,13 +345,13 @@ namespace DragonJson
                                 }
                                 else
                                 {
-                                    myObject.offset = fieldInfo.offset;
+                                    myObject.offset = fieldInfo.offsetTypeHead; //myObject.offsetPtr = fieldInfo.offsetPtr; 
                                 }
                                 break;
                             case CollectionManager.TypeCollectionBranch.ReadCollection:
                                 break;
                             case CollectionManager.TypeCollectionBranch.Array:
-                                myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                myObject.offset = /* myObject.offsetPtr =*/ parentObject.arrayNowItemSize * v->arrayIndex;
                                 break;
                             default:
                                 break;
@@ -373,9 +374,10 @@ namespace DragonJson
                                     }
                                     else
                                     {
-                                        myObject.offset = fieldInfo.offset;
+                                        myObject.offset = fieldInfo.offsetTypeHead; //myObject.offsetPtr = fieldInfo.offsetPtr;
                                     }
-                                    typeAllCollection = fieldInfo.GetTypeAllCollection();
+                                    typeAllCollection = CollectionManager.GetTypeCollection(fieldInfo.fieldOrPropertyType);
+                                    //typeAllCollection = fieldInfo.GetTypeAllCollection();
                                 }
                                 break;
                             case CollectionManager.TypeCollectionBranch.ReadCollection:
@@ -387,8 +389,8 @@ namespace DragonJson
                                 {
                                     if (parentObject.arrayWrap.rank == 1)//数组的秩= 1 直接遍历赋值
                                     {
-                                        typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
-                                        myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                        typeAllCollection = CollectionManager.GetTypeCollection(parentObject.arrayWrap.elementType);
+                                        myObject.offset = /*myObject.offsetPtr =*/ parentObject.arrayNowItemSize * v->arrayIndex;
                                     }
                                     else
                                     {
@@ -398,7 +400,7 @@ namespace DragonJson
 
                                             //myObject.arrayItemTypeSize = parentObject.arrayWrap.elementTypeSize;
                                             myObject.arrayNowItemSize = parentObject.arrayNowItemSize / v->arrayCount;
-                                            myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                            myObject.offset = /*myObject.offsetPtr =*/ parentObject.arrayNowItemSize * v->arrayIndex;
                                             myObject.bytePtr = parentObject.bytePtr + myObject.offset;
 
 
@@ -413,8 +415,8 @@ namespace DragonJson
                                         }
                                         else
                                         {
-                                            typeAllCollection = parentObject.arrayWrap.GetTypeAllCollection();
-                                            myObject.offset = parentObject.arrayNowItemSize * v->arrayIndex;
+                                            typeAllCollection = CollectionManager.GetTypeCollection(parentObject.arrayWrap.elementType);
+                                            myObject.offset = /*myObject.offsetPtr =*/ parentObject.arrayNowItemSize * v->arrayIndex;
                                         }
                                     }
 
@@ -548,7 +550,7 @@ namespace DragonJson
                                     out myObject.objPtr, out myObject.bytePtr, out myObject.gcHandle);
                                 myObject.arrayNowItemSize = myObject.arrayWrap.elementTypeSize;
 
-                                //myObject.objPtr = (byte*)GeneralTool.ObjectToVoid(myObject.obj);
+                                //myObject.objPtr = (byte*)GeneralTool.ObjectToVoidPtr(myObject.obj);
                                 //myObject.arrayItemTypeSize = myObject.arrayWrap.elementTypeSize;
                             }
                             else
@@ -625,10 +627,6 @@ namespace DragonJson
                 //基本类型赋值  
                 for (int i = 0; i < jsonRender.poolIndex; i++)
                 {
-                    if (i == 28)
-                    {
-                        int ddd = 0;
-                    }
                     var v = jsonRender.pool[i];
                     CreateObjectItem myObject = createObjectItems[v.objectQueueIndex];
                     JsonObject* parent = jsonRender.objectQueue + v.objectQueueIndex;
@@ -820,29 +818,34 @@ namespace DragonJson
                                         switch (itemTypeCode)
                                         {
                                             case TypeCode.Char:
-                                                *(char*)(myObject.bytePtr + fieldInfo.offset) = vs[v.valueStringStart];
+                                                //var a1 = *(char*)(myObject.objPtr + fieldInfo.offsetNoType);
+                                                //var a2 = *(char*)(myObject.bytePtr + fieldInfo.offset);
+                                                //if (a1 != a2)
+                                                //{
+                                                //    int a = 0;
+                                                //}
+                                                * (char*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = vs[v.valueStringStart];
                                                 break;
                                             case TypeCode.String:
-                                                GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
+                                                GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offsetTypeHead, jsonRender.EscapeString(vs + v.valueStringStart, v.valueStringLength));
                                                 break;
                                             case TypeCode.Object:
                                                 JsonObject* obj = jsonRender.objectQueue;
                                                 if (PathToObject(vs + v.valueStringStart, v.valueStringLength, parent, jsonRender, ref obj))
                                                 {
-                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offsetTypeHead,
                                                       createObjectItems[obj->objectQueueIndex].obj);
                                                     break;
                                                 }
                                                 if (fieldInfo.fieldOrPropertyType == typeof(Type))
                                                 //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                                                 {
-                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offset,
+                                                    GeneralTool.SetObject(myObject.bytePtr + fieldInfo.offsetTypeHead,
                                                         UnsafeOperation.GetType(new string(vs, v.valueStringStart, v.valueStringLength))
                                                         );
                                                 }
                                                 break;
                                             default:
-
                                                 if (fieldInfo.isEnum)
                                                 {
                                                     var strEnum = new string(vs, v.valueStringStart, v.valueStringLength);
@@ -851,8 +854,8 @@ namespace DragonJson
                                                     {
                                                         if (Arrays.GetValue(k).ToString().Equals(strEnum))
                                                         {
-                                                            GeneralTool.Memcpy(myObject.bytePtr + fieldInfo.offset
-                                                                , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
+                                                            GeneralTool.MemCpy(myObject.bytePtr + fieldInfo.offsetTypeHead
+                                                                , ((IntPtr*)GeneralTool.ObjectToVoidPtr(Arrays.GetValue(k)) + 1)
                                                                 , UnsafeOperation.SizeOfStack(fieldInfo.fieldOrPropertyType)
                                                                 );
                                                             break;
@@ -866,37 +869,37 @@ namespace DragonJson
                                         switch (itemTypeCode)
                                         {
                                             case TypeCode.SByte:
-                                                *(SByte*)(myObject.bytePtr + fieldInfo.offset) = (SByte)v.valueLong;
+                                                *(SByte*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (SByte)v.valueLong;
                                                 break;
                                             case TypeCode.Byte:
-                                                *(Byte*)(myObject.bytePtr + fieldInfo.offset) = (Byte)v.valueLong;
+                                                *(Byte*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Byte)v.valueLong;
                                                 break;
                                             case TypeCode.Int16:
-                                                *(Int16*)(myObject.bytePtr + fieldInfo.offset) = (Int16)v.valueLong;
+                                                *(Int16*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Int16)v.valueLong;
                                                 break;
                                             case TypeCode.UInt16:
-                                                *(UInt16*)(myObject.bytePtr + fieldInfo.offset) = (UInt16)v.valueLong;
+                                                *(UInt16*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (UInt16)v.valueLong;
                                                 break;
                                             case TypeCode.Int32:
-                                                *(Int32*)(myObject.bytePtr + fieldInfo.offset) = (Int32)v.valueLong;
+                                                *(Int32*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Int32)v.valueLong;
                                                 break;
                                             case TypeCode.UInt32:
-                                                *(UInt32*)(myObject.bytePtr + fieldInfo.offset) = (UInt32)v.valueLong;
+                                                *(UInt32*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (UInt32)v.valueLong;
                                                 break;
                                             case TypeCode.Int64:
-                                                *(Int64*)(myObject.bytePtr + fieldInfo.offset) = v.valueLong;
+                                                *(Int64*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = v.valueLong;
                                                 break;
                                             case TypeCode.UInt64:
-                                                *(UInt64*)(myObject.bytePtr + fieldInfo.offset) = (UInt64)v.valueLong;
+                                                *(UInt64*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (UInt64)v.valueLong;
                                                 break;
                                             case TypeCode.Single:
-                                                *(Single*)(myObject.bytePtr + fieldInfo.offset) = (Single)v.valueLong;
+                                                *(Single*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Single)v.valueLong;
                                                 break;
                                             case TypeCode.Double:
-                                                *(Double*)(myObject.bytePtr + fieldInfo.offset) = (Double)v.valueLong;
+                                                *(Double*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Double)v.valueLong;
                                                 break;
                                             case TypeCode.Decimal:
-                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offset) = (Decimal)v.valueLong;
+                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Decimal)v.valueLong;
                                                 break;
                                         }
                                         break;
@@ -904,18 +907,18 @@ namespace DragonJson
                                         switch (itemTypeCode)
                                         {
                                             case TypeCode.Single:
-                                                *(Single*)(myObject.bytePtr + fieldInfo.offset) = (Single)v.valueDouble;
+                                                *(Single*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Single)v.valueDouble;
                                                 break;
                                             case TypeCode.Double:
-                                                *(Double*)(myObject.bytePtr + fieldInfo.offset) = v.valueDouble;
+                                                *(Double*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = v.valueDouble;
                                                 break;
                                             case TypeCode.Decimal:
-                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offset) = (Decimal)v.valueDouble;
+                                                *(Decimal*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = (Decimal)v.valueDouble;
                                                 break;
                                         }
                                         break;
                                     case JsonValueType.Boolean:
-                                        *(bool*)(myObject.bytePtr + fieldInfo.offset) = v.valueBool;
+                                        *(bool*)(myObject.bytePtr + fieldInfo.offsetTypeHead) = v.valueBool;
                                         break;
                                     case JsonValueType.Object:
                                         break;
@@ -1001,8 +1004,8 @@ namespace DragonJson
                                                 {
                                                     if (Arrays.GetValue(k).ToString().Equals(strEnum))
                                                     {
-                                                        GeneralTool.Memcpy(pByte
-                                                            , ((IntPtr*)GeneralTool.ObjectToVoid(Arrays.GetValue(k)) + 1)
+                                                        GeneralTool.MemCpy(pByte
+                                                            , ((IntPtr*)GeneralTool.ObjectToVoidPtr(Arrays.GetValue(k)) + 1)
                                                             , UnsafeOperation.SizeOfStack(itemType)
                                                             );
                                                         break;
@@ -1372,6 +1375,14 @@ namespace DragonJson
                                 return createObjectItems[obj->objectQueueIndex].obj;
                             }
                             //myObject = createObjectItems[value->objectQueueIndex];
+                            ICollectionString writeString = CollectionManager.GetWriterCollectionString(typeof(Type));
+                            //if (itemType == typeof(Type))
+                            if (writeString != null)
+                            //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
+                            {
+                                return writeString.ToObject(new string(str, value->valueStringStart, value->valueStringLength));
+                                //return UnsafeOperation.GetType(new string(str, value->valueStringStart, value->valueStringLength));
+                            }
                             if (itemType == typeof(Type))
                             //if (fieldInfo.fieldType.IsSubclassOf(typeof(Type)))
                             {

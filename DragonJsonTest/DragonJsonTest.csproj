@@ -82,9 +82,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GeneralToolAssembly, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="DynamicCustomReflection, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\CharPointerTable\GeneralToolAssembly.dll</HintPath>
+      <HintPath>..\Lib\DynamicCustomReflection.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=3.13.3.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.13.3\lib\net45\nunit.framework.dll</HintPath>
@@ -102,7 +102,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Read\JsonReadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Read\JsonReadTestClassA.cs" />
+    <Compile Include="JsonReadTestClassA.cs" />
     <Compile Include="TestClassA.cs" />
     <Compile Include="WriteReadTest.cs" />
     <Compile Include="Writer\JsonWriteTest.cs" />
@@ -123,6 +123,14 @@
     <ProjectReference Include="..\DragonJson\DragonJson.csproj">
       <Project>{169180bc-815e-428a-bd24-71b9022b800d}</Project>
       <Name>DragonJson</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PtrReflection\PtrReflection.csproj">
+      <Project>{986d54d1-becc-44fb-b647-6ca9efbe0090}</Project>
+      <Name>PtrReflection</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UnsafeApplication\UnsafeApplication.csproj">
+      <Project>{49abd234-5bd4-45fc-bc5a-febba344d476}</Project>
+      <Name>UnsafeApplication</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

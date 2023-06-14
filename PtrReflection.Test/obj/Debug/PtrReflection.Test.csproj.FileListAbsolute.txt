@@ -1,0 +1,17 @@
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\PtrReflection.Test.dll.config
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\PtrReflection.Test.dll
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\PtrReflection.Test.pdb
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\DynamicCustomReflection.dll
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\nunit.framework.dll
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\PtrReflection.dll
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\PtrReflection.pdb
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\PtrReflection.dll.config
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\nunit.framework.xml
+D:\a\old\DragonJson\PtrReflection.Test\obj\Debug\PtrReflection.Test.csproj.AssemblyReference.cache
+D:\a\old\DragonJson\PtrReflection.Test\obj\Debug\PtrReflection.Test.csproj.CoreCompileInputs.cache
+D:\a\old\DragonJson\PtrReflection.Test\obj\Debug\PtrReflection.Test.csproj.CopyComplete
+D:\a\old\DragonJson\PtrReflection.Test\obj\Debug\PtrReflection.Test.dll
+D:\a\old\DragonJson\PtrReflection.Test\obj\Debug\PtrReflection.Test.pdb
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\UnsafeApplication.dll
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\UnsafeApplication.pdb
+D:\a\old\DragonJson\PtrReflection.Test\bin\Debug\UnsafeApplication.dll.config

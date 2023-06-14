@@ -25,3 +25,6 @@ D:\DogJson\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CopyCo
 D:\DogJson\DogJson\CharPointerTable\bin\x64\Debug\CharPointerTable.exe.config
 D:\DogJson\DogJson\CharPointerTable\bin\x64\Debug\CharPointerTable.exe
 D:\DogJson\DogJson\CharPointerTable\obj\x64\Debug\CharPointerTable.exe
+D:\a\old\DragonJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.AssemblyReference.cache
+D:\a\old\DragonJson\CharPointerTable\obj\x64\Debug\CharPointerTable.csproj.CoreCompileInputs.cache
+D:\a\old\DragonJson\CharPointerTable\obj\x64\Debug\CharPointerTable.pdb

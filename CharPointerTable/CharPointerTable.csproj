@@ -81,7 +81,7 @@
   <ItemGroup>
     <Reference Include="DynamicCustomReflection, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\DynamicCustomReflection.dll</HintPath>
+      <HintPath>..\Lib\DynamicCustomReflection.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -91,7 +91,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="StringTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

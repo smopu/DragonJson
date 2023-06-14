@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PtrReflection;
 
 namespace DragonJsonTest
 {
@@ -357,13 +358,13 @@ namespace DragonJsonTest
             if (allChake.TryGetValue(tuple, out tuple2))
             {
                 if (
-                    GeneralTool.ObjectToVoid(tuple2.Item1)
+                    GeneralTool.ObjectToVoidPtr(tuple2.Item1)
                     ==
-                    GeneralTool.ObjectToVoid(tuple.Item1)
+                    GeneralTool.ObjectToVoidPtr(tuple.Item1)
                     &&
-                    GeneralTool.ObjectToVoid(tuple2.Item2)
+                    GeneralTool.ObjectToVoidPtr(tuple2.Item2)
                     ==
-                    GeneralTool.ObjectToVoid(tuple.Item2)
+                    GeneralTool.ObjectToVoidPtr(tuple.Item2)
                     )
                 {
                     return true;
@@ -487,8 +488,8 @@ namespace DragonJsonTest
                 }
             }
 
-            void* p_expected = GeneralTool.ObjectToVoid(expected);
-            void* p_actual = GeneralTool.ObjectToVoid(actual);
+            void* p_expected = GeneralTool.ObjectToVoidPtr(expected);
+            void* p_actual = GeneralTool.ObjectToVoidPtr(actual);
 
             string vvv = "不相等" + (*(byte*)p_expected) + " , " + (*(byte*)p_actual);
             throw new Exception("不相等" + expected + " , " + actual);

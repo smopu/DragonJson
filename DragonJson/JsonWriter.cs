@@ -19,7 +19,7 @@ namespace DragonJson
 
         IJsonWriterToObject jsonWriterToObject;
 
-        const int backCount = 4;
+        const int backCount = 2;
         public string Writer(object data)
         {
             bool isNext = false;

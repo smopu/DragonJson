@@ -5,12 +5,17 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using PtrReflection;
 
 namespace DragonJsonTest
 {
 
     public class TestJsonClassA
     {
+        public object a1;
+        public ACE5 a5;
+        public object a6;
+        public object a7;
         public Action<int, string> testDelegate;
         public Action<int, string> testDelegate2;
         public Action<int, string> testDelegate3;
@@ -19,7 +24,7 @@ namespace DragonJsonTest
         }
         public void Foo2(int a, string b)
         {
-            
+
         }
         ///*
         private double num;
@@ -92,6 +97,36 @@ namespace DragonJsonTest
         public Dictionary<Vector3, B> dictionary3;
         //*/
         public TstructA tstructA;
+    }
+
+    public class ACE3
+    {
+        public int kk;
+        public string str;
+    }
+
+    public class ACE5
+    {
+        public int kk;
+        public string str;
+        public ACE3 aCE3;
+        public ACE5(int kk, string str, ACE3 aCE3)
+        {
+            this.kk = kk;
+            this.str = str;
+            this.aCE3 = aCE3;
+        }
+        public ACE5()
+        {
+        }
+        public string Foo3(int kk, string str, ACE3 aCE3)
+        {
+            return "草泥马";
+        }
+        public string Foo4(int kk, string str, ACE3 aCE3)
+        {
+            return "我是傻逼！";
+        }
     }
 
     public class TclassA

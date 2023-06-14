@@ -3,33 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PtrReflection;
 
 namespace DragonJson
 {
-    public class Box<T> : IBox
-    {
-        public T value;
-        public Box(T value) {
-            this.value = value;
-        }
-        public Box()
-        {
-        }
-        public void SetObject(object obj)
-        {
-            this.value = (T)obj;
-        }
-        public object GetObject()
-        {
-            return value;
-        }
-    }
-
-    public interface IBox
-    {
-        void SetObject(object ob);
-        object GetObject();
-    }
 
     [ReadCollection(typeof(Box<>), false)]
     public unsafe class BoxCollection<T> : CreateTaget<ReadCollectionLink>
@@ -44,15 +21,15 @@ namespace DragonJson
         public ReadCollectionLink Create()
         {
             ReadCollectionLink read = new ReadCollectionLink();
-            //if (typeof(T).IsValueType)
-            //{
-            //    read.addObjectDelegate = (Action<Box<T>, Box<T>, ReadCollectionLink.Add_Args>)AddObjectStruct;
-            //}
-            //else
-            //{
-            //    read.addObjectDelegate = (Action<Box<T>, T, ReadCollectionLink.Add_Args>)AddObjectClass;
-            //}
-            if (typeof(T) == typeof(string))
+            if (typeof(T).IsValueType)
+            {
+                read.addObjectStructDelegate = (Action<Box<T>, Box<T>, ReadCollectionLink.Add_Args>)AddObjectStruct;
+            }
+            else
+            {
+                read.addObjectClassDelegate = (Action<Box<T>, T, ReadCollectionLink.Add_Args>)AddObjectClass;
+            }
+            if (!typeof(T).IsPrimitive)
             {
                 read.isLaze = true;
             }
@@ -85,17 +62,17 @@ namespace DragonJson
         object CreateObject(out object temp, ReadCollectionLink.Create_Args arg)
         {
             object data = new Box<T>();
-            if (typeof(T) == typeof(string))
+            if (!typeof(T).IsPrimitive)//typeof(T) == typeof(string) || 
             {
                 //var typeHead = UnsafeOperation.GetTypeHead(typeof(T));
-                //*(IntPtr*)GeneralTool.ObjectToVoid(data) = typeHead;
+                //*(IntPtr*)GeneralTool.ObjectToVoidPtr(data) = typeHead;
                 temp = null;
                 return data;
             }
             else
             {
                 var typeHead = UnsafeOperation.GetTypeHead(typeof(T));
-                *(IntPtr*)GeneralTool.ObjectToVoid(data) = typeHead;
+                *(IntPtr*)GeneralTool.ObjectToVoidPtr(data) = typeHead;
                 temp = null;
                 return data;
             }

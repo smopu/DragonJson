@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using PtrReflection;
 
 namespace DragonJson
 {
@@ -161,8 +162,6 @@ namespace DragonJson
         int poolLength = 65536;
         public int poolIndex = 0;
 
-        ArrayWrapper arrayWrapper = new ArrayWrapper();
-
         public JsonObject[] jsonObjects;
         public JsonObject* objectQueue;
         int objectQueueLength = 65536;
@@ -181,7 +180,7 @@ namespace DragonJson
             //int size = sizeof(typeof(JsonObject));
             //int size2 = sizeof(JsonObject);
 
-            GeneralTool.Memcpy(var_jobjectQueue, objectQueue, (objectQueueIndex) * sizeof(JsonObject));
+            GeneralTool.MemCpy(var_jobjectQueue, objectQueue, (objectQueueIndex) * sizeof(JsonObject));
             //Array.Copy(jsonObjects, var_jsonObjects, objectQueueIndex);
             //jsonObjects = var_jsonObjects;
             objectQueue = var_jobjectQueue;
@@ -198,7 +197,7 @@ namespace DragonJson
             //IntPtr copy = Marshal.AllocHGlobal((objectQueueLength + 10) * sizeof(JsonObject));
             //JsonObject* objectQueueCopy = (JsonObject*)copy.ToPointer();
 
-            //GeneralTool.Memcpy(objectQueueCopy, objectQueue, objectQueueIndex * sizeof(JsonObject));
+            //GeneralTool.MemCpy(objectQueueCopy, objectQueue, objectQueueIndex * sizeof(JsonObject));
             objectQueue = (JsonObject*)objectQueueIntPtr.ToPointer();
 
             // Marshal.FreeHGlobal(objectQueueIntPtr);
@@ -781,128 +780,16 @@ namespace DragonJson
                                 }
                                 throw new Exception(Debug(startChar, length, i, "key:后面的value解析错误 " + *now));
                             default:
-                                fu = false;
-                                if (*now < '0' || *now > '9')
-                                {
-                                    if (*now == '-')
-                                    {
-                                        fu = true;
-                                        //负号后面可以加空格
-                                        for (++i, ++now; i < length; ++i, ++now)
-                                        {
-                                            if (*now != ' ')
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else if (*now == '+')
-                                    {
-                                        ++i; ++now;
-                                    }
-                                    else
-                                    {
-                                        throw new Exception(Debug(startChar, length, i, "key:value后面必须要跟,或者} " + *now));
-                                    }
-                                }
                                 json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                if (StringToNumber.ToNumber(ref now, ref i, length, ref json_value->valueLong, ref json_value->valueDouble))
+                                {
+                                    json_value->type = JsonValueType.Long;
+                                }
+                                else
+                                {
+                                    json_value->type = JsonValueType.Double;
+                                }
                                 json_value->_startType = 0;
-                                v_long = (*now - '0');
-                                for (++i, ++now; i < length; ++i, ++now)
-                                {
-                                    if (*now < '0' || *now > '9')
-                                    {
-                                        if (*now == '.')
-                                        {
-                                            goto Dot;
-                                        }
-                                        else if (*now == 'E' || *now == 'e')
-                                        {
-                                            --now;
-                                            --i;
-                                            goto Dot;
-                                        }
-                                        else
-                                        {
-                                            json_value->type = JsonValueType.Long;
-                                            json_value->valueLong = fu ? -v_long : v_long;
-                                            goto Value;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        v_long *= 10;
-                                        v_long += (*now - '0');
-                                    }
-                                }
-                                //long
-                                throw new Exception(Debug(startChar, length, i, "key:value后面必须要跟,或者} " + *now));
-
-                            Dot:
-                                v_double = v_long;
-                                //点
-                                v_decimal = 0.1;
-                                for (++i, ++now; i < length; ++i, ++now)
-                                {
-                                    if (*now < '0' || *now > '9')
-                                    {
-                                        if (*now == 'E' || *now == 'e')
-                                        {
-                                            ++now; ++i;
-                                            if (*now == '-')
-                                            {
-                                                v_long = 0;
-
-                                                for (++i, ++now; i < length; ++i, ++now)
-                                                {
-                                                    if (*now < '0' || *now > '9')
-                                                    {
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        v_long *= 10;
-                                                        v_long += (*now - '0');
-                                                    }
-                                                }
-                                                v_double *= pow309negative[v_long];
-                                                json_value->type = JsonValueType.Double;
-                                                json_value->valueDouble = fu ? -v_double : v_double;
-                                                goto Value;
-                                            }
-                                            else if (*now == '+')
-                                            {
-                                                v_long = 0;
-
-                                                for (++i, ++now; i < length; ++i, ++now)
-                                                {
-                                                    if (*now < '0' || *now > '9')
-                                                    {
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        v_long *= 10;
-                                                        v_long += (*now - '0');
-                                                    }
-                                                }
-                                                v_double *= pow309[v_long];
-                                                json_value->type = JsonValueType.Double;
-                                                json_value->valueDouble = fu ? -v_double : v_double;
-                                                goto Value;
-                                            }
-
-                                        }
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        v_double += (*now - '0') * v_decimal;
-                                        v_decimal *= 0.1;
-                                    }
-                                }
-                                json_value->type = JsonValueType.Double;
-                                json_value->valueDouble = fu ? -v_double : v_double;
                             //goto Value;
                             //throw new Exception("key:后面的value解析错误");
 
@@ -1012,13 +899,61 @@ namespace DragonJson
                                                 json_value->valueStringLength = vStringLength;
                                                 json_value->objectQueueIndex = stackNow->objectQueueIndex;
                                                 json_value->arrayIndex = stackNow->arrayCount;
-
                                                 //objectNext 赋值
                                                 stackNow->objectNext = objectQueueIndex;
                                                 ++stackNow->arrayCount;
-                                                //出栈
-                                                --stackIndex; stackNow = objectQueue + stack[stackIndex];
-                                                goto Loop;
+
+                                                if (stackNow->isCommandValue)
+                                                {
+                                                    //下面必是 }
+                                                    for (++i, ++now; i < length; ++i, ++now)
+                                                    {
+                                                        switch (*now)
+                                                        {
+                                                            case ' ':
+                                                            case '\t':
+                                                            case '\r':
+                                                            case '\n':
+                                                                break;
+
+                                                            case '}':
+                                                                //出栈 
+                                                                --stackIndex;
+                                                                if (stackIndex == -1)
+                                                                {
+                                                                    goto BACK;
+                                                                }
+                                                                stackNow = objectQueue + stack[stackIndex];
+                                                                if (stackNow->isObject)
+                                                                {
+                                                                    goto State_Object;
+                                                                }
+                                                                else
+                                                                {
+                                                                    (objectQueue + stack[stackIndex + 1])->arrayIndex = stackNow->arrayCount;
+                                                                    ++stackNow->arrayCount;
+                                                                    goto State_Array;
+                                                                }
+                                                            case '"':
+                                                            case '{':
+                                                            case ':':
+                                                            case '[':
+                                                            case ']':
+                                                            case ',':
+                                                            default:
+                                                                throw new Exception(Debug(startChar, length, i, "#value[] 后面必须是} 现在是:" + *now));
+                                                        }
+                                                    }
+                                                    throw new Exception(Debug(startChar, length, i, "#value[] 后面必须是}"));
+
+                                                }
+                                                else
+                                                {
+                                                    //出栈
+                                                    --stackIndex; stackNow = objectQueue + stack[stackIndex];
+                                                    goto Loop;
+                                                }
+
                                             }
                                         }
                                         throw new Exception("key后面需要:");
@@ -1135,132 +1070,17 @@ namespace DragonJson
                                 }
                                 throw new Exception("key:后面的value解析错误");
                             default:
-                                fu = false;
-                                if (*now < '0' || *now > '9')
-                                {
-                                    if (*now == '-')
-                                    {
-                                        fu = true;
-                                        //负号后面可以加空格
-                                        for (++i, ++now; i < length; ++i, ++now)
-                                        {
-                                            if (*now != ' ')
-                                            {
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else if (*now == '+')
-                                    {
-                                        ++i; ++now;
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("key:value后面必须要跟,或者}" + *now);
-                                    }
-                                }
                                 json_value = pool + poolIndex; if (++poolIndex == poolLength) { ResizePool(); };
+                                if (StringToNumber.ToNumber(ref now, ref i, length, ref json_value->valueLong, ref json_value->valueDouble))
+                                {
+                                    json_value->type = JsonValueType.Long;
+                                }
+                                else
+                                {
+                                    json_value->type = JsonValueType.Double;
+                                }
                                 json_value->_startType = 0;
-                                v_long = (*now - '0');
-                                for (++i, ++now; i < length; ++i, ++now)
-                                {
-                                    if (*now < '0' || *now > '9')
-                                    {
-                                        if (*now == '.')
-                                        {
-                                            goto Dot2;
-                                        }
-                                        else if (*now == 'E' || *now == 'e')
-                                        {
-                                            --now;
-                                            --i;
-                                            goto Dot2;
-                                        }
-                                        else
-                                        {
-                                            json_value->type = JsonValueType.Long;
-                                            json_value->valueLong = fu ? -v_long : v_long;
-                                            goto Value2;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        v_long *= 10;
-                                        v_long += (*now - '0');
-                                    }
-                                }
-                                //long
-                                throw new Exception("key:value后面必须要跟,或者}" + *now);
-
-                            Dot2:
-                                v_double = v_long;
-                                //点
-                                v_decimal = 0.1;
-                                for (++i, ++now; i < length; ++i, ++now)
-                                {
-                                    if (*now < '0' || *now > '9')
-                                    {
-                                        if (*now == 'E' || *now == 'e')
-                                        {
-                                            ++now; ++i;
-                                            if (*now == '-')
-                                            {
-                                                v_long = 0;
-
-                                                for (++i, ++now; i < length; ++i, ++now)
-                                                {
-                                                    if (*now < '0' || *now > '9')
-                                                    {
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        v_long *= 10;
-                                                        v_long += (*now - '0');
-                                                    }
-                                                }
-                                                v_double *= pow309negative[v_long];
-                                                json_value->type = JsonValueType.Double;
-                                                json_value->valueDouble = fu ? -v_double : v_double;
-                                                goto Value2;
-                                            }
-                                            else if (*now == '+')
-                                            {
-                                                v_long = 0;
-
-                                                for (++i, ++now; i < length; ++i, ++now)
-                                                {
-                                                    if (*now < '0' || *now > '9')
-                                                    {
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        v_long *= 10;
-                                                        v_long += (*now - '0');
-                                                    }
-                                                }
-                                                v_double *= pow309[v_long];
-                                                json_value->type = JsonValueType.Double;
-                                                json_value->valueDouble = fu ? -v_double : v_double;
-                                                goto Value2;
-                                            }
-
-                                        }
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        v_double += (*now - '0') * v_decimal;
-                                        v_decimal *= 0.1;
-                                    }
-                                }
-                                json_value->type = JsonValueType.Double;
-                                json_value->valueDouble = fu ? -v_double : v_double;
-                            //goto Value;
-                            //throw new Exception("key:后面的value解析错误");
-
-                            Value2:
+                                Value2:
                                 json_value->objectQueueIndex = stackNow->objectQueueIndex;
 
                                 for (; i < length; ++i, ++now)

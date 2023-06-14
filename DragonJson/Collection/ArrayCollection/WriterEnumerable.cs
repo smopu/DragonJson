@@ -43,11 +43,10 @@ namespace DragonJson.Collection.ArrayCollection
     {
         public JsonWriteType GetWriteType(object obj) {
 
-            var inEnum = ((EnumWrapper)obj).inEnum;
-            var type = inEnum.GetType();
-            EnumTypeWrap enumTypeWrap = CollectionManager.GetEnumTypeWrap(type);
+            EnumWrapper obj2 = (EnumWrapper)obj;
+            EnumTypeWrap enumTypeWrap = CollectionManager.GetEnumTypeWrap(obj2.type);
             long source;
-            List<string> vs = enumTypeWrap.GetValue(inEnum, out source);
+            List<string> vs = enumTypeWrap.GetValue(obj2.inEnum, out source);
 
             if (vs.Count == 0)
             {
@@ -61,11 +60,10 @@ namespace DragonJson.Collection.ArrayCollection
 
         public IEnumerable<KeyValueStruct> GetValue(object obj)
         {
-            var inEnum = ((EnumWrapper)obj).inEnum;
-            var type = inEnum.GetType();
-            EnumTypeWrap enumTypeWrap = CollectionManager.GetEnumTypeWrap(type);
+            EnumWrapper obj2 = (EnumWrapper)obj;
+            EnumTypeWrap enumTypeWrap = CollectionManager.GetEnumTypeWrap(obj2.type);
             long source;
-            List<string> vs = enumTypeWrap.GetValue(inEnum, out source);
+            List<string> vs = enumTypeWrap.GetValue(obj2.inEnum, out source);
             if (vs.Count == 0)
             {
                 yield return new KeyValueStruct() { key = source.ToString(), type = typeof(string) };

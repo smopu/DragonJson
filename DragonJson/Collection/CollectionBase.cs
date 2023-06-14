@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using PtrReflection;
 
 namespace DragonJson
 {
@@ -20,9 +21,10 @@ namespace DragonJson
     }
 
 
-    public unsafe interface IWriterCollectionString
+    public unsafe interface ICollectionString
     {
-        string GetStringValue(object obj);
+        string ToStringValue(object obj);
+        object ToObject(string obj);
     }
 
     public struct KeyValueStruct

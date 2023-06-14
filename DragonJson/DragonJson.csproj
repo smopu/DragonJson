@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{169180BC-815E-428A-BD24-71B9022B800D}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>DragonJson</RootNamespace>
     <AssemblyName>DragonJson</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -103,7 +103,7 @@
   <ItemGroup>
     <Reference Include="DynamicCustomReflection, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\CharPointerTable\bin\Debug\DynamicCustomReflection.dll</HintPath>
+      <HintPath>..\Lib\DynamicCustomReflection.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -140,24 +140,25 @@
     <Compile Include="DataBaseExtend.cs" />
     <Compile Include="JsonData.cs" />
     <Compile Include="JsonMapper.cs" />
-    <Compile Include="JsonReflection.cs" />
+    <Compile Include="Old\JsonReflection.cs" />
     <Compile Include="JsonReader.cs" />
     <Compile Include="JsonWriter.cs" />
-    <Compile Include="RenderToObject\Addr\ArrayWrapManager.cs" />
+    <Compile Include="Old\ArrayWrapManager.cs" />
+    <Compile Include="Old\Box.cs" />
     <Compile Include="RenderToObject\Addr\EnumWrapper.cs" />
-    <Compile Include="RenderToObject\StringToType.cs" />
+    <Compile Include="Old\StringToType.cs" />
     <Compile Include="WriterToObject\WriterReflection.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RenderToObject\Addr\ArrayWrapper.cs" />
-    <Compile Include="RenderToObject\Addr\MulticastDelegateValue.cs" />
-    <Compile Include="RenderToObject\Addr\PropertyWrapper.cs" />
-    <Compile Include="RenderToObject\Addr\StringTable.cs" />
-    <Compile Include="RenderToObject\Addr\TypeAddrWrapper.cs" />
-    <Compile Include="RenderToObject\Addr\UnsafeOperation.cs" />
+    <Compile Include="Old\ArrayWrapper.cs" />
+    <Compile Include="Old\MulticastDelegateValue.cs" />
+    <Compile Include="Old\PropertyWrapper.cs" />
+    <Compile Include="Old\StringTable.cs" />
+    <Compile Include="Old\TypeAddrWrapper.cs" />
+    <Compile Include="Old\UnsafeOperation.cs" />
     <Compile Include="RenderToObject\Addr\AddrToObject.cs" />
     <Compile Include="RenderToObject\ReflectionToObject.cs" />
-    <Compile Include="StringTableLive.cs" />
+    <Compile Include="Old\StringTableLive.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">
@@ -187,6 +188,16 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PtrReflection\PtrReflection.csproj">
+      <Project>{986d54d1-becc-44fb-b647-6ca9efbe0090}</Project>
+      <Name>PtrReflection</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UnsafeApplication\UnsafeApplication.csproj">
+      <Project>{49abd234-5bd4-45fc-bc5a-febba344d476}</Project>
+      <Name>UnsafeApplication</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

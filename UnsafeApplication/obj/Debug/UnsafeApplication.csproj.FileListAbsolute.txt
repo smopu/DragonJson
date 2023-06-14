@@ -1,0 +1,7 @@
+D:\a\old\DragonJson\UnsafeApplication\bin\Debug\UnsafeApplication.dll.config
+D:\a\old\DragonJson\UnsafeApplication\bin\Debug\UnsafeApplication.dll
+D:\a\old\DragonJson\UnsafeApplication\bin\Debug\UnsafeApplication.pdb
+D:\a\old\DragonJson\UnsafeApplication\obj\Debug\UnsafeApplication.csproj.AssemblyReference.cache
+D:\a\old\DragonJson\UnsafeApplication\obj\Debug\UnsafeApplication.csproj.CoreCompileInputs.cache
+D:\a\old\DragonJson\UnsafeApplication\obj\Debug\UnsafeApplication.dll
+D:\a\old\DragonJson\UnsafeApplication\obj\Debug\UnsafeApplication.pdb

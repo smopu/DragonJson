@@ -1,4 +1,4 @@
-﻿using DragonJson.RenderToObject;
+﻿using PtrReflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -178,7 +178,7 @@ namespace DragonJson
         static Dictionary<Type, IWriterCollectionObject> writeObjectMap = new Dictionary<Type, IWriterCollectionObject>();
         static readonly Dictionary<Type, TypeCollectionMapItem> writeObjectTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
         
-        static Dictionary<Type, IWriterCollectionString> writeStringMap = new Dictionary<Type, IWriterCollectionString>();
+        static Dictionary<Type, ICollectionString> writeStringMap = new Dictionary<Type, ICollectionString>();
         static readonly Dictionary<Type, TypeCollectionMapItem> writeStringTypeMap = new Dictionary<Type, TypeCollectionMapItem>();
         static readonly HashSet<Type> writeStringInheritedTypeMap = new HashSet<Type>();
 
@@ -222,9 +222,9 @@ namespace DragonJson
         {
             return GetCollection<IWriterCollectionObject>(writeObjectMap, writeObjectTypeMap, type, writeInheritedTypeMap);
         }
-        public static IWriterCollectionString GetWriterCollectionString(Type type)
+        public static ICollectionString GetWriterCollectionString(Type type)
         {
-            return GetCollection<IWriterCollectionString>(writeStringMap, writeStringTypeMap, type, writeStringInheritedTypeMap);
+            return GetCollection<ICollectionString>(writeStringMap, writeStringTypeMap, type, writeStringInheritedTypeMap);
         }
 
         //public static IReadCollectionObject GetReadObjectCollection(Type type)
@@ -412,23 +412,6 @@ namespace DragonJson
             //Assembly.UnsafeLoadFrom
             foreach (var collectionType in assembly.GetTypes())
             {
-                //CollectionReadAttribute attribute = collectionType.GetCustomAttribute<CollectionReadAttribute>();
-                //if (attribute != null)
-                //{
-                //    if (attribute.isArrays)
-                //    {
-                //        ChakeType<IReadCollectionObject>(readArrayTypeMap, readArrayMap, collectionType, attribute.type);
-                //    }
-                //    else
-                //    {
-                //        ChakeType<IReadCollectionObject>(readObjectTypeMap, readObjectMap, collectionType, attribute.type);
-                //    }
-                //    if (attribute.inherited)
-                //    {
-                //        readInheritedTypeMap.Add(attribute.type);
-                //    }
-                //}
-
                 IEnumerable<CollectionWriteAttribute> attributeWrite = collectionType.GetCustomAttributes<CollectionWriteAttribute>();
                 foreach (var attributeType in attributeWrite)
                 {
@@ -505,7 +488,7 @@ namespace DragonJson
                     {
                         writeStringInheritedTypeMap.Add(attributeType.type);
                     }
-                    ChakeType<IWriterCollectionString>(writeStringTypeMap, writeStringMap, collectionType, attributeType.type);
+                    ChakeType<ICollectionString>(writeStringTypeMap, writeStringMap, collectionType, attributeType.type);
                 }
 
 
